@@ -254,7 +254,7 @@
     <!-- Logo & Welcome -->
     <div style="text-align:center;margin-bottom:14px">
       <div style="font-size:28px;font-weight:900;color:#0f1923">CamMarket<span style="color:#1a7a3c">237</span></div>
-      <div style="font-size:13px;color:#888;margin-top:4px">Everything you need in Cameroon</div>
+      <div style="font-size:13px;color:#888;margin-top:4px" data-i18n="landing.tagline">Everything you need in Cameroon</div>
       <!-- Language switcher -->
       <div style="display:flex;justify-content:center;gap:6px;margin-top:10px">
         <button class="lang-btn" data-lang="en" onclick="window.setLanguage('en')" style="padding:5px 12px;border:none;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;background:#1a7a3c;color:white">EN</button>
@@ -321,6 +321,61 @@
         <div style="font-size:20px;margin-bottom:3px">&#x1F9F9;</div>
         <div style="font-weight:800;font-size:11px" data-i18n="service.cleaning">Cleaning</div>
         <div style="font-size:9px;opacity:0.8;margin-top:1px" data-i18n="service.cleaningDesc">Home &amp; office</div>
+      </button>
+      <button onclick="window.openServiceHub('agriculture')" style="background:#e65100;color:white;border:none;border-radius:12px;padding:12px 6px;cursor:pointer;font-family:inherit;text-align:center">
+        <div style="font-size:20px;margin-bottom:3px">&#x1F33E;</div>
+        <div style="font-weight:800;font-size:11px" data-i18n="service.agriculture">Farm/Agric Produce</div>
+        <div style="font-size:9px;opacity:0.8;margin-top:1px" data-i18n="service.agricultureDesc">Produce &amp; farming</div>
+      </button>
+      <button onclick="window.openServiceHub('delivery')" style="background:#0097a7;color:white;border:none;border-radius:12px;padding:12px 6px;cursor:pointer;font-family:inherit;text-align:center">
+        <div style="font-size:20px;margin-bottom:3px">&#x1F4E6;</div>
+        <div style="font-weight:800;font-size:11px" data-i18n="service.delivery">Delivery</div>
+        <div style="font-size:9px;opacity:0.8;margin-top:1px" data-i18n="service.deliveryDesc">Send &amp; receive</div>
+      </button>
+      <button onclick="window.openServiceHub('electronics')" style="background:#2c3e50;color:white;border:none;border-radius:12px;padding:12px 6px;cursor:pointer;font-family:inherit;text-align:center">
+        <div style="font-size:20px;margin-bottom:3px">&#x1F4BB;</div>
+        <div style="font-weight:800;font-size:11px" data-i18n="service.electronics">Electronics</div>
+        <div style="font-size:9px;opacity:0.8;margin-top:1px" data-i18n="service.electronicsDesc">Gadgets &amp; devices</div>
+      </button>
+      <button onclick="window.openServiceHub('phones_access')" style="background:#2980b9;color:white;border:none;border-radius:12px;padding:12px 6px;cursor:pointer;font-family:inherit;text-align:center">
+        <div style="font-size:20px;margin-bottom:3px">&#x1F4F1;</div>
+        <div style="font-weight:800;font-size:11px" data-i18n="service.phonesAccess">Phones</div>
+        <div style="font-size:9px;opacity:0.8;margin-top:1px" data-i18n="service.phonesAccessDesc">&amp; Accessories</div>
+      </button>
+      <button onclick="window.openServiceHub('clothing')" style="background:#ad1457;color:white;border:none;border-radius:12px;padding:12px 6px;cursor:pointer;font-family:inherit;text-align:center">
+        <div style="font-size:20px;margin-bottom:3px">&#x1F457;</div>
+        <div style="font-weight:800;font-size:11px" data-i18n="service.clothing">Clothing</div>
+        <div style="font-size:9px;opacity:0.8;margin-top:1px" data-i18n="service.clothingDesc">&amp; Fashion</div>
+      </button>
+      <button onclick="window.openServiceHub('food_groceries')" style="background:#1e8449;color:white;border:none;border-radius:12px;padding:12px 6px;cursor:pointer;font-family:inherit;text-align:center">
+        <div style="font-size:20px;margin-bottom:3px">&#x1F96C;</div>
+        <div style="font-weight:800;font-size:11px" data-i18n="service.foodGroceries">Food</div>
+        <div style="font-size:9px;opacity:0.8;margin-top:1px" data-i18n="service.foodGroceriesDesc">&amp; Groceries</div>
+      </button>
+      <button onclick="window.openServiceHub('furniture_home')" style="background:#6a1b9a;color:white;border:none;border-radius:12px;padding:12px 6px;cursor:pointer;font-family:inherit;text-align:center">
+        <div style="font-size:20px;margin-bottom:3px">&#x1F6CB;&#xFE0F;</div>
+        <div style="font-weight:800;font-size:11px" data-i18n="service.furnitureHome">Furniture</div>
+        <div style="font-size:9px;opacity:0.8;margin-top:1px" data-i18n="service.furnitureHomeDesc">&amp; Home</div>
+      </button>
+      <button onclick="window.openServiceHub('beauty_health')" style="background:#c62828;color:white;border:none;border-radius:12px;padding:12px 6px;cursor:pointer;font-family:inherit;text-align:center">
+        <div style="font-size:20px;margin-bottom:3px">&#x1F48A;</div>
+        <div style="font-weight:800;font-size:11px" data-i18n="service.beautyHealth">Beauty</div>
+        <div style="font-size:9px;opacity:0.8;margin-top:1px" data-i18n="service.beautyHealthDesc">&amp; Health</div>
+      </button>
+      <button onclick="window.openServiceHub('vehicles_parts')" style="background:#b71c1c;color:white;border:none;border-radius:12px;padding:12px 6px;cursor:pointer;font-family:inherit;text-align:center">
+        <div style="font-size:20px;margin-bottom:3px">&#x1F699;</div>
+        <div style="font-weight:800;font-size:11px" data-i18n="service.vehiclesParts">Vehicles</div>
+        <div style="font-size:9px;opacity:0.8;margin-top:1px" data-i18n="service.vehiclesPartsDesc">&amp; Parts</div>
+      </button>
+      <button onclick="window.openServiceHub('books')" style="background:#00695c;color:white;border:none;border-radius:12px;padding:12px 6px;cursor:pointer;font-family:inherit;text-align:center">
+        <div style="font-size:20px;margin-bottom:3px">&#x1F4DA;</div>
+        <div style="font-weight:800;font-size:11px" data-i18n="service.books">Books</div>
+        <div style="font-size:9px;opacity:0.8;margin-top:1px" data-i18n="service.booksDesc">&amp; Stationery</div>
+      </button>
+      <button onclick="window.openServiceHub('interior_design')" style="background:#6d4c41;color:white;border:none;border-radius:12px;padding:12px 6px;cursor:pointer;font-family:inherit;text-align:center">
+        <div style="font-size:20px;margin-bottom:3px">&#x1F6CB;&#xFE0F;</div>
+        <div style="font-weight:800;font-size:11px" data-i18n="service.interiorDesign">Interior Design</div>
+        <div style="font-size:9px;opacity:0.8;margin-top:1px" data-i18n="service.interiorDesignDesc">Decor &amp; spaces</div>
       </button>
       <button onclick="window.openServiceHub('other')" style="background:#7f8c8d;color:white;border:none;border-radius:12px;padding:12px 6px;cursor:pointer;font-family:inherit;text-align:center">
         <div style="font-size:20px;margin-bottom:3px">&#x1F4BC;</div>
@@ -452,7 +507,7 @@
 
   <!-- BUYER OTP -->
   <div class="screen" id="screen-buyer-otp">
-    <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer" onclick="window.go('buyer-auth')">&#8592; Back</button>
+    <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer" onclick="window.go('buyer-auth')">&#8592; <span data-i18n="btn.back">Back</span></button>
     <div class="title" data-i18n="otp.guestTitle">Guest Access Code</div>
     <p id="otp-msg" style="font-size:13px;color:#666;margin-bottom:14px" data-i18n="otp.guestHint">Enter the code for 24-hour read-only guest access.</p>
     <div class="alert-y" id="dev-hint"></div>
@@ -1005,7 +1060,7 @@
   <div class="screen" id="screen-post-item">
     <div style="padding:24px 24px 100px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-        <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer" onclick="window.cancelPostItem()">&#8592; Back</button>
+        <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer" onclick="window.cancelPostItem()">&#8592; <span data-i18n="btn.back">Back</span></button>
         <button onclick="window.cancelPostItem()" style="background:#fde8e8;color:#e74c3c;border:1.5px solid #e74c3c;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">&#x274C; Cancel</button>
       </div>
       <div class="title" style="margin-bottom:4px" data-i18n="create.title">Post Item for Sale</div>
@@ -1096,12 +1151,12 @@
         <select id="p-cat" onchange="window.onCategoryChange(this.value)"><option value="">Select Category</option>
           <option>Electronics</option><option>Phones &amp; Accessories</option><option>Clothing &amp; Fashion</option>
           <option>Food &amp; Groceries</option><option>Furniture &amp; Home</option><option>Beauty &amp; Health</option>
-          <option>Vehicles &amp; Parts</option><option>Agriculture</option><option>Books &amp; Stationery</option>
-          <option>Sports &amp; Fitness</option><option>Toys &amp; Kids</option>
+          <option>Vehicles &amp; Parts</option><option>Agriculture</option><option>Farm/Agricultural Produce</option>
+          <option>Books &amp; Stationery</option><option>Sports &amp; Fitness</option><option>Toys &amp; Kids</option>
           <option>Guesthouses &amp; Hotels</option><option>Car Rental</option><option>Apartments &amp; Rentals</option>
           <option>Transport &amp; Drivers</option><option>Catering &amp; Food</option>
           <option>Photography &amp; Video</option><option>Cleaning Services</option>
-          <option>Repairs &amp; Plumbing</option><option>Services</option><option>Other</option>
+          <option>Repairs &amp; Plumbing</option><option>Interior Design</option><option>Delivery Service</option><option>Services</option><option>Other</option>
         </select>
       </div>
 
@@ -1266,7 +1321,7 @@
     <div style="padding:0 0 80px">
       <!-- Sticky header -->
       <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:white;border-bottom:1px solid #eee;position:sticky;top:0;z-index:10">
-        <button id="gh-detail-back-btn" onclick="window.go(window._ghFromScreen||'find-guesthouses')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer">&#8592; Back</button>
+        <button id="gh-detail-back-btn" onclick="window.go(window._ghFromScreen||'find-guesthouses')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer">&#8592; <span data-i18n="btn.back">Back</span></button>
         <div style="display:flex;gap:8px">
           <button onclick="window.shareGuesthouse()" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 12px;font-size:16px;cursor:pointer">&#128228;</button>
         </div>
@@ -1367,7 +1422,7 @@
   <div class="screen" id="screen-service-hub">
     <div style="padding-bottom:40px">
       <div id="sh-header" style="background:#555;padding:20px 16px 32px;color:white">
-        <button onclick="window.go('landing')" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:14px">&#8592; Back</button>
+        <button onclick="window.go('role')" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:14px">&#8592; <span data-i18n="btn.back">Back</span></button>
         <div id="sh-icon" style="font-size:28px;margin-bottom:6px">&#x1F4BC;</div>
         <div id="sh-title" style="font-size:20px;font-weight:900;margin-bottom:5px">Services</div>
         <div id="sh-sub" style="font-size:13px;opacity:0.85;line-height:1.5">Find or list a service</div>
@@ -1417,10 +1472,10 @@
   <div class="screen" id="screen-guesthouse-hub">
     <div style="padding-bottom:40px">
       <div style="background:linear-gradient(135deg,#1a7a3c 0%,#2e8b57 100%);padding:20px 16px 32px;color:white">
-        <button onclick="window.go('landing')" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:14px">&#8592; Back</button>
+        <button onclick="window.go('role')" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:14px">&#8592; <span data-i18n="btn.back">Back</span></button>
         <div style="font-size:28px;margin-bottom:6px">&#x1F3E8;</div>
-        <div style="font-size:20px;font-weight:900;margin-bottom:5px">Guesthouses &amp; Hotels</div>
-        <div style="font-size:13px;opacity:0.85;line-height:1.5">Find a comfortable stay anywhere in Cameroon, or list your property for free</div>
+        <div id="gh-hub-title" style="font-size:20px;font-weight:900;margin-bottom:5px">Guesthouses &amp; Hotels</div>
+        <div id="gh-hub-sub" style="font-size:13px;opacity:0.85;line-height:1.5">Find a comfortable stay anywhere in Cameroon, or list your property for free</div>
       </div>
       <div style="padding:0 16px;margin-top:-18px">
         <!-- Find Near Me card -->
@@ -1428,12 +1483,12 @@
           <div style="display:flex;align-items:flex-start;gap:14px">
             <div style="width:52px;height:52px;background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">&#x1F50D;</div>
             <div style="flex:1">
-              <div style="font-size:16px;font-weight:900;color:#1a7a3c;margin-bottom:5px">Find a Guesthouse Near Me</div>
-              <div style="font-size:12px;color:#666;line-height:1.6">Browse guest houses and hotels sorted by distance from your location. Contact any host directly on WhatsApp — completely free.</div>
+              <div id="gh-hub-find-title" style="font-size:16px;font-weight:900;color:#1a7a3c;margin-bottom:5px">Find a Guesthouse Near Me</div>
+              <div id="gh-hub-find-desc" style="font-size:12px;color:#666;line-height:1.6">Browse guest houses and hotels sorted by distance from your location. Contact any host directly on WhatsApp — completely free.</div>
             </div>
           </div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid #f0f0f0">
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <div id="gh-hub-find-tags" style="display:flex;gap:8px;flex-wrap:wrap">
               <span style="background:#e8f5e9;color:#1a7a3c;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px">&#x1F4CD; Uses your location</span>
               <span style="background:#e8f5e9;color:#1a7a3c;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px">Free to use</span>
             </div>
@@ -1445,12 +1500,12 @@
           <div style="display:flex;align-items:flex-start;gap:14px">
             <div style="width:52px;height:52px;background:linear-gradient(135deg,#fff3e0,#ffe0b2);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">&#x1F3E0;</div>
             <div style="flex:1">
-              <div style="font-size:16px;font-weight:900;color:#e67e22;margin-bottom:5px">List My Guesthouse</div>
-              <div style="font-size:12px;color:#666;line-height:1.6">Are you a guest house or hotel owner? Create a free seller account and reach thousands of guests across Cameroon.</div>
+              <div id="gh-hub-list-title" style="font-size:16px;font-weight:900;color:#e67e22;margin-bottom:5px">List My Guesthouse</div>
+              <div id="gh-hub-list-desc" style="font-size:12px;color:#666;line-height:1.6">Are you a guest house or hotel owner? Create a free seller account and reach thousands of guests across Cameroon.</div>
             </div>
           </div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid #f0f0f0">
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <div id="gh-hub-list-tags" style="display:flex;gap:8px;flex-wrap:wrap">
               <span style="background:#fff3e0;color:#e67e22;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px">&#x2705; Free to list</span>
               <span style="background:#fff3e0;color:#e67e22;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px">Nationwide reach</span>
             </div>
@@ -1458,7 +1513,7 @@
           </div>
         </div>
         <div style="background:#f8f9fa;border-radius:12px;padding:14px 16px;border:1px solid #eee;text-align:center">
-          <div style="font-size:12px;color:#777;line-height:1.7">&#x1F91D; <strong>We connect you with hosts.</strong> All arrangements and payments happen directly between you and the host — CamMarket237 never collects money.</div>
+          <div id="gh-hub-disclaimer" style="font-size:12px;color:#777;line-height:1.7">&#x1F91D; <strong>We connect you with hosts.</strong> All arrangements and payments happen directly between you and the host — CamMarket237 never collects money.</div>
         </div>
       </div>
     </div>
@@ -1473,7 +1528,7 @@
       <div style="background:#1a7a3c;padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10">
         <button onclick="window.go('guesthouse-hub')" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:16px;flex-shrink:0;font-family:inherit">&#8592;</button>
         <div style="flex:1;min-width:0">
-          <div style="color:rgba(255,255,255,0.75);font-size:10px;text-transform:uppercase;letter-spacing:0.5px">Showing guesthouses near</div>
+          <div id="fgh-near-label" style="color:rgba(255,255,255,0.75);font-size:10px;text-transform:uppercase;letter-spacing:0.5px" data-i18n="ghub.showingNear">Showing guesthouses near</div>
           <div style="color:white;font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="fgh-location-name">Detecting location&#x2026;</div>
         </div>
         <button onclick="window.changeGHLocation()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;font-family:inherit;flex-shrink:0;font-weight:700">&#x1F4CD; Change</button>
@@ -1555,7 +1610,7 @@
   <!-- SAVED ITEMS SCREEN -->
   <div class="screen" id="screen-saved">
     <div style="padding:20px">
-      <button onclick="window.go('buyer-search')" style="background:#f5f5f5;border:none;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;margin-bottom:14px">&#8592; Back</button>
+      <button onclick="window.go('buyer-search')" style="background:#f5f5f5;border:none;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;margin-bottom:14px">&#8592; <span data-i18n="btn.back">Back</span></button>
       <div style="font-size:18px;font-weight:800;color:#0f1923;margin-bottom:14px">&#10084;&#65039; <span data-i18n="saved.title">Saved Items</span></div>
       <div id="saved-list"></div>
     </div>
@@ -1858,7 +1913,7 @@
   <div class="screen" id="screen-cart">
     <div style="padding:0 0 80px">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:white;border-bottom:1px solid #eee;position:sticky;top:0;z-index:10">
-        <button onclick="window.go('buyer-search')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer">&#x2190; Back</button>
+        <button onclick="window.go('buyer-search')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer">&#x2190; <span data-i18n="btn.back">Back</span></button>
         <div style="font-size:17px;font-weight:800;color:#0f1923">&#x1F6D2; <span data-i18n="cart.title">My Cart</span></div>
         <div id="cart-count-label" style="font-size:12px;color:#888">0 items</div>
       </div>
@@ -2150,7 +2205,7 @@
   <!-- INVITE & EARN SCREEN -->
   <div class="screen" id="screen-invite">
     <div style="padding:20px 20px 100px">
-      <button onclick="window.inviteGoBack()" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer;margin-bottom:16px">&#8592; Back</button>
+      <button onclick="window.inviteGoBack()" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer;margin-bottom:16px">&#8592; <span data-i18n="btn.back">Back</span></button>
 
       <!-- Header -->
       <div style="text-align:center;margin-bottom:20px">
@@ -2259,7 +2314,7 @@
   <!-- DEALS SCREEN -->
   <div class="screen" id="screen-deals">
     <div style="padding:20px 20px 100px">
-      <button onclick="window.go('seller-dash')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer;margin-bottom:16px">&#8592; Back</button>
+      <button onclick="window.go('seller-dash')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer;margin-bottom:16px">&#8592; <span data-i18n="btn.back">Back</span></button>
       <div style="font-size:20px;font-weight:900;color:#0f1923;margin-bottom:4px">&#x1F525; <span data-i18n="dash.createDeal">Create a Deal</span></div>
       <div style="font-size:13px;color:#888;margin-bottom:20px" data-i18n="deal.subtitle">Set a discount on your listing. Buyers will see it instantly!</div>
 
@@ -2586,7 +2641,7 @@
     <!-- FORGOT PASSWORD SCREEN (PIN-based) -->
   <div class="screen" id="screen-forgot-password">
     <div style="padding:20px 20px 80px">
-      <button onclick="var r=document.getElementById('forgot-role').value;window.go(r==='seller'?'seller-auth':'buyer-auth')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer;margin-bottom:16px">&#8592; Back</button>
+      <button onclick="var r=document.getElementById('forgot-role').value;window.go(r==='seller'?'seller-auth':'buyer-auth')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer;margin-bottom:16px">&#8592; <span data-i18n="btn.back">Back</span></button>
       <div style="font-size:20px;font-weight:900;color:#0f1923;margin-bottom:4px" data-i18n="password.reset">&#x1F511; Reset Password</div>
       <div style="font-size:13px;color:#888;margin-bottom:20px" data-i18n="password.enterPhone">Enter your phone and 6-digit Recovery PIN</div>
 
@@ -2622,7 +2677,7 @@
   <!-- SET RECOVERY PIN SCREEN (during registration or from dashboard) -->
   <div class="screen" id="screen-set-pin">
     <div style="padding:20px 20px 80px">
-      <button onclick="var u=JSON.parse(localStorage.getItem('cm237_user')||'{}');window.go(u.role==='seller'?'seller-dash':'buyer-search')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer;margin-bottom:16px">&#8592; Back</button>
+      <button onclick="var u=JSON.parse(localStorage.getItem('cm237_user')||'{}');window.go(u.role==='seller'?'seller-dash':'buyer-search')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer;margin-bottom:16px">&#8592; <span data-i18n="btn.back">Back</span></button>
       <div style="font-size:20px;font-weight:900;color:#0f1923;margin-bottom:4px">&#x1F510; Recovery PIN</div>
       <div style="font-size:13px;color:#888;margin-bottom:20px;line-height:1.5">This 6-digit PIN will let you reset your password if you forget it. <strong>Remember it well!</strong></div>
 
@@ -2648,7 +2703,7 @@
   <!-- SCHEDULE MEETING SCREEN -->
   <div class="screen" id="screen-schedule-meeting">
     <div style="padding:20px 20px 80px">
-      <button onclick="window.go('buyer-search')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer;margin-bottom:16px">&#8592; Back</button>
+      <button onclick="window.go('buyer-search')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer;margin-bottom:16px">&#8592; <span data-i18n="btn.back">Back</span></button>
       <div style="font-size:18px;font-weight:900;color:#0f1923;margin-bottom:4px">&#x1F4C5; Schedule Safe Meeting</div>
       <div style="font-size:12px;color:#888;margin-bottom:20px">Your meeting will be logged for safety</div>
 
@@ -2798,7 +2853,7 @@
   <!-- SELLER RESPOND TO BUYER SCREEN -->
   <div class="screen" id="screen-seller-respond">
     <div style="padding:20px 20px 80px">
-      <button onclick="window.go('seller-dash')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer;margin-bottom:16px">&#8592; Back</button>
+      <button onclick="window.go('seller-dash')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer;margin-bottom:16px">&#8592; <span data-i18n="btn.back">Back</span></button>
       <div style="font-size:18px;font-weight:900;color:#0f1923;margin-bottom:4px">&#x1F4AC; Buyer Enquiry</div>
       <div style="font-size:12px;color:#888;margin-bottom:20px">A buyer is asking about your item</div>
 
@@ -2848,7 +2903,7 @@
     <div style="background:#0f1923;min-height:100vh;display:flex;flex-direction:column">
       <!-- Header -->
       <div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.1)">
-        <button onclick="window.exitGoLive()" style="background:rgba(255,255,255,0.15);border:none;color:white;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer">&#8592; Back</button>
+        <button onclick="window.exitGoLive()" style="background:rgba(255,255,255,0.15);border:none;color:white;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer">&#8592; <span data-i18n="btn.back">Back</span></button>
         <div style="color:white;font-weight:800;font-size:15px">&#x1F4F9; Go Live</div>
         <div id="go-live-timer" style="color:#e74c3c;font-weight:800;font-size:14px"></div>
       </div>
@@ -3006,7 +3061,7 @@
   <!-- ═══════════════════════════════════════════ -->
   <div class="screen" id="screen-advertise-hub">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <button onclick="history.back()||window.go('seller-dash')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer">&#8592; Back</button>
+      <button onclick="history.back()||window.go('seller-dash')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer">&#8592; <span data-i18n="btn.back">Back</span></button>
       <div style="font-size:17px;font-weight:800;color:#0f1923">&#x1F4E3; Advertise on CamMarket237</div>
     </div>
 
@@ -3106,7 +3161,7 @@
   <!-- ═══════════════════════════════════════════ -->
   <div class="screen" id="screen-sponsored-ad">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <button onclick="window.go('advertise-hub')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer">&#8592; Back</button>
+      <button onclick="window.go('advertise-hub')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer">&#8592; <span data-i18n="btn.back">Back</span></button>
       <div style="font-size:17px;font-weight:800;color:#0f1923">&#x1F514; Sponsored Notification</div>
     </div>
 
@@ -3597,7 +3652,111 @@ window.TRANSLATIONS = {
     'live.whatsappSeller':'WhatsApp Seller','live.tapBalance':'Tap to check balance',
     'live.onlyMinsLeft':'Only {{n}} minutes left!',
     'live.saySomething':'Say something...','live.send':'Send',
-    'live.liveBadge':'LIVE','live.liveNow':'Live Now','live.loading':'Loading...'
+    'live.liveBadge':'LIVE','live.liveNow':'Live Now','live.loading':'Loading...',
+    'hub.common.usesLocation':'&#x1F4CD; Uses your location','hub.common.freeToUse':'Free to use','hub.common.freeToList':'&#x2705; Free to list',
+    'hub.buySellCar.title':'Buy &amp; Sell Cars','hub.buySellCar.sub':'Find a car to buy, or list yours for sale',
+    'hub.buySellCar.findTitle':'Find a Car Near Me','hub.buySellCar.findDesc':'Browse cars for sale sorted by distance. Contact sellers directly on WhatsApp — completely free.',
+    'hub.buySellCar.listTitle':'List My Car for Sale','hub.buySellCar.listDesc':'Selling a car? Create a free seller account and reach thousands of buyers across Cameroon.',
+    'hub.buySellCar.listTag2':'Nationwide reach','hub.buySellCar.disclaimer':'We connect buyers with sellers. All arrangements and payments happen directly between you — CamMarket237 never collects money.',
+    'hub.carRental.title':'Car Rental','hub.carRental.sub':'Find a rental car near you, or earn by listing your car',
+    'hub.carRental.findTitle':'Find a Rental Car Near Me','hub.carRental.findDesc':'Browse rental cars near you. Contact owners directly on WhatsApp — no booking fees.',
+    'hub.carRental.listTitle':'List My Car for Rent','hub.carRental.listDesc':'Have a car to rent? Create a free seller account and reach customers across Cameroon.',
+    'hub.carRental.listTag2':'Earn from your car','hub.carRental.disclaimer':'We connect renters with car owners. All arrangements and payments happen directly between you.',
+    'hub.apartment.title':'Apartments &amp; Rentals','hub.apartment.sub':'Find a room or apartment to rent, or list your property',
+    'hub.apartment.findTitle':'Find an Apartment Near Me','hub.apartment.findDesc':'Browse apartments, studios and houses for rent sorted by distance. Contact landlords directly.',
+    'hub.apartment.listTitle':'List My Property','hub.apartment.listDesc':'Have a room, apartment or house to rent? Create a free seller account and find tenants fast.',
+    'hub.apartment.listTag2':'Nationwide reach','hub.apartment.disclaimer':'We connect tenants with landlords. All arrangements and payments happen directly between you.',
+    'hub.transport.title':'Transport &amp; Drivers','hub.transport.sub':'Find a driver near you, or list your transport service',
+    'hub.transport.findTitle':'Find a Driver Near Me','hub.transport.findDesc':'Browse drivers and transport services near you. City runs, long distance, airport transfers.',
+    'hub.transport.listTitle':'List My Transport Service','hub.transport.listDesc':'Are you a driver or transport operator? Create a free seller account and get more clients.',
+    'hub.transport.listTag2':'Get more bookings','hub.transport.disclaimer':'We connect passengers with drivers. All arrangements and payments happen directly between you.',
+    'hub.plumber.title':'Repairs &amp; Plumbing','hub.plumber.sub':'Find a repair specialist near you, or list your trade skills',
+    'hub.plumber.findTitle':'Find a Repair Service Near Me','hub.plumber.findDesc':'Browse plumbers, electricians and repair specialists near you. Contact them directly.',
+    'hub.plumber.listTitle':'List My Repair Service','hub.plumber.listDesc':'Plumber, electrician or technician? Create a free seller account and reach more customers.',
+    'hub.plumber.listTag2':'Get more clients','hub.plumber.disclaimer':'We connect customers with tradespeople. All arrangements and payments happen directly between you.',
+    'hub.catering.title':'Catering &amp; Food','hub.catering.sub':'Find a caterer near you, or list your catering service',
+    'hub.catering.findTitle':'Find a Caterer Near Me','hub.catering.findDesc':'Browse caterers, chefs and food services near you. Events, daily meals, pastry and more.',
+    'hub.catering.listTitle':'List My Catering Service','hub.catering.listDesc':'Are you a caterer or chef? Create a free seller account and get event and catering bookings.',
+    'hub.catering.listTag2':'Get more clients','hub.catering.disclaimer':'We connect clients with caterers. All arrangements and payments happen directly between you.',
+    'hub.photography.title':'Photography &amp; Video','hub.photography.sub':'Find a photographer near you, or list your photography service',
+    'hub.photography.findTitle':'Find a Photographer Near Me','hub.photography.findDesc':'Browse photographers and videographers near you. Events, weddings, portraits, drone and more.',
+    'hub.photography.listTitle':'List My Photography Service','hub.photography.listDesc':'Photographer or videographer? Create a free seller account and get discovered by clients near you.',
+    'hub.photography.listTag2':'Get bookings','hub.photography.disclaimer':'We connect clients with photographers. All arrangements and payments happen directly between you.',
+    'hub.cleaning.title':'Cleaning Services','hub.cleaning.sub':'Find a cleaning service near you, or list what you offer',
+    'hub.cleaning.findTitle':'Find a Cleaning Service Near Me','hub.cleaning.findDesc':'Browse cleaning professionals near you. Home cleaning, office, post-event and more.',
+    'hub.cleaning.listTitle':'List My Cleaning Service','hub.cleaning.listDesc':'Offer cleaning services? Create a free seller account and reach homes and businesses near you.',
+    'hub.cleaning.listTag2':'Get more clients','hub.cleaning.disclaimer':'We connect clients with cleaning professionals. All arrangements happen directly between you.',
+    'hub.other.title':'More Services','hub.other.sub':'Find any local service near you, or list what you offer',
+    'hub.other.findTitle':'Find a Service Near Me','hub.other.findDesc':'Browse all kinds of local services near you. Contact providers directly on WhatsApp — free.',
+    'hub.other.listTitle':'List My Service','hub.other.listDesc':'Offer any service? Create a free seller account and reach thousands of potential clients.',
+    'hub.other.listTag2':'Nationwide reach','hub.other.disclaimer':'We connect clients with service providers. All arrangements and payments happen directly between you.',
+    'hub.disclaimer.prefix':'We connect you with providers.',
+    'service.electronics':'Electronics','service.electronicsDesc':'Gadgets & devices',
+    'service.phonesAccess':'Phones','service.phonesAccessDesc':'& Accessories',
+    'service.clothing':'Clothing','service.clothingDesc':'& Fashion',
+    'service.foodGroceries':'Food','service.foodGroceriesDesc':'& Groceries',
+    'service.furnitureHome':'Furniture','service.furnitureHomeDesc':'& Home',
+    'service.beautyHealth':'Beauty','service.beautyHealthDesc':'& Health',
+    'service.vehiclesParts':'Vehicles','service.vehiclesPartsDesc':'& Parts',
+    'service.agriculture':'Farm/Agric Produce','service.agricultureDesc':'Produce & farming',
+    'service.delivery':'Delivery Service','service.deliveryDesc':'Send & receive',
+    'service.books':'Books','service.booksDesc':'& Stationery',
+    'hub.agriculture.title':'Farm / Agricultural Produce','hub.agriculture.sub':'Find farm produce near you, or list what you grow and sell',
+    'hub.agriculture.findTitle':'Find Farm Produce Near Me','hub.agriculture.findDesc':'Browse fresh produce, grains, vegetables, livestock and agricultural products near you. Contact sellers directly on WhatsApp — free.',
+    'hub.agriculture.listTitle':'List My Farm Produce','hub.agriculture.listDesc':'Are you a farmer or agric producer? Create a free seller account and reach buyers across Cameroon.',
+    'hub.agriculture.listTag2':'Nationwide reach','hub.agriculture.disclaimer':'We connect buyers with farmers and producers. All arrangements and payments happen directly between you.',
+    'hub.electronics.title':'Electronics','hub.electronics.sub':'Find electronics near you, or list yours for sale',
+    'hub.electronics.findTitle':'Find Electronics Near Me','hub.electronics.findDesc':'Browse phones, laptops, TVs, cameras and more. Contact sellers directly on WhatsApp — free.',
+    'hub.electronics.listTitle':'Sell My Electronics','hub.electronics.listDesc':'Selling electronics? Create a free seller account and reach buyers across Cameroon.',
+    'hub.electronics.listTag2':'Nationwide reach','hub.electronics.disclaimer':'We connect buyers with sellers. All arrangements and payments happen directly between you.',
+    'hub.phonesAccess.title':'Phones & Accessories','hub.phonesAccess.sub':'Find phones or accessories near you, or list yours for sale',
+    'hub.phonesAccess.findTitle':'Find Phones & Accessories Near Me','hub.phonesAccess.findDesc':'Browse smartphones, tablets, chargers and accessories near you. Contact sellers directly — free.',
+    'hub.phonesAccess.listTitle':'Sell My Phone or Accessories','hub.phonesAccess.listDesc':'Selling phones or accessories? Create a free seller account and reach buyers across Cameroon.',
+    'hub.phonesAccess.listTag2':'Nationwide reach','hub.phonesAccess.disclaimer':'We connect buyers with sellers. All arrangements and payments happen directly between you.',
+    'hub.clothing.title':'Clothing & Fashion','hub.clothing.sub':'Find clothes and fashion items near you, or list yours for sale',
+    'hub.clothing.findTitle':'Find Clothing & Fashion Near Me','hub.clothing.findDesc':'Browse clothes, shoes, bags and fashion items near you. Contact sellers directly — free.',
+    'hub.clothing.listTitle':'Sell My Clothing & Fashion','hub.clothing.listDesc':'Selling clothes or fashion? Create a free seller account and reach buyers across Cameroon.',
+    'hub.clothing.listTag2':'Nationwide reach','hub.clothing.disclaimer':'We connect buyers with sellers. All arrangements and payments happen directly between you.',
+    'hub.foodGroceries.title':'Food & Groceries','hub.foodGroceries.sub':'Find food and groceries near you, or list yours for sale',
+    'hub.foodGroceries.findTitle':'Find Food & Groceries Near Me','hub.foodGroceries.findDesc':'Browse food sellers, fresh produce and groceries near you. Contact vendors directly on WhatsApp — free.',
+    'hub.foodGroceries.listTitle':'Sell My Food & Groceries','hub.foodGroceries.listDesc':'Selling food or groceries? Create a free seller account and reach buyers across Cameroon.',
+    'hub.foodGroceries.listTag2':'Nationwide reach','hub.foodGroceries.disclaimer':'We connect buyers with sellers. All arrangements and payments happen directly between you.',
+    'hub.furnitureHome.title':'Furniture & Home','hub.furnitureHome.sub':'Find furniture and home items near you, or list yours for sale',
+    'hub.furnitureHome.findTitle':'Find Furniture & Home Items Near Me','hub.furnitureHome.findDesc':'Browse furniture, appliances and home goods near you. Contact sellers directly — free.',
+    'hub.furnitureHome.listTitle':'Sell My Furniture or Home Items','hub.furnitureHome.listDesc':'Selling furniture or home goods? Create a free seller account and reach buyers across Cameroon.',
+    'hub.furnitureHome.listTag2':'Nationwide reach','hub.furnitureHome.disclaimer':'We connect buyers with sellers. All arrangements and payments happen directly between you.',
+    'hub.beautyHealth.title':'Beauty & Health','hub.beautyHealth.sub':'Find beauty and health products near you, or list yours for sale',
+    'hub.beautyHealth.findTitle':'Find Beauty & Health Products Near Me','hub.beautyHealth.findDesc':'Browse beauty products, health supplements and wellness items near you. Contact sellers directly — free.',
+    'hub.beautyHealth.listTitle':'Sell My Beauty & Health Products','hub.beautyHealth.listDesc':'Selling beauty or health products? Create a free seller account and reach buyers across Cameroon.',
+    'hub.beautyHealth.listTag2':'Nationwide reach','hub.beautyHealth.disclaimer':'We connect buyers with sellers. All arrangements and payments happen directly between you.',
+    'hub.vehiclesParts.title':'Vehicles & Parts','hub.vehiclesParts.sub':'Find vehicles and spare parts near you, or list yours for sale',
+    'hub.vehiclesParts.findTitle':'Find Vehicles & Parts Near Me','hub.vehiclesParts.findDesc':'Browse vehicles, spare parts and accessories near you. Contact sellers directly on WhatsApp — free.',
+    'hub.vehiclesParts.listTitle':'Sell My Vehicle or Parts','hub.vehiclesParts.listDesc':'Selling a vehicle or spare parts? Create a free seller account and reach buyers across Cameroon.',
+    'hub.vehiclesParts.listTag2':'Nationwide reach','hub.vehiclesParts.disclaimer':'We connect buyers with sellers. All arrangements and payments happen directly between you.',
+    'hub.agriculture.title':'Agriculture','hub.agriculture.sub':'Find farm produce and equipment near you, or list yours for sale',
+    'hub.agriculture.findTitle':'Find Agricultural Products Near Me','hub.agriculture.findDesc':'Browse farm produce, seeds, tools and agricultural equipment near you. Contact sellers directly — free.',
+    'hub.agriculture.listTitle':'Sell My Agricultural Products','hub.agriculture.listDesc':'Selling farm produce or equipment? Create a free seller account and reach buyers across Cameroon.',
+    'hub.agriculture.listTag2':'Nationwide reach','hub.agriculture.disclaimer':'We connect buyers with sellers. All arrangements and payments happen directly between you.',
+    'hub.delivery.title':'Delivery Service','hub.delivery.sub':'Find a delivery service near you, or offer your delivery service to customers',
+    'hub.delivery.findTitle':'Find Delivery Near Me','hub.delivery.findDesc':'Browse delivery services, couriers and logistics providers near you. Contact directly on WhatsApp — free.',
+    'hub.delivery.listTitle':'Offer My Delivery Service','hub.delivery.listDesc':'Do you offer delivery or courier services? Create a free account and reach customers across Cameroon.',
+    'hub.delivery.listTag2':'Reach all Cameroon','hub.delivery.disclaimer':'We connect senders with delivery providers. All arrangements and payments happen directly between you.',
+    'hub.books.title':'Books & Stationery','hub.books.sub':'Find books and stationery near you, or list yours for sale',
+    'hub.books.findTitle':'Find Books & Stationery Near Me','hub.books.findDesc':'Browse books, school supplies and stationery near you. Contact sellers directly on WhatsApp — free.',
+    'hub.books.listTitle':'Sell My Books & Stationery','hub.books.listDesc':'Selling books or stationery? Create a free seller account and reach buyers across Cameroon.',
+    'hub.books.listTag2':'Nationwide reach','hub.books.disclaimer':'We connect buyers with sellers. All arrangements and payments happen directly between you.',
+    'service.interiorDesign':'Interior Design','service.interiorDesignDesc':'Decor & spaces',
+    'hub.interiorDesign.title':'Interior Design','hub.interiorDesign.sub':'Find an interior designer near you, or list your design service',
+    'hub.interiorDesign.findTitle':'Find an Interior Designer Near Me','hub.interiorDesign.findDesc':'Browse interior designers and decorators near you. Home makeovers, office spaces, renovations and more. Contact directly on WhatsApp.',
+    'hub.interiorDesign.listTitle':'List My Interior Design Service','hub.interiorDesign.listDesc':'Are you an interior designer or decorator? Create a free seller account and reach clients across Cameroon.',
+    'hub.interiorDesign.listTag2':'Get more clients','hub.interiorDesign.disclaimer':'We connect clients with interior designers. All arrangements and payments happen directly between you.',
+    'landing.tagline':'Everything you need in Cameroon',
+    'ghub.title':'Guesthouses &amp; Hotels','ghub.sub':'Find a comfortable stay anywhere in Cameroon, or list your property for free',
+    'ghub.findTitle':'Find a Guesthouse Near Me','ghub.findDesc':'Browse guest houses and hotels sorted by distance from your location. Contact any host directly on WhatsApp — completely free.',
+    'ghub.listTitle':'List My Guesthouse','ghub.listDesc':'Are you a guest house or hotel owner? Create a free seller account and reach thousands of guests across Cameroon.',
+    'ghub.listTag2':'Nationwide reach','ghub.disclaimer.prefix':'We connect you with hosts.',
+    'ghub.disclaimer':'All arrangements and payments happen directly between you and the host — CamMarket237 never collects money.',
+    'ghub.showingNear':'Showing guesthouses near'
   },
   fr: {
     'app.name':'CamMarket237','app.tagline':'Achetez. Vendez. Connectez.','app.shortTagline':'Votre marché',
@@ -3848,7 +4007,107 @@ window.TRANSLATIONS = {
     'live.whatsappSeller':'Vendeur WhatsApp','live.tapBalance':'Appuyer pour voir le solde',
     'live.onlyMinsLeft':'Il ne reste que {{n}} minutes !',
     'live.saySomething':'Dites quelque chose...','live.send':'Envoyer',
-    'live.liveBadge':'EN DIRECT','live.liveNow':'En direct','live.loading':'Chargement...'
+    'live.liveBadge':'EN DIRECT','live.liveNow':'En direct','live.loading':'Chargement...',
+    'hub.common.usesLocation':'&#x1F4CD; Utilise votre position','hub.common.freeToUse':'Gratuit','hub.common.freeToList':'&#x2705; Gratuit à publier',
+    'hub.buySellCar.title':'Achat &amp; Vente de voitures','hub.buySellCar.sub':'Trouvez une voiture à acheter, ou mettez la vôtre en vente',
+    'hub.buySellCar.findTitle':'Trouver une voiture près de moi','hub.buySellCar.findDesc':'Parcourez les voitures à vendre triées par distance. Contactez directement les vendeurs sur WhatsApp — entièrement gratuit.',
+    'hub.buySellCar.listTitle':'Mettre ma voiture en vente','hub.buySellCar.listDesc':'Vous vendez une voiture ? Créez un compte vendeur gratuit et atteignez des milliers d\'acheteurs au Cameroun.',
+    'hub.buySellCar.listTag2':'Portée nationale','hub.buySellCar.disclaimer':'Nous mettons en relation acheteurs et vendeurs. Tous les arrangements et paiements se font directement entre vous — CamMarket237 ne collecte jamais d\'argent.',
+    'hub.carRental.title':'Location de voiture','hub.carRental.sub':'Trouvez une voiture de location près de vous, ou gagnez en proposant la vôtre',
+    'hub.carRental.findTitle':'Trouver une voiture de location','hub.carRental.findDesc':'Parcourez les voitures de location près de vous. Contactez directement les propriétaires sur WhatsApp — sans frais de réservation.',
+    'hub.carRental.listTitle':'Mettre ma voiture en location','hub.carRental.listDesc':'Vous avez une voiture à louer ? Créez un compte vendeur gratuit et atteignez des clients dans tout le Cameroun.',
+    'hub.carRental.listTag2':'Gagnez avec votre voiture','hub.carRental.disclaimer':'Nous mettons en relation locataires et propriétaires de voitures. Tous les arrangements se font directement entre vous.',
+    'hub.apartment.title':'Appartements &amp; Locations','hub.apartment.sub':'Trouvez une chambre ou un appartement à louer, ou publiez votre bien',
+    'hub.apartment.findTitle':'Trouver un appartement près de moi','hub.apartment.findDesc':'Parcourez appartements, studios et maisons à louer triés par distance. Contactez directement les propriétaires.',
+    'hub.apartment.listTitle':'Publier mon bien immobilier','hub.apartment.listDesc':'Vous avez une chambre, un appartement ou une maison à louer ? Créez un compte vendeur gratuit et trouvez rapidement des locataires.',
+    'hub.apartment.listTag2':'Portée nationale','hub.apartment.disclaimer':'Nous mettons en relation locataires et propriétaires. Tous les arrangements se font directement entre vous.',
+    'hub.transport.title':'Transport &amp; Chauffeurs','hub.transport.sub':'Trouvez un chauffeur près de vous, ou proposez votre service de transport',
+    'hub.transport.findTitle':'Trouver un chauffeur près de moi','hub.transport.findDesc':'Parcourez les chauffeurs et services de transport près de vous. Trajets en ville, longue distance, transferts aéroport.',
+    'hub.transport.listTitle':'Proposer mon service de transport','hub.transport.listDesc':'Vous êtes chauffeur ou transporteur ? Créez un compte vendeur gratuit et obtenez plus de clients.',
+    'hub.transport.listTag2':'Plus de réservations','hub.transport.disclaimer':'Nous mettons en relation passagers et chauffeurs. Tous les arrangements se font directement entre vous.',
+    'hub.plumber.title':'Réparations &amp; Plomberie','hub.plumber.sub':'Trouvez un spécialiste de réparation près de vous, ou proposez vos compétences',
+    'hub.plumber.findTitle':'Trouver un service de réparation','hub.plumber.findDesc':'Parcourez plombiers, électriciens et spécialistes de réparation près de vous. Contactez-les directement.',
+    'hub.plumber.listTitle':'Proposer mon service de réparation','hub.plumber.listDesc':'Vous êtes plombier, électricien ou technicien ? Créez un compte vendeur gratuit et atteignez plus de clients.',
+    'hub.plumber.listTag2':'Plus de clients','hub.plumber.disclaimer':'Nous mettons en relation clients et artisans. Tous les arrangements se font directement entre vous.',
+    'hub.catering.title':'Restauration &amp; Traiteur','hub.catering.sub':'Trouvez un traiteur près de vous, ou proposez votre service de restauration',
+    'hub.catering.findTitle':'Trouver un traiteur près de moi','hub.catering.findDesc':'Parcourez traiteurs, cuisiniers et services de restauration près de vous. Événements, repas quotidiens, pâtisserie et plus.',
+    'hub.catering.listTitle':'Proposer mon service de restauration','hub.catering.listDesc':'Vous êtes traiteur ou cuisinier ? Créez un compte vendeur gratuit et obtenez des réservations.',
+    'hub.catering.listTag2':'Plus de clients','hub.catering.disclaimer':'Nous mettons en relation clients et traiteurs. Tous les arrangements se font directement entre vous.',
+    'hub.photography.title':'Photographie &amp; Vidéo','hub.photography.sub':'Trouvez un photographe près de vous, ou proposez votre service',
+    'hub.photography.findTitle':'Trouver un photographe près de moi','hub.photography.findDesc':'Parcourez photographes et vidéastes près de vous. Événements, mariages, portraits, drone et plus.',
+    'hub.photography.listTitle':'Proposer mon service de photographie','hub.photography.listDesc':'Vous êtes photographe ou vidéaste ? Créez un compte vendeur gratuit et soyez découvert par des clients.',
+    'hub.photography.listTag2':'Obtenir des réservations','hub.photography.disclaimer':'Nous mettons en relation clients et photographes. Tous les arrangements se font directement entre vous.',
+    'hub.cleaning.title':'Services de Nettoyage','hub.cleaning.sub':'Trouvez un service de nettoyage près de vous, ou proposez ce que vous offrez',
+    'hub.cleaning.findTitle':'Trouver un service de nettoyage','hub.cleaning.findDesc':'Parcourez les professionnels du nettoyage près de vous. Nettoyage domiciliaire, bureau, après événement et plus.',
+    'hub.cleaning.listTitle':'Proposer mon service de nettoyage','hub.cleaning.listDesc':'Vous proposez des services de nettoyage ? Créez un compte vendeur gratuit et atteignez des maisons et entreprises.',
+    'hub.cleaning.listTag2':'Plus de clients','hub.cleaning.disclaimer':'Nous mettons en relation clients et professionnels du nettoyage. Tous les arrangements se font directement entre vous.',
+    'hub.other.title':'Plus de services','hub.other.sub':'Trouvez n\'importe quel service local près de vous, ou proposez ce que vous offrez',
+    'hub.other.findTitle':'Trouver un service près de moi','hub.other.findDesc':'Parcourez toutes sortes de services locaux près de vous. Contactez directement les prestataires sur WhatsApp — gratuit.',
+    'hub.other.listTitle':'Proposer mon service','hub.other.listDesc':'Vous proposez un service ? Créez un compte vendeur gratuit et atteignez des milliers de clients potentiels.',
+    'hub.other.listTag2':'Portée nationale','hub.other.disclaimer':'Nous mettons en relation clients et prestataires de services. Tous les arrangements se font directement entre vous.',
+    'hub.disclaimer.prefix':'Nous vous mettons en relation avec des prestataires.',
+    'service.electronics':'Électronique','service.electronicsDesc':'Gadgets & appareils',
+    'service.phonesAccess':'Téléphones','service.phonesAccessDesc':'& Accessoires',
+    'service.clothing':'Vêtements','service.clothingDesc':'& Mode',
+    'service.foodGroceries':'Alimentation','service.foodGroceriesDesc':'& Épicerie',
+    'service.furnitureHome':'Meubles','service.furnitureHomeDesc':'& Maison',
+    'service.beautyHealth':'Beauté','service.beautyHealthDesc':'& Santé',
+    'service.vehiclesParts':'Véhicules','service.vehiclesPartsDesc':'& Pièces',
+    'service.agriculture':'Ferme/Produits Agricoles','service.agricultureDesc':'Produits & agriculture',
+    'service.delivery':'Service de Livraison','service.deliveryDesc':'Envoyer & recevoir',
+    'service.books':'Livres','service.booksDesc':'& Papeterie',
+    'hub.electronics.title':'Électronique','hub.electronics.sub':'Trouvez des appareils électroniques près de vous, ou mettez les vôtres en vente',
+    'hub.electronics.findTitle':'Trouver des Électroniques près de moi','hub.electronics.findDesc':'Parcourez téléphones, laptops, télés, caméras et plus. Contactez directement les vendeurs sur WhatsApp — gratuit.',
+    'hub.electronics.listTitle':'Vendre mes Électroniques','hub.electronics.listDesc':'Vous vendez des appareils électroniques ? Créez un compte vendeur gratuit et atteignez des acheteurs au Cameroun.',
+    'hub.electronics.listTag2':'Portée nationale','hub.electronics.disclaimer':'Nous mettons en relation acheteurs et vendeurs. Tous les arrangements se font directement entre vous.',
+    'hub.phonesAccess.title':'Téléphones & Accessoires','hub.phonesAccess.sub':'Trouvez des téléphones ou accessoires près de vous, ou mettez les vôtres en vente',
+    'hub.phonesAccess.findTitle':'Trouver Téléphones & Accessoires','hub.phonesAccess.findDesc':'Parcourez smartphones, tablettes, chargeurs et accessoires près de vous. Contactez directement — gratuit.',
+    'hub.phonesAccess.listTitle':'Vendre mon Téléphone ou Accessoires','hub.phonesAccess.listDesc':'Vous vendez des téléphones ou accessoires ? Créez un compte vendeur gratuit et atteignez des acheteurs.',
+    'hub.phonesAccess.listTag2':'Portée nationale','hub.phonesAccess.disclaimer':'Nous mettons en relation acheteurs et vendeurs. Tous les arrangements se font directement entre vous.',
+    'hub.clothing.title':'Vêtements & Mode','hub.clothing.sub':'Trouvez des vêtements et articles de mode près de vous, ou mettez les vôtres en vente',
+    'hub.clothing.findTitle':'Trouver Vêtements & Mode près de moi','hub.clothing.findDesc':'Parcourez habits, chaussures, sacs et articles de mode près de vous. Contactez directement — gratuit.',
+    'hub.clothing.listTitle':'Vendre mes Vêtements & Mode','hub.clothing.listDesc':'Vous vendez des vêtements ou articles de mode ? Créez un compte vendeur gratuit et atteignez des acheteurs.',
+    'hub.clothing.listTag2':'Portée nationale','hub.clothing.disclaimer':'Nous mettons en relation acheteurs et vendeurs. Tous les arrangements se font directement entre vous.',
+    'hub.foodGroceries.title':'Alimentation & Épicerie','hub.foodGroceries.sub':'Trouvez de la nourriture et des courses près de vous, ou mettez les vôtres en vente',
+    'hub.foodGroceries.findTitle':'Trouver Alimentation & Épicerie','hub.foodGroceries.findDesc':'Parcourez vendeurs de nourriture, produits frais et épiceries près de vous. Contactez directement — gratuit.',
+    'hub.foodGroceries.listTitle':'Vendre ma Nourriture & Épicerie','hub.foodGroceries.listDesc':'Vous vendez de la nourriture ou des courses ? Créez un compte vendeur gratuit et atteignez des acheteurs.',
+    'hub.foodGroceries.listTag2':'Portée nationale','hub.foodGroceries.disclaimer':'Nous mettons en relation acheteurs et vendeurs. Tous les arrangements se font directement entre vous.',
+    'hub.furnitureHome.title':'Meubles & Maison','hub.furnitureHome.sub':'Trouvez des meubles et articles de maison près de vous, ou mettez les vôtres en vente',
+    'hub.furnitureHome.findTitle':'Trouver Meubles & Maison près de moi','hub.furnitureHome.findDesc':'Parcourez meubles, électroménager et articles de maison près de vous. Contactez directement — gratuit.',
+    'hub.furnitureHome.listTitle':'Vendre mes Meubles & Articles de Maison','hub.furnitureHome.listDesc':'Vous vendez des meubles ou articles de maison ? Créez un compte vendeur gratuit et atteignez des acheteurs.',
+    'hub.furnitureHome.listTag2':'Portée nationale','hub.furnitureHome.disclaimer':'Nous mettons en relation acheteurs et vendeurs. Tous les arrangements se font directement entre vous.',
+    'hub.beautyHealth.title':'Beauté & Santé','hub.beautyHealth.sub':'Trouvez des produits de beauté et de santé près de vous, ou mettez les vôtres en vente',
+    'hub.beautyHealth.findTitle':'Trouver Beauté & Santé près de moi','hub.beautyHealth.findDesc':'Parcourez produits de beauté, compléments de santé et bien-être près de vous. Contactez directement — gratuit.',
+    'hub.beautyHealth.listTitle':'Vendre mes Produits Beauté & Santé','hub.beautyHealth.listDesc':'Vous vendez des produits de beauté ou de santé ? Créez un compte vendeur gratuit et atteignez des acheteurs.',
+    'hub.beautyHealth.listTag2':'Portée nationale','hub.beautyHealth.disclaimer':'Nous mettons en relation acheteurs et vendeurs. Tous les arrangements se font directement entre vous.',
+    'hub.vehiclesParts.title':'Véhicules & Pièces','hub.vehiclesParts.sub':'Trouvez des véhicules et pièces détachées près de vous, ou mettez les vôtres en vente',
+    'hub.vehiclesParts.findTitle':'Trouver Véhicules & Pièces près de moi','hub.vehiclesParts.findDesc':'Parcourez véhicules, pièces détachées et accessoires près de vous. Contactez directement sur WhatsApp — gratuit.',
+    'hub.vehiclesParts.listTitle':'Vendre mon Véhicule ou mes Pièces','hub.vehiclesParts.listDesc':'Vous vendez un véhicule ou des pièces ? Créez un compte vendeur gratuit et atteignez des acheteurs.',
+    'hub.vehiclesParts.listTag2':'Portée nationale','hub.vehiclesParts.disclaimer':'Nous mettons en relation acheteurs et vendeurs. Tous les arrangements se font directement entre vous.',
+    'hub.agriculture.title':'Ferme / Produits Agricoles','hub.agriculture.sub':'Trouvez des produits agricoles près de vous, ou publiez ce que vous cultivez et vendez',
+    'hub.agriculture.findTitle':'Trouver des Produits Agricoles près de moi','hub.agriculture.findDesc':'Parcourez produits frais, céréales, légumes, bétail et produits agricoles près de vous. Contactez directement sur WhatsApp — gratuit.',
+    'hub.agriculture.listTitle':'Publier mes Produits Agricoles','hub.agriculture.listDesc':'Vous êtes agriculteur ou producteur ? Créez un compte vendeur gratuit et atteignez des acheteurs dans tout le Cameroun.',
+    'hub.agriculture.listTag2':'Portée nationale','hub.agriculture.disclaimer':'Nous mettons en relation acheteurs et agriculteurs. Tous les arrangements et paiements se font directement entre vous.',
+    'hub.delivery.title':'Service de Livraison','hub.delivery.sub':'Trouvez un service de livraison près de vous, ou proposez vos services de livraison',
+    'hub.delivery.findTitle':'Trouver un Service de Livraison','hub.delivery.findDesc':'Parcourez les services de livraison, coursiers et prestataires logistiques près de vous. Contactez directement sur WhatsApp — gratuit.',
+    'hub.delivery.listTitle':'Proposer mon Service de Livraison','hub.delivery.listDesc':'Vous offrez des services de livraison ou de coursier ? Créez un compte gratuit et atteignez des clients dans tout le Cameroun.',
+    'hub.delivery.listTag2':'Portée nationale','hub.delivery.disclaimer':'Nous mettons en relation expéditeurs et prestataires de livraison. Tous les arrangements se font directement entre vous.',
+    'hub.books.title':'Livres & Papeterie','hub.books.sub':'Trouvez des livres et articles de papeterie près de vous, ou mettez les vôtres en vente',
+    'hub.books.findTitle':'Trouver Livres & Papeterie près de moi','hub.books.findDesc':'Parcourez livres, fournitures scolaires et articles de papeterie près de vous. Contactez directement — gratuit.',
+    'hub.books.listTitle':'Vendre mes Livres & Papeterie','hub.books.listDesc':'Vous vendez des livres ou articles de papeterie ? Créez un compte vendeur gratuit et atteignez des acheteurs.',
+    'hub.books.listTag2':'Portée nationale','hub.books.disclaimer':'Nous mettons en relation acheteurs et vendeurs. Tous les arrangements se font directement entre vous.',
+    'service.interiorDesign':'Design d\'intérieur','service.interiorDesignDesc':'Décoration & espaces',
+    'hub.interiorDesign.title':'Design d\'intérieur','hub.interiorDesign.sub':'Trouvez un décorateur d\'intérieur près de vous, ou proposez votre service de design',
+    'hub.interiorDesign.findTitle':'Trouver un designer d\'intérieur','hub.interiorDesign.findDesc':'Parcourez décorateurs et designers d\'intérieur près de vous. Rénovations, bureaux, maisons et plus. Contactez directement sur WhatsApp.',
+    'hub.interiorDesign.listTitle':'Proposer mon service de design d\'intérieur','hub.interiorDesign.listDesc':'Vous êtes designer ou décorateur d\'intérieur ? Créez un compte vendeur gratuit et atteignez des clients au Cameroun.',
+    'hub.interiorDesign.listTag2':'Plus de clients','hub.interiorDesign.disclaimer':'Nous mettons en relation clients et designers d\'intérieur. Tous les arrangements se font directement entre vous.',
+    'landing.tagline':'Tout ce dont vous avez besoin au Cameroun',
+    'ghub.title':'Maisons d\'hôtes &amp; Hôtels','ghub.sub':'Trouvez un hébergement confortable partout au Cameroun, ou publiez votre bien gratuitement',
+    'ghub.findTitle':'Trouver une maison d\'hôtes près de moi','ghub.findDesc':'Parcourez les maisons d\'hôtes et hôtels triés par distance. Contactez directement n\'importe quel hôte sur WhatsApp — entièrement gratuit.',
+    'ghub.listTitle':'Publier ma maison d\'hôtes','ghub.listDesc':'Vous êtes propriétaire d\'une maison d\'hôtes ou d\'un hôtel ? Créez un compte vendeur gratuit et atteignez des milliers de clients au Cameroun.',
+    'ghub.listTag2':'Portée nationale','ghub.disclaimer.prefix':'Nous vous mettons en relation avec des hôtes.',
+    'ghub.disclaimer':'Tous les arrangements et paiements se font directement entre vous et l\'hôte — CamMarket237 ne collecte jamais d\'argent.',
+    'ghub.showingNear':'Maisons d\'hôtes près de'
   },
   pid: {
     'app.name':'CamMarket237','app.tagline':'Buy. Sell. Connect.','app.shortTagline':'Your market',
@@ -4099,7 +4358,107 @@ window.TRANSLATIONS = {
     'live.whatsappSeller':'WhatsApp Seller','live.tapBalance':'Tap make you see balance',
     'live.onlyMinsLeft':'Only {{n}} minutes remain!',
     'live.saySomething':'Talk something...','live.send':'Send am',
-    'live.liveBadge':'LIVE','live.liveNow':'Live Now','live.loading':'Loading...'
+    'live.liveBadge':'LIVE','live.liveNow':'Live Now','live.loading':'Loading...',
+    'hub.common.usesLocation':'&#x1F4CD; Go use your location','hub.common.freeToUse':'E free','hub.common.freeToList':'&#x2705; Free for put',
+    'hub.buySellCar.title':'Buy &amp; Sell Car','hub.buySellCar.sub':'Find car for buy, or put your own for sell',
+    'hub.buySellCar.findTitle':'Find Car Near Me','hub.buySellCar.findDesc':'See cars wey dey for sell near you. Tok direct with seller for WhatsApp — e free.',
+    'hub.buySellCar.listTitle':'Put My Car for Sell','hub.buySellCar.listDesc':'You wan sell car? Make free seller account reach plenty buyer for Cameroon.',
+    'hub.buySellCar.listTag2':'Reach all Cameroon','hub.buySellCar.disclaimer':'We go connect buyer with seller. All arrangement and payment na between una — CamMarket237 no go collect money.',
+    'hub.carRental.title':'Hire Car','hub.carRental.sub':'Find car for hire near you, or earn money with your car',
+    'hub.carRental.findTitle':'Find Car for Hire Near Me','hub.carRental.findDesc':'See car wey dey for hire near you. Tok direct with owner for WhatsApp — no booking fee.',
+    'hub.carRental.listTitle':'Put My Car for Hire','hub.carRental.listDesc':'You get car for hire? Make free seller account reach customer for Cameroon.',
+    'hub.carRental.listTag2':'Earn from your car','hub.carRental.disclaimer':'We go connect person wey wan hire with car owner. All arrangement na between una.',
+    'hub.apartment.title':'Apartment &amp; Rent','hub.apartment.sub':'Find room or apartment for rent, or put your own place',
+    'hub.apartment.findTitle':'Find Apartment Near Me','hub.apartment.findDesc':'See apartment, studio and house for rent near you. Tok direct with landlord.',
+    'hub.apartment.listTitle':'Put My Place for Rent','hub.apartment.listDesc':'You get room, apartment or house for rent? Make free seller account find tenant quick.',
+    'hub.apartment.listTag2':'Reach all Cameroon','hub.apartment.disclaimer':'We go connect tenant with landlord. All arrangement na between una.',
+    'hub.transport.title':'Transport &amp; Driver','hub.transport.sub':'Find driver near you, or put your transport service',
+    'hub.transport.findTitle':'Find Driver Near Me','hub.transport.findDesc':'See driver and transport service near you. Town run, long distance, airport drop.',
+    'hub.transport.listTitle':'Put My Transport Service','hub.transport.listDesc':'You be driver or transport man? Make free seller account get more customer.',
+    'hub.transport.listTag2':'Get more booking','hub.transport.disclaimer':'We go connect passenger with driver. All arrangement na between una.',
+    'hub.plumber.title':'Repair &amp; Plumber Work','hub.plumber.sub':'Find repair man near you, or put your skill',
+    'hub.plumber.findTitle':'Find Repair Service Near Me','hub.plumber.findDesc':'See plumber, electrician and repair man near you. Tok direct with dem.',
+    'hub.plumber.listTitle':'Put My Repair Service','hub.plumber.listDesc':'You be plumber, electrician or technician? Make free seller account reach more customer.',
+    'hub.plumber.listTag2':'Get more customer','hub.plumber.disclaimer':'We go connect customer with repair man. All arrangement na between una.',
+    'hub.catering.title':'Catering &amp; Food','hub.catering.sub':'Find cook near you, or put your food service',
+    'hub.catering.findTitle':'Find Cook Near Me','hub.catering.findDesc':'See caterer, cook and food service near you. Party, daily chop, cake and more.',
+    'hub.catering.listTitle':'Put My Food Service','hub.catering.listDesc':'You be caterer or cook? Make free seller account get party and catering work.',
+    'hub.catering.listTag2':'Get more customer','hub.catering.disclaimer':'We go connect customer with caterer. All arrangement na between una.',
+    'hub.photography.title':'Photo &amp; Video','hub.photography.sub':'Find photographer near you, or put your photo service',
+    'hub.photography.findTitle':'Find Photographer Near Me','hub.photography.findDesc':'See photographer and videographer near you. Party, wedding, portrait, drone and more.',
+    'hub.photography.listTitle':'Put My Photo Service','hub.photography.listDesc':'You be photographer or videographer? Make free seller account, customer go find you.',
+    'hub.photography.listTag2':'Get booking','hub.photography.disclaimer':'We go connect customer with photographer. All arrangement na between una.',
+    'hub.cleaning.title':'Cleaning Service','hub.cleaning.sub':'Find cleaner near you, or put wetin you offer',
+    'hub.cleaning.findTitle':'Find Cleaning Service Near Me','hub.cleaning.findDesc':'See cleaning person near you. House cleaning, office, after party and more.',
+    'hub.cleaning.listTitle':'Put My Cleaning Service','hub.cleaning.listDesc':'You dey do cleaning? Make free seller account reach house and business near you.',
+    'hub.cleaning.listTag2':'Get more customer','hub.cleaning.disclaimer':'We go connect customer with cleaning person. All arrangement na between una.',
+    'hub.other.title':'More Service','hub.other.sub':'Find any local service near you, or put wetin you offer',
+    'hub.other.findTitle':'Find Service Near Me','hub.other.findDesc':'See all kind of local service near you. Tok direct with provider for WhatsApp — e free.',
+    'hub.other.listTitle':'Put My Service','hub.other.listDesc':'You dey offer service? Make free seller account reach plenty customer.',
+    'hub.other.listTag2':'Reach all Cameroon','hub.other.disclaimer':'We go connect customer with service provider. All arrangement na between una.',
+    'hub.disclaimer.prefix':'We go connect you with provider.',
+    'service.electronics':'Electronics','service.electronicsDesc':'Gadgets',
+    'service.phonesAccess':'Phone','service.phonesAccessDesc':'& Accessory',
+    'service.clothing':'Cloth','service.clothingDesc':'& Fashion',
+    'service.foodGroceries':'Food','service.foodGroceriesDesc':'& Market',
+    'service.furnitureHome':'Furniture','service.furnitureHomeDesc':'House things',
+    'service.beautyHealth':'Beauty','service.beautyHealthDesc':'& Body',
+    'service.vehiclesParts':'Motor','service.vehiclesPartsDesc':'& Parts',
+    'service.agriculture':'Farm/Agric','service.agricultureDesc':'Produce & farm',
+    'service.delivery':'Delivery','service.deliveryDesc':'Send & receive',
+    'service.books':'Books','service.booksDesc':'& Paper',
+    'hub.electronics.title':'Electronics','hub.electronics.sub':'Find electronics near you, or sell your own',
+    'hub.electronics.findTitle':'Find Electronics Near Me','hub.electronics.findDesc':'See phone, laptop, TV, camera and more near you. Tok direct with seller for WhatsApp — e free.',
+    'hub.electronics.listTitle':'Sell My Electronics','hub.electronics.listDesc':'You wan sell electronics? Make free seller account reach plenty buyer for Cameroon.',
+    'hub.electronics.listTag2':'Reach all Cameroon','hub.electronics.disclaimer':'We go connect buyer with seller. All arrangement na between una.',
+    'hub.phonesAccess.title':'Phone & Accessory','hub.phonesAccess.sub':'Find phone or accessory near you, or sell your own',
+    'hub.phonesAccess.findTitle':'Find Phone & Accessory Near Me','hub.phonesAccess.findDesc':'See smartphone, tablet, charger and accessory near you. Tok direct — e free.',
+    'hub.phonesAccess.listTitle':'Sell My Phone or Accessory','hub.phonesAccess.listDesc':'You wan sell phone or accessory? Make free seller account reach buyer for Cameroon.',
+    'hub.phonesAccess.listTag2':'Reach all Cameroon','hub.phonesAccess.disclaimer':'We go connect buyer with seller. All arrangement na between una.',
+    'hub.clothing.title':'Cloth & Fashion','hub.clothing.sub':'Find cloth and fashion near you, or sell your own',
+    'hub.clothing.findTitle':'Find Cloth & Fashion Near Me','hub.clothing.findDesc':'See cloth, shoe, bag and fashion thing near you. Tok direct — e free.',
+    'hub.clothing.listTitle':'Sell My Cloth & Fashion','hub.clothing.listDesc':'You wan sell cloth or fashion? Make free seller account reach buyer for Cameroon.',
+    'hub.clothing.listTag2':'Reach all Cameroon','hub.clothing.disclaimer':'We go connect buyer with seller. All arrangement na between una.',
+    'hub.foodGroceries.title':'Food & Market','hub.foodGroceries.sub':'Find food and market thing near you, or sell your own',
+    'hub.foodGroceries.findTitle':'Find Food & Market Near Me','hub.foodGroceries.findDesc':'See food seller, fresh thing and market near you. Tok direct — e free.',
+    'hub.foodGroceries.listTitle':'Sell My Food & Market','hub.foodGroceries.listDesc':'You wan sell food or market thing? Make free seller account reach buyer for Cameroon.',
+    'hub.foodGroceries.listTag2':'Reach all Cameroon','hub.foodGroceries.disclaimer':'We go connect buyer with seller. All arrangement na between una.',
+    'hub.furnitureHome.title':'Furniture & House Thing','hub.furnitureHome.sub':'Find furniture or house thing near you, or sell your own',
+    'hub.furnitureHome.findTitle':'Find Furniture Near Me','hub.furnitureHome.findDesc':'See furniture, appliance and house thing near you. Tok direct — e free.',
+    'hub.furnitureHome.listTitle':'Sell My Furniture & House Thing','hub.furnitureHome.listDesc':'You wan sell furniture or house thing? Make free seller account reach buyer for Cameroon.',
+    'hub.furnitureHome.listTag2':'Reach all Cameroon','hub.furnitureHome.disclaimer':'We go connect buyer with seller. All arrangement na between una.',
+    'hub.beautyHealth.title':'Beauty & Body','hub.beautyHealth.sub':'Find beauty and health thing near you, or sell your own',
+    'hub.beautyHealth.findTitle':'Find Beauty & Health Near Me','hub.beautyHealth.findDesc':'See beauty product, health thing and body care near you. Tok direct — e free.',
+    'hub.beautyHealth.listTitle':'Sell My Beauty & Health','hub.beautyHealth.listDesc':'You wan sell beauty or health thing? Make free seller account reach buyer for Cameroon.',
+    'hub.beautyHealth.listTag2':'Reach all Cameroon','hub.beautyHealth.disclaimer':'We go connect buyer with seller. All arrangement na between una.',
+    'hub.vehiclesParts.title':'Motor & Parts','hub.vehiclesParts.sub':'Find motor and parts near you, or sell your own',
+    'hub.vehiclesParts.findTitle':'Find Motor & Parts Near Me','hub.vehiclesParts.findDesc':'See motor, spare part and accessory near you. Tok direct for WhatsApp — e free.',
+    'hub.vehiclesParts.listTitle':'Sell My Motor or Parts','hub.vehiclesParts.listDesc':'You wan sell motor or spare part? Make free seller account reach buyer for Cameroon.',
+    'hub.vehiclesParts.listTag2':'Reach all Cameroon','hub.vehiclesParts.disclaimer':'We go connect buyer with seller. All arrangement na between una.',
+    'hub.agriculture.title':'Farm / Agric Produce','hub.agriculture.sub':'Find farm produce near you, or list wetin you grow and sell',
+    'hub.agriculture.findTitle':'Find Farm Produce Near Me','hub.agriculture.findDesc':'See fresh produce, grain, vegetable, animal and farm thing near you. Tok direct for WhatsApp — e free.',
+    'hub.agriculture.listTitle':'List My Farm Produce','hub.agriculture.listDesc':'You be farmer or agric person? Make free seller account reach buyer for Cameroon.',
+    'hub.agriculture.listTag2':'Reach all Cameroon','hub.agriculture.disclaimer':'We go connect buyer with farmer. All arrangement na between una.',
+    'hub.delivery.title':'Delivery Service','hub.delivery.sub':'Find delivery person near you, or list your own delivery service',
+    'hub.delivery.findTitle':'Find Delivery Near Me','hub.delivery.findDesc':'See delivery service and courier near you. Tok direct for WhatsApp — e free.',
+    'hub.delivery.listTitle':'Offer My Delivery Service','hub.delivery.listDesc':'You dey do delivery? Make free account reach customer for Cameroon.',
+    'hub.delivery.listTag2':'Reach all Cameroon','hub.delivery.disclaimer':'We go connect sender with delivery person. All arrangement na between una.',
+    'hub.books.title':'Books & Paper','hub.books.sub':'Find book and stationery near you, or sell your own',
+    'hub.books.findTitle':'Find Books & Paper Near Me','hub.books.findDesc':'See book, school supply and stationery near you. Tok direct for WhatsApp — e free.',
+    'hub.books.listTitle':'Sell My Books & Paper','hub.books.listDesc':'You wan sell book or stationery? Make free seller account reach buyer for Cameroon.',
+    'hub.books.listTag2':'Reach all Cameroon','hub.books.disclaimer':'We go connect buyer with seller. All arrangement na between una.',
+    'service.interiorDesign':'Interior Design','service.interiorDesignDesc':'Decor & space',
+    'hub.interiorDesign.title':'Interior Design','hub.interiorDesign.sub':'Find decorator near you, or put your design service',
+    'hub.interiorDesign.findTitle':'Find Interior Designer Near Me','hub.interiorDesign.findDesc':'See interior designer and decorator near you. House, office, renovation and more. Tok direct for WhatsApp.',
+    'hub.interiorDesign.listTitle':'Put My Interior Design Service','hub.interiorDesign.listDesc':'You be interior designer or decorator? Make free seller account reach customer for Cameroon.',
+    'hub.interiorDesign.listTag2':'Get more customer','hub.interiorDesign.disclaimer':'We go connect customer with interior designer. All arrangement na between una.',
+    'landing.tagline':'Everything wey you need for Cameroon',
+    'ghub.title':'Guest House &amp; Hotel','ghub.sub':'Find place to sleep for Cameroon, or put your place for free',
+    'ghub.findTitle':'Find Guest House Near Me','ghub.findDesc':'See guest house and hotel near you. Tok direct with any host for WhatsApp — e free.',
+    'ghub.listTitle':'Put My Guest House','ghub.listDesc':'You get guest house or hotel? Make free seller account reach plenty guest for Cameroon.',
+    'ghub.listTag2':'Reach all Cameroon','ghub.disclaimer.prefix':'We go connect you with host.',
+    'ghub.disclaimer':'All arrangement and payment na between you and host — CamMarket237 no go collect money.',
+    'ghub.showingNear':'Guest house near'
   }
 };
 
@@ -4137,7 +4496,23 @@ window.setLanguage = function(lang) {
     if (id === 'screen-saved' && window.goSaved) window.goSaved();
     if (id === 'screen-cart' && window.loadCart) window.loadCart();
     if (id === 'screen-services' && _currentSvcType && window.openService) window.openService(_currentSvcType);
+    if (id === 'screen-service-hub' && window._currentServiceHub && window.openServiceHub) window.openServiceHub(window._currentServiceHub);
+    if (id === 'screen-guesthouse-hub' && window.renderGuesthouseHub) window.renderGuesthouseHub();
   }
+};
+
+window.renderGuesthouseHub = function() {
+  var set = function(id, txt) { var el = document.getElementById(id); if (el) el.innerHTML = txt; };
+  var tag = function(t, bg, col) { return '<span style="background:'+bg+';color:'+col+';font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px">'+t+'</span>'; };
+  set('gh-hub-title',     window.t('ghub.title'));
+  set('gh-hub-sub',       window.t('ghub.sub'));
+  set('gh-hub-find-title',window.t('ghub.findTitle'));
+  set('gh-hub-find-desc', window.t('ghub.findDesc'));
+  set('gh-hub-find-tags', [window.t('hub.common.usesLocation'), window.t('hub.common.freeToUse')].map(function(t){ return tag(t,'#e8f5e9','#1a7a3c'); }).join(''));
+  set('gh-hub-list-title',window.t('ghub.listTitle'));
+  set('gh-hub-list-desc', window.t('ghub.listDesc'));
+  set('gh-hub-list-tags', [window.t('hub.common.freeToList'), window.t('ghub.listTag2')].map(function(t){ return tag(t,'#fff3e0','#e67e22'); }).join(''));
+  set('gh-hub-disclaimer','&#x1F91D; <strong>'+window.t('ghub.disclaimer.prefix')+'</strong> '+window.t('ghub.disclaimer'));
 };
 
 var CITIES = {
@@ -4155,10 +4530,10 @@ var CITIES = {
 
 var CATS = ["Electronics","Phones & Accessories","Clothing & Fashion","Food & Groceries",
   "Furniture & Home","Beauty & Health","Vehicles & Parts","Agriculture",
-  "Books & Stationery","Sports & Fitness","Toys & Kids",
+  "Farm/Agricultural Produce","Books & Stationery","Sports & Fitness","Toys & Kids",
   "Guesthouses & Hotels","Car Rental","Apartments & Rentals",
   "Transport & Drivers","Catering & Food","Photography & Video",
-  "Cleaning Services","Repairs & Plumbing","Services","Other"];
+  "Cleaning Services","Repairs & Plumbing","Interior Design","Delivery Service","Services","Other"];
 
 // \u2500\u2500 STATE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 var _sessionToken = '', _currentUser = null, _currentStore = null;
@@ -4229,6 +4604,12 @@ window.go = function(id) {
       sessionStorage.removeItem('_gh_intent');
       setTimeout(function(){ window.go('find-guesthouses'); }, 200);
     }
+    var catIntent = sessionStorage.getItem('_cat_intent');
+    if (catIntent) {
+      sessionStorage.removeItem('_cat_intent');
+      _currentCat = catIntent;
+      setTimeout(function(){ if (window.doSearch) window.doSearch(); }, 300);
+    }
   }
   if (id === 'find-guesthouses') {
     window._ghServiceFilter = '';
@@ -4243,6 +4624,9 @@ window.go = function(id) {
       c.style.fontWeight = on ? '700' : '600';
     });
     setTimeout(function(){ window.requestGHLocation && window.requestGHLocation(); }, 100);
+  }
+  if (id === 'guesthouse-hub') {
+    setTimeout(function(){ window.renderGuesthouseHub && window.renderGuesthouseHub(); }, 0);
   }
   if (id === 'sponsored-ad') {
     window.loadAdPackages && window.loadAdPackages();
@@ -8202,105 +8586,26 @@ var _ghCardMap = {};  // id → listing object (avoids JSON-in-onclick issues)
 // GENERIC SERVICE HUB
 // ═══════════════════════════════════════════════════════════
 var SERVICE_HUB_CFG = {
-  buy_sell_car: {
-    icon:'&#x1F697;', title:'Buy &amp; Sell Cars', color:'#c0392b',
-    sub:'Find a car to buy, or list yours for sale',
-    findTitle:'Find a Car Near Me',
-    findDesc:'Browse cars for sale sorted by distance. Contact sellers directly on WhatsApp — completely free.',
-    findTags:['&#x1F4CD; Uses your location','Free to use'],
-    listTitle:'List My Car for Sale',
-    listDesc:'Selling a car? Create a free seller account and reach thousands of buyers across Cameroon.',
-    listTags:['&#x2705; Free to list','Nationwide reach'],
-    disclaimer:'We connect buyers with sellers. All arrangements and payments happen directly between you — CamMarket237 never collects money.'
-  },
-  car_rental: {
-    icon:'&#x1F698;', title:'Car Rental', color:'#0f1923',
-    sub:'Find a rental car near you, or earn by listing your car',
-    findTitle:'Find a Rental Car Near Me',
-    findDesc:'Browse rental cars near you. Contact owners directly on WhatsApp — no booking fees.',
-    findTags:['&#x1F4CD; Uses your location','Free to use'],
-    listTitle:'List My Car for Rent',
-    listDesc:'Have a car to rent? Create a free seller account and reach customers across Cameroon.',
-    listTags:['&#x2705; Free to list','Earn from your car'],
-    disclaimer:'We connect renters with car owners. All arrangements and payments happen directly between you.'
-  },
-  apartment: {
-    icon:'&#x1F3E0;', title:'Apartments &amp; Rentals', color:'#2980b9',
-    sub:'Find a room or apartment to rent, or list your property',
-    findTitle:'Find an Apartment Near Me',
-    findDesc:'Browse apartments, studios and houses for rent sorted by distance. Contact landlords directly.',
-    findTags:['&#x1F4CD; Uses your location','Free to use'],
-    listTitle:'List My Property',
-    listDesc:'Have a room, apartment or house to rent? Create a free seller account and find tenants fast.',
-    listTags:['&#x2705; Free to list','Nationwide reach'],
-    disclaimer:'We connect tenants with landlords. All arrangements and payments happen directly between you.'
-  },
-  transport: {
-    icon:'&#x1F68C;', title:'Transport &amp; Drivers', color:'#8e44ad',
-    sub:'Find a driver near you, or list your transport service',
-    findTitle:'Find a Driver Near Me',
-    findDesc:'Browse drivers and transport services near you. City runs, long distance, airport transfers.',
-    findTags:['&#x1F4CD; Uses your location','Free to use'],
-    listTitle:'List My Transport Service',
-    listDesc:'Are you a driver or transport operator? Create a free seller account and get more clients.',
-    listTags:['&#x2705; Free to list','Get more bookings'],
-    disclaimer:'We connect passengers with drivers. All arrangements and payments happen directly between you.'
-  },
-  plumber: {
-    icon:'&#x1F527;', title:'Repairs &amp; Plumbing', color:'#e67e22',
-    sub:'Find a repair specialist near you, or list your trade skills',
-    findTitle:'Find a Repair Service Near Me',
-    findDesc:'Browse plumbers, electricians and repair specialists near you. Contact them directly.',
-    findTags:['&#x1F4CD; Uses your location','Free to use'],
-    listTitle:'List My Repair Service',
-    listDesc:'Plumber, electrician or technician? Create a free seller account and reach more customers.',
-    listTags:['&#x2705; Free to list','Get more clients'],
-    disclaimer:'We connect customers with tradespeople. All arrangements and payments happen directly between you.'
-  },
-  catering: {
-    icon:'&#x1F37D;&#xFE0F;', title:'Catering &amp; Food', color:'#c0392b',
-    sub:'Find a caterer near you, or list your catering service',
-    findTitle:'Find a Caterer Near Me',
-    findDesc:'Browse caterers, chefs and food services near you. Events, daily meals, pastry and more.',
-    findTags:['&#x1F4CD; Uses your location','Free to use'],
-    listTitle:'List My Catering Service',
-    listDesc:'Are you a caterer or chef? Create a free seller account and get event and catering bookings.',
-    listTags:['&#x2705; Free to list','Get more clients'],
-    disclaimer:'We connect clients with caterers. All arrangements and payments happen directly between you.'
-  },
-  photography: {
-    icon:'&#x1F4F8;', title:'Photography &amp; Video', color:'#16a085',
-    sub:'Find a photographer near you, or list your photography service',
-    findTitle:'Find a Photographer Near Me',
-    findDesc:'Browse photographers and videographers near you. Events, weddings, portraits, drone and more.',
-    findTags:['&#x1F4CD; Uses your location','Free to use'],
-    listTitle:'List My Photography Service',
-    listDesc:'Photographer or videographer? Create a free seller account and get discovered by clients near you.',
-    listTags:['&#x2705; Free to list','Get bookings'],
-    disclaimer:'We connect clients with photographers. All arrangements and payments happen directly between you.'
-  },
-  cleaning: {
-    icon:'&#x1F9F9;', title:'Cleaning Services', color:'#27ae60',
-    sub:'Find a cleaning service near you, or list what you offer',
-    findTitle:'Find a Cleaning Service Near Me',
-    findDesc:'Browse cleaning professionals near you. Home cleaning, office, post-event and more.',
-    findTags:['&#x1F4CD; Uses your location','Free to use'],
-    listTitle:'List My Cleaning Service',
-    listDesc:'Offer cleaning services? Create a free seller account and reach homes and businesses near you.',
-    listTags:['&#x2705; Free to list','Get more clients'],
-    disclaimer:'We connect clients with cleaning professionals. All arrangements happen directly between you.'
-  },
-  other: {
-    icon:'&#x1F4BC;', title:'More Services', color:'#7f8c8d',
-    sub:'Find any local service near you, or list what you offer',
-    findTitle:'Find a Service Near Me',
-    findDesc:'Browse all kinds of local services near you. Contact providers directly on WhatsApp — free.',
-    findTags:['&#x1F4CD; Uses your location','Free to use'],
-    listTitle:'List My Service',
-    listDesc:'Offer any service? Create a free seller account and reach thousands of potential clients.',
-    listTags:['&#x2705; Free to list','Nationwide reach'],
-    disclaimer:'We connect clients with service providers. All arrangements and payments happen directly between you.'
-  }
+  buy_sell_car: { icon:'&#x1F697;', color:'#c0392b', tkey:'buySellCar' },
+  car_rental:   { icon:'&#x1F698;', color:'#0f1923', tkey:'carRental' },
+  apartment:    { icon:'&#x1F3E0;', color:'#2980b9', tkey:'apartment' },
+  transport:    { icon:'&#x1F68C;', color:'#8e44ad', tkey:'transport' },
+  plumber:      { icon:'&#x1F527;', color:'#e67e22', tkey:'plumber' },
+  catering:     { icon:'&#x1F37D;&#xFE0F;', color:'#c0392b', tkey:'catering' },
+  photography:  { icon:'&#x1F4F8;', color:'#16a085', tkey:'photography' },
+  cleaning:        { icon:'&#x1F9F9;', color:'#27ae60', tkey:'cleaning' },
+  interior_design: { icon:'&#x1F6CB;&#xFE0F;', color:'#6d4c41', tkey:'interiorDesign' },
+  electronics:     { icon:'&#x1F4BB;', color:'#2c3e50', tkey:'electronics',    prodCat:'Electronics' },
+  phones_access:   { icon:'&#x1F4F1;', color:'#2980b9', tkey:'phonesAccess',   prodCat:'Phones & Accessories' },
+  clothing:        { icon:'&#x1F457;', color:'#ad1457', tkey:'clothing',        prodCat:'Clothing & Fashion' },
+  food_groceries:  { icon:'&#x1F96C;', color:'#1e8449', tkey:'foodGroceries',  prodCat:'Food & Groceries' },
+  furniture_home:  { icon:'&#x1F6CB;&#xFE0F;', color:'#6a1b9a', tkey:'furnitureHome', prodCat:'Furniture & Home' },
+  beauty_health:   { icon:'&#x1F48A;', color:'#c62828', tkey:'beautyHealth',   prodCat:'Beauty & Health' },
+  vehicles_parts:  { icon:'&#x1F699;', color:'#b71c1c', tkey:'vehiclesParts', prodCat:'Vehicles & Parts' },
+  agriculture:     { icon:'&#x1F33E;', color:'#e65100', tkey:'agriculture' },
+  delivery:        { icon:'&#x1F4E6;', color:'#0097a7', tkey:'delivery' },
+  books:           { icon:'&#x1F4DA;', color:'#00695c', tkey:'books',          prodCat:'Books & Stationery' },
+  other:           { icon:'&#x1F4BC;', color:'#7f8c8d', tkey:'other' }
 };
 
 window._currentServiceHub = null;
@@ -8308,36 +8613,57 @@ window._currentServiceHub = null;
 window.openServiceHub = function(type) {
   var cfg = SERVICE_HUB_CFG[type] || SERVICE_HUB_CFG['other'];
   window._currentServiceHub = type;
+  var k = 'hub.' + cfg.tkey + '.';
   var hdr = document.getElementById('sh-header');
   if (hdr) hdr.style.background = 'linear-gradient(135deg,' + cfg.color + ' 0%,' + cfg.color + 'bb 100%)';
   var set = function(id, txt) { var el = document.getElementById(id); if (el) el.innerHTML = txt; };
+  var tag = function(t, bg, col) { return '<span style="background:'+bg+';color:'+col+';font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px">'+t+'</span>'; };
   set('sh-icon', cfg.icon);
-  set('sh-title', cfg.title);
-  set('sh-sub', cfg.sub);
-  set('sh-find-title', cfg.findTitle);
-  set('sh-find-desc', cfg.findDesc);
+  set('sh-title', window.t(k + 'title'));
+  set('sh-sub',   window.t(k + 'sub'));
+  set('sh-find-title', window.t(k + 'findTitle'));
+  set('sh-find-desc',  window.t(k + 'findDesc'));
   var fa = document.getElementById('sh-find-arrow'); if (fa) fa.style.color = cfg.color;
   var ft = document.getElementById('sh-find-title'); if (ft) ft.style.color = cfg.color;
   var fic = document.getElementById('sh-find-icon');
   if (fic) { fic.style.background = 'linear-gradient(135deg,#e8f5e9,#c8e6c9)'; fic.innerHTML = '&#x1F50D;'; }
-  set('sh-find-tags', cfg.findTags.map(function(t){ return '<span style="background:#e8f5e9;color:'+cfg.color+';font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px">'+t+'</span>'; }).join(''));
-  set('sh-list-title', cfg.listTitle);
-  set('sh-list-desc', cfg.listDesc);
-  set('sh-list-tags', cfg.listTags.map(function(t){ return '<span style="background:#fff3e0;color:#e67e22;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px">'+t+'</span>'; }).join(''));
-  set('sh-disclaimer-text', '&#x1F91D; <strong>We connect you with providers.</strong> ' + cfg.disclaimer);
+  set('sh-find-tags', [window.t('hub.common.usesLocation'), window.t('hub.common.freeToUse')].map(function(t){ return tag(t,'#e8f5e9',cfg.color); }).join(''));
+  set('sh-list-title', window.t(k + 'listTitle'));
+  set('sh-list-desc',  window.t(k + 'listDesc'));
+  set('sh-list-tags', [window.t('hub.common.freeToList'), window.t(k + 'listTag2')].map(function(t){ return tag(t,'#fff3e0','#e67e22'); }).join(''));
+  set('sh-disclaimer-text', '&#x1F91D; <strong>' + window.t('hub.disclaimer.prefix') + '</strong> ' + window.t(k + 'disclaimer'));
   window.go('service-hub');
 };
 
 window.goFindService = function() {
   var type = window._currentServiceHub;
   if (!type) return;
+  var cfg = SERVICE_HUB_CFG[type] || SERVICE_HUB_CFG['other'];
+  if (cfg.prodCat) {
+    _currentCat = cfg.prodCat;
+    var user = _currentUser || JSON.parse(localStorage.getItem('cm237_user') || 'null');
+    if (!user) { sessionStorage.setItem('_cat_intent', cfg.prodCat); window.go('buyer-auth'); return; }
+    window.go('buyer-search');
+    setTimeout(function(){ if (window.doSearch) window.doSearch(); }, 200);
+    return;
+  }
   window.openService(type);
 };
 
 window.goListService = function() {
   var type = window._currentServiceHub;
   if (!type) return;
+  var cfg = SERVICE_HUB_CFG[type] || SERVICE_HUB_CFG['other'];
   var user = _currentUser || JSON.parse(localStorage.getItem('cm237_user') || 'null');
+  if (cfg.prodCat) {
+    if (!user || !_sellerStoreId) { sessionStorage.setItem('_svc_hub_intent', type); window.go('seller-auth'); return; }
+    window.go('post-item');
+    setTimeout(function() {
+      var catEl = document.getElementById('p-cat');
+      if (catEl) { catEl.value = cfg.prodCat; window.onCategoryChange && window.onCategoryChange(cfg.prodCat); }
+    }, 150);
+    return;
+  }
   if (!user || !_sellerStoreId) {
     sessionStorage.setItem('_svc_hub_intent', type);
     window.go('seller-auth');
