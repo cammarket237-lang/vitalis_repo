@@ -133,6 +133,20 @@ function authUser() {
 // UNIVERSAL PHONE NORMALIZER
 // Strips all formatting and generates search variants
 // ══════════════════════════════════════════════════════════
+function isCameroonPhone($phone) {
+    $digits = preg_replace('/[^0-9]/', '', urldecode(trim($phone ?? '')));
+    if (!$digits) return false;
+    // Handle 00237 international dial prefix
+    if (substr($digits, 0, 5) === '00237') $digits = substr($digits, 2);
+    // Explicit +237 country code (e.g. 2376XXXXXXXX — 12 digits)
+    if (strlen($digits) >= 11 && substr($digits, 0, 3) === '237') return true;
+    // Local 9-digit Cameroon mobile (6XX…) or landline (2XX… / 3XX…)
+    if (strlen($digits) === 9 && in_array($digits[0], ['6','2','3'])) return true;
+    // 8-digit legacy local format
+    if (strlen($digits) === 8) return true;
+    return false;
+}
+
 function normalizePhone($phone) {
     // Pre-clean: handle +, spaces, URL encoding
     $phone = urldecode(trim($phone));
@@ -452,6 +466,16 @@ if ($action === 'register_seller') {
             }
         } catch(Exception $ex) {}
 
+        // Announce new store to all users via the bell notification system
+        try {
+            db()->prepare("INSERT INTO cammarket237.store_announcements (store_id, triggered_by_listing_id, created_at) VALUES (?,0,NOW())")
+                ->execute([$store['id']]);
+        } catch(Exception $e) {}
+
+        // Stage 1 broadcast: new store joined (milestone — always fires)
+        rateLimitedBroadcast($uid, 0, 'store_created',
+            '&#x1F3EA; New store just joined: ' . $storeName . ' (' . $region . ') — Tap to explore!');
+
         ok([
             'user'    => $user,
             'store'   => $storeArr,
@@ -752,12 +776,32 @@ if ($action === 'get_listings') {
                    COALESCE(l.price_drop_active,false) AS price_drop_active,
                    l.description,l.bulk_available,
                    l.bulk_discount_note,l.views,l.created_at,l.listing_type,
-                   s.id AS store_id,s.store_name,s.whatsapp,s.latitude,s.longitude,
+                   l.subtitle,l.about_long,l.host_bio,l.host_languages,l.year_built,
+                   COALESCE(l.offers_airport_pickup,false)    AS offers_airport_pickup,
+                   COALESCE(l.offers_airport_dropoff,false)   AS offers_airport_dropoff,
+                   COALESCE(l.offers_local_transport,false)   AS offers_local_transport,
+                   COALESCE(l.offers_breakfast,false)         AS offers_breakfast,
+                   COALESCE(l.offers_meals,false)             AS offers_meals,
+                   COALESCE(l.offers_restaurant_onsite,false) AS offers_restaurant_onsite,
+                   COALESCE(l.offers_laundry,false)           AS offers_laundry,
+                   COALESCE(l.offers_housekeeping,false)      AS offers_housekeeping,
+                   COALESCE(l.offers_tour_guide,false)        AS offers_tour_guide,
+                   COALESCE(l.offers_event_space,false)       AS offers_event_space,
+                   COALESCE(l.offers_wifi,false)              AS offers_wifi,
+                   COALESCE(l.offers_generator,false)         AS offers_generator,
+                   s.id AS store_id,s.store_name,s.whatsapp,
+                   s.latitude,s.longitude,
                    s.region,s.rating,s.trust_score,s.landmark,s.area_quarter,
             (SELECT media_url FROM cammarket237.listing_media
-             WHERE listing_id=l.id AND media_role IN ('main','main_image') LIMIT 1) AS main_photo,
+             WHERE listing_id=l.id AND media_role IN ('main','main_image') ORDER BY sort_order LIMIT 1) AS main_photo,
             (SELECT media_url FROM cammarket237.listing_media
-             WHERE listing_id=l.id AND media_role IN ('secondary','secondary_image','extra_image') LIMIT 1) AS photo2,
+             WHERE listing_id=l.id AND media_role IN ('secondary','secondary_image','extra_image') ORDER BY sort_order LIMIT 1) AS photo2,
+            (SELECT media_url FROM cammarket237.listing_media
+             WHERE listing_id=l.id AND media_role='extra_image' ORDER BY sort_order LIMIT 1 OFFSET 1) AS photo3,
+            (SELECT media_url FROM cammarket237.listing_media
+             WHERE listing_id=l.id AND media_role='extra_image' ORDER BY sort_order LIMIT 1 OFFSET 2) AS photo4,
+            (SELECT media_url FROM cammarket237.listing_media
+             WHERE listing_id=l.id AND media_role='extra_image' ORDER BY sort_order LIMIT 1 OFFSET 3) AS photo5,
             (SELECT media_url FROM cammarket237.listing_media
              WHERE listing_id=l.id AND media_role IN ('360view','video_360','video') LIMIT 1) AS video360
             $distCol
@@ -801,6 +845,8 @@ if ($action === 'post_listing') {
     $user = authUser();
     if (!$user) fail('Please login first.');
     if ($user['role'] !== 'seller') fail('Only sellers can post items.');
+    if (!isCameroonPhone($user['phone']))
+        fail('A Cameroon phone number (+237) is required to post listings. Please update your profile with a valid Cameroon number.');
 
     foreach (['store_id','title','price','category','town'] as $f)
         if (empty($_POST[$f])) fail("Missing: $f");
@@ -809,8 +855,8 @@ if ($action === 'post_listing') {
     $desc     = trim($_POST['description'] ?? '');
     $category = trim($_POST['category']    ?? '');
 
-    if (empty($_FILES['photo1']['name'])||empty($_FILES['photo2']['name']))
-        fail('Please upload at least 2 photos (video optional).');
+    if (empty($_FILES['photo1']['name'])||empty($_FILES['photo2']['name'])||empty($_FILES['photo3']['name']))
+        fail('3 photos are required: Front view, Back view, and Side/Detail. Please upload all 3 before submitting.');
 
     // Save files
     function saveFile($file,$type) {
@@ -832,9 +878,9 @@ if ($action === 'post_listing') {
 
     $p1 = saveFile($_FILES['photo1'],'photo'); if(!$p1['ok']) fail($p1['error']);
     $p2 = saveFile($_FILES['photo2'],'photo'); if(!$p2['ok']){@unlink($p1['path']);fail($p2['error']);}
-    // Photo 3 - optional
-    $p3 = ['ok'=>true,'url'=>null,'path'=>null];
-    if(!empty($_FILES['photo3']['name'])){ $p3=saveFile($_FILES['photo3'],'photo'); if(!$p3['ok']){@unlink($p1['path']);@unlink($p2['path']);fail($p3['error']);} }
+    // Photo 3 - required
+    $p3 = saveFile($_FILES['photo3'],'photo');
+    if(!$p3['ok']){@unlink($p1['path']);@unlink($p2['path']);fail($p3['error']);}
     // Video - optional
     $vd = ['ok'=>true,'url'=>null,'path'=>null];
     if(!empty($_FILES['video']['name'])){ $vd=saveFile($_FILES['video'],'video'); if(!$vd['ok']){@unlink($p1['path']);@unlink($p2['path']);if($p3['path'])@unlink($p3['path']);fail($vd['error']);} }
@@ -870,27 +916,58 @@ if ($action === 'post_listing') {
     }
 
     // Save to DB
+    $isGuesthouse = (strtolower(trim($category)) === 'guesthouses & hotels');
     try {
         $stmt = db()->prepare(
             "INSERT INTO cammarket237.listings
              (store_id,user_id,title,description,price,category,town,status,
               listing_type,price_type,quantity_available,bulk_available,
-              bulk_discount_note,video_url,ai_status,moderation_status,created_at,updated_at)
-             VALUES (?,?,?,?,?,?,?,'active',?,?,?,?,?,?,'approved','approved',NOW(),NOW())
+              bulk_discount_note,video_url,ai_status,moderation_status,
+              subtitle,about_long,host_bio,host_languages,year_built,
+              offers_airport_pickup,offers_airport_dropoff,offers_local_transport,
+              offers_breakfast,offers_meals,offers_restaurant_onsite,
+              offers_laundry,offers_housekeeping,offers_tour_guide,
+              offers_event_space,offers_wifi,offers_generator,
+              created_at,updated_at)
+             VALUES (?,?,?,?,?,?,?,'active',?,?,?,?,?,?,'approved','approved',
+                     ?,?,?,?,?,
+                     ?,?,?,?,?,?,?,?,?,?,?,?,
+                     NOW(),NOW())
              RETURNING id"
         );
+        $hlRaw = trim($_POST['host_languages'] ?? '');
+        $hlArr = $hlRaw ? '{' . implode(',', array_map(fn($v)=>'"'.trim($v).'"', explode(',', $hlRaw))) . '}' : null;
         $stmt->execute([
             intval($_POST['store_id']), $user['id'],
             $title, $desc,
             intval($_POST['price']),
             $category,
             trim($_POST['town']),
-            $_POST['listing_type'] ?? 'sale',
+            $isGuesthouse ? 'guesthouse' : ($_POST['listing_type'] ?? 'sale'),
             $_POST['price_type']   ?? 'fixed',
             intval($_POST['quantity'] ?? 1),
             !empty($_POST['bulk_available']) ? 'true' : 'false',
             trim($_POST['bulk_note'] ?? ''),
             $vd['url'],
+            // guesthouse extra fields
+            $isGuesthouse ? trim($_POST['subtitle']  ?? '') : null,
+            $isGuesthouse ? trim($_POST['about_long'] ?? '') : null,
+            $isGuesthouse ? trim($_POST['host_bio']   ?? '') : null,
+            $isGuesthouse ? $hlArr : null,
+            $isGuesthouse && !empty($_POST['year_built']) ? intval($_POST['year_built']) : null,
+            // service flags (cast to bool)
+            $isGuesthouse ? !empty($_POST['offers_airport_pickup'])    : false,
+            $isGuesthouse ? !empty($_POST['offers_airport_dropoff'])   : false,
+            $isGuesthouse ? !empty($_POST['offers_local_transport'])   : false,
+            $isGuesthouse ? !empty($_POST['offers_breakfast'])         : false,
+            $isGuesthouse ? !empty($_POST['offers_meals'])             : false,
+            $isGuesthouse ? !empty($_POST['offers_restaurant_onsite']) : false,
+            $isGuesthouse ? !empty($_POST['offers_laundry'])           : false,
+            $isGuesthouse ? !empty($_POST['offers_housekeeping'])      : false,
+            $isGuesthouse ? !empty($_POST['offers_tour_guide'])        : false,
+            $isGuesthouse ? !empty($_POST['offers_event_space'])       : false,
+            $isGuesthouse ? !empty($_POST['offers_wifi'])              : false,
+            $isGuesthouse ? !empty($_POST['offers_generator'])         : false,
         ]);
         $lid = $stmt->fetch()['id'];
 
@@ -902,49 +979,54 @@ if ($action === 'post_listing') {
         );
         $ms->execute([$lid,'image',$p1['url'],'main_image',1]);
         $ms->execute([$lid,'image',$p2['url'],'extra_image',2]);
-        if(!empty($p3['url'])) $ms->execute([$lid,'image',$p3['url'],'extra_image',3]);
+        $ms->execute([$lid,'image',$p3['url'],'extra_image',3]);
         if(!empty($vd['url'])) $ms->execute([$lid,'video',$vd['url'],'video_360',4]);
 
-        // Check if seller just hit 5 items → trigger store announcement
         $storeId = intval($_POST['store_id'] ?? 0);
-        if ($storeId) {
-            $itemCount = q1("SELECT COUNT(*) AS n FROM cammarket237.listings
-                WHERE store_id=? AND status='active'", [$storeId]);
-            if (intval($itemCount['n']) === 5) {
-                $alreadyAnn = q1("SELECT id FROM cammarket237.store_announcements
-                    WHERE store_id=? LIMIT 1", [$storeId]);
-                if (!$alreadyAnn) {
-                    db()->prepare("INSERT INTO cammarket237.store_announcements
-                        (store_id, triggered_by_listing_id, created_at)
-                        VALUES (?,?,NOW())")->execute([$storeId, $lid]);
-                }
-            }
+        $listingPrice = intval($_POST['price'] ?? 0);
+        $storeInfo = $storeId ? q1("SELECT store_name FROM cammarket237.stores WHERE id=?", [$storeId]) : null;
+        $storeName2 = $storeInfo['store_name'] ?? 'A seller';
+
+        // Count active listings for this store (just updated to include the new one)
+        $itemCount = $storeId ? q1("SELECT COUNT(*) AS n FROM cammarket237.listings
+            WHERE store_id=? AND status='active'", [$storeId]) : null;
+        $activeCount = intval($itemCount['n'] ?? 0);
+
+        // ── Stage 2: First listing posted ────────────────────
+        if ($activeCount === 1) {
+            // Add store announcement (used by buyers browsing new stores)
+            try {
+                db()->prepare("INSERT INTO cammarket237.store_announcements
+                    (store_id, triggered_by_listing_id, created_at)
+                    VALUES (?,?,NOW())")->execute([$storeId, $lid]);
+            } catch(Exception $e) {}
+            // Milestone broadcast — always fires
+            rateLimitedBroadcast($user['id'], $lid, 'first_listing',
+                '&#x1F3EA; ' . $storeName2 . ' just went live with their first item: ' . $title . ' &#x2014; ' . number_format($listingPrice) . ' FCFA');
         }
 
-        // Check if seller just hit 10 listings → confirm pending referral reward
-        $totalListings = q1(
-            "SELECT COUNT(*) AS n FROM cammarket237.listings
-             WHERE store_id IN (SELECT id FROM cammarket237.stores WHERE user_id=?)
-             AND status != 'deleted'",
-            [$user['id']]
-        );
-        if (intval($totalListings['n']) >= 10) {
-            $pendingRewards = q(
-                "SELECT * FROM cammarket237.referral_rewards
-                 WHERE referee_id=? AND status='pending'",
-                [$user['id']]
-            );
+        // ── Stage 3: 5th listing milestone ───────────────────
+        if ($activeCount === 5) {
+            // Confirm pending referral rewards for this seller
+            $pendingRewards = q("SELECT * FROM cammarket237.referral_rewards
+                WHERE referee_id=? AND status='pending'", [$user['id']]);
             foreach ($pendingRewards as $rw) {
-                db()->prepare(
-                    "UPDATE cammarket237.referral_rewards
-                     SET status='confirmed', confirmed_at=NOW() WHERE id=?"
-                )->execute([$rw['id']]);
-                db()->prepare(
-                    "UPDATE cammarket237.users
-                     SET wallet_balance=COALESCE(wallet_balance,0)+? WHERE id=?"
+                db()->prepare("UPDATE cammarket237.referral_rewards
+                    SET status='confirmed', confirmed_at=NOW() WHERE id=?")->execute([$rw['id']]);
+                db()->prepare("UPDATE cammarket237.users
+                    SET wallet_balance=COALESCE(wallet_balance,0)+? WHERE id=?"
                 )->execute([$rw['reward_fcfa'], $rw['referrer_id']]);
                 logWalletTx($rw['referrer_id'], $rw['reward_fcfa'], 'referral_confirmed', 'Referral reward confirmed');
             }
+            // Milestone broadcast — always fires
+            rateLimitedBroadcast($user['id'], $lid, 'fifth_listing',
+                '&#x1F525; ' . $storeName2 . ' is now fully stocked — 5 items live! Check them out.');
+        }
+
+        // ── Generic per-listing broadcast (rate-limited, max 3/day) ──
+        if ($activeCount !== 1 && $activeCount !== 5) {
+            rateLimitedBroadcast($user['id'], $lid, 'new_listing',
+                '&#x1F195; ' . $storeName2 . ' posted: ' . $title . ' &#x2014; ' . number_format($listingPrice) . ' FCFA');
         }
 
         ok(['listing_id'=>$lid,'message'=>'Item verified and posted live!']);
@@ -1622,16 +1704,23 @@ if ($action === 'get_cart_notifications') {
     $notifs = q("SELECT cn.*, l.title, l.price, l.is_sold,
         s.store_name, lm.media_url AS photo
         FROM cammarket237.cart_notifications cn
-        JOIN cammarket237.listings l ON l.id=cn.listing_id
+        LEFT JOIN cammarket237.listings l ON l.id=cn.listing_id AND cn.listing_id > 0
         LEFT JOIN cammarket237.stores s ON s.id=l.store_id
         LEFT JOIN cammarket237.listing_media lm ON lm.listing_id=l.id AND lm.media_role='main_image'
         WHERE cn.buyer_id=? AND cn.seen=false
-        ORDER BY cn.created_at DESC LIMIT 20", [$user['id']]);
+        ORDER BY cn.created_at DESC LIMIT 30", [$user['id']]);
     db()->prepare("UPDATE cammarket237.cart_notifications SET seen=true WHERE buyer_id=?")
         ->execute([$user['id']]);
     $unseenCount = q1("SELECT COUNT(*) AS n FROM cammarket237.cart_notifications
         WHERE buyer_id=?", [$user['id']]);
     ok(['notifications' => $notifs, 'unseen' => intval($unseenCount['n'])]);
+}
+
+if ($action === 'get_user_alerts_count') {
+    $user = authUser();
+    if (!$user) ok(['count' => 0, 'success' => true]);
+    $cnt = q1("SELECT COUNT(*) AS n FROM cammarket237.cart_notifications WHERE buyer_id=? AND seen=false", [$user['id']]);
+    ok(['count' => intval($cnt['n']), 'success' => true]);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2038,6 +2127,18 @@ if ($action === 'delete_listing') {
     ok(['message' => 'Listing deleted.']);
 }
 
+
+// ── LOGOUT ─────────────────────────────────────────────────
+if ($action === 'logout') {
+    $tok = $_SERVER['HTTP_X_SESSION_TOKEN'] ?? '';
+    if ($tok) {
+        try {
+            db()->prepare("UPDATE cammarket237.users SET session_token=NULL, session_expires_at=NULL WHERE session_token=?")
+                ->execute([$tok]);
+        } catch(Exception $e) {}
+    }
+    ok(['message' => 'Logged out']);
+}
 
 // ── CHECK SESSION ──────────────────────────────────────────
 if($action === 'check_session'){
@@ -2470,10 +2571,21 @@ if ($action === 'end_stream') {
     ok(['message' => 'Stream ended.']);
 }
 
+// ── LAZY COLUMN SETUP (live_comments + live_streams) ───────
+function ensureLiveColumns() {
+    static $done = false;
+    if ($done) return;
+    $done = true;
+    try { db()->exec("ALTER TABLE cammarket237.live_comments ADD COLUMN IF NOT EXISTS msg_type VARCHAR(20) DEFAULT 'text'"); } catch(Exception $e) {}
+    try { db()->exec("ALTER TABLE cammarket237.live_comments ADD COLUMN IF NOT EXISTS like_count INTEGER DEFAULT 0"); } catch(Exception $e) {}
+    try { db()->exec("ALTER TABLE cammarket237.live_streams ADD COLUMN IF NOT EXISTS pinned_message TEXT"); } catch(Exception $e) {}
+}
+
 // ── POST COMMENT ───────────────────────────────────────────
 if ($action === 'post_comment') {
     $streamId = intval(p('stream_id'));
     $message  = trim(p('message') ?? '');
+    $msgType  = in_array(p('msg_type'), ['text','reaction','location']) ? p('msg_type') : 'text';
     if (!$message) fail('Empty message.');
     $userId = 0; $userName = 'Guest'; $userRole = 'guest';
     try {
@@ -2483,8 +2595,9 @@ if ($action === 'post_comment') {
             if ($u) { $userId = $u['id']; $userName = $u['full_name']; $userRole = $u['role']; }
         }
     } catch(Exception $e) {}
-    db()->prepare("INSERT INTO cammarket237.live_comments (stream_id,user_id,user_name,user_role,message) VALUES (?,?,?,?,?)")
-        ->execute([$streamId, $userId ?: null, $userName, $userRole, $message]);
+    ensureLiveColumns();
+    db()->prepare("INSERT INTO cammarket237.live_comments (stream_id,user_id,user_name,user_role,message,msg_type) VALUES (?,?,?,?,?,?)")
+        ->execute([$streamId, $userId ?: null, $userName, $userRole, $message, $msgType]);
     ok(['message' => 'Comment posted.']);
 }
 
@@ -2492,10 +2605,58 @@ if ($action === 'post_comment') {
 if ($action === 'get_comments') {
     $streamId = intval(g('stream_id'));
     $since    = g('since') ?: '1970-01-01';
-    $comments = q("SELECT id, user_name, user_role, message, created_at
+    ensureLiveColumns();
+    $comments = q("SELECT id, user_name, user_role, message,
+        COALESCE(msg_type,'text') AS msg_type, COALESCE(like_count,0) AS like_count, created_at
         FROM cammarket237.live_comments WHERE stream_id=? AND created_at > ?
         ORDER BY created_at ASC LIMIT 50", [$streamId, $since]);
-    ok(['comments' => $comments]);
+    $streamRow = q1("SELECT COALESCE(pinned_message,'') AS pinned_message, COALESCE(viewer_count,0) AS viewer_count
+        FROM cammarket237.live_streams WHERE id=?", [$streamId]);
+    ok(['comments' => $comments,
+        'pinned_message' => $streamRow['pinned_message'] ?? '',
+        'viewer_count'   => intval($streamRow['viewer_count'] ?? 0)]);
+}
+
+// ── SHARE STORE LOCATION ────────────────────────────────────
+if ($action === 'share_store_location') {
+    $user = authUser();
+    if (!$user || $user['role'] !== 'seller') fail('Sellers only.');
+    $streamId = intval(p('stream_id'));
+    $stream = q1("SELECT id FROM cammarket237.live_streams WHERE id=? AND seller_id=? AND status='active'", [$streamId, $user['id']]);
+    if (!$stream) fail('Stream not found or not active.');
+    $store = q1("SELECT store_name, address, lat, lng, region, town FROM cammarket237.stores WHERE seller_id=? LIMIT 1", [$user['id']]);
+    if (!$store) fail('Store not found.');
+    $parts = array_filter([$store['address'] ?: null, $store['town'] ?: null, $store['region'] ?: null]);
+    $addr = implode(', ', $parts) ?: 'Location not set';
+    $locMsg = '📍 ' . ($store['store_name'] ?: 'Store') . ': ' . $addr;
+    if (!empty($store['lat']) && !empty($store['lng'])) $locMsg .= ' |maps:' . $store['lat'] . ',' . $store['lng'];
+    ensureLiveColumns();
+    db()->prepare("INSERT INTO cammarket237.live_comments (stream_id,user_id,user_name,user_role,message,msg_type) VALUES (?,?,?,?,?,?)")
+        ->execute([$streamId, $user['id'], $user['full_name'], 'seller', $locMsg, 'location']);
+    ok(['message' => 'Location shared.']);
+}
+
+// ── PIN MESSAGE ────────────────────────────────────────────
+if ($action === 'pin_message') {
+    $user = authUser();
+    if (!$user || $user['role'] !== 'seller') fail('Sellers only.');
+    $streamId = intval(p('stream_id'));
+    $pinned = trim(p('pinned_message') ?? '');
+    $stream = q1("SELECT id FROM cammarket237.live_streams WHERE id=? AND seller_id=? AND status='active'", [$streamId, $user['id']]);
+    if (!$stream) fail('Stream not found or not active.');
+    ensureLiveColumns();
+    db()->prepare("UPDATE cammarket237.live_streams SET pinned_message=? WHERE id=?")->execute([$pinned ?: null, $streamId]);
+    ok(['message' => $pinned ? 'Message pinned.' : 'Pin cleared.']);
+}
+
+// ── LIKE COMMENT ───────────────────────────────────────────
+if ($action === 'like_comment') {
+    $commentId = intval(p('comment_id'));
+    if (!$commentId) fail('Comment ID required.');
+    ensureLiveColumns();
+    db()->prepare("UPDATE cammarket237.live_comments SET like_count=COALESCE(like_count,0)+1 WHERE id=?")->execute([$commentId]);
+    $row = q1("SELECT COALESCE(like_count,0) AS like_count FROM cammarket237.live_comments WHERE id=?", [$commentId]);
+    ok(['like_count' => intval($row['like_count'] ?? 1)]);
 }
 
 // ── GET ACTIVE STREAMS (for buyers) ───────────────────────
@@ -2822,6 +2983,53 @@ if ($action === 'log_enquiry') {
     } catch(Exception $e) { ok(['message' => 'Logged.']); }
 }
 
+// ── SELLER NOTIFICATION SUMMARY ───────────────────────────
+if ($action === 'get_seller_notif_summary') {
+    $user = authUser();
+    if (!$user || $user['role'] !== 'seller') fail('Sellers only.');
+    $storeRow = q1("SELECT id FROM cammarket237.stores WHERE user_id=? LIMIT 1", [$user['id']]);
+    $sid = $storeRow ? intval($storeRow['id']) : 0;
+    // Pending enquiries
+    $enq = q1("SELECT COUNT(*) AS n FROM cammarket237.enquiries WHERE store_id=? AND status='pending'", [$sid]);
+    // Distinct buyers with seller's items in cart
+    $cart = q1("SELECT COUNT(DISTINCT ci.buyer_id) AS n
+        FROM cammarket237.cart_items ci
+        JOIN cammarket237.listings l ON l.id=ci.listing_id
+        WHERE l.store_id=?", [$sid]);
+    // Referrals in last 30 days
+    $refs = q1("SELECT COUNT(*) AS n FROM cammarket237.referral_rewards
+        WHERE referrer_id=? AND created_at > NOW() - INTERVAL '30 days'", [$user['id']]);
+    // Listings priced above 120% of category average (basic price tip)
+    $tips = q1("SELECT COUNT(*) AS n FROM cammarket237.listings l
+        JOIN cammarket237.stores s ON s.id=l.store_id
+        WHERE s.user_id=? AND l.status='active' AND l.price > 0
+        AND l.price > 1.2 * COALESCE((
+            SELECT AVG(l2.price) FROM cammarket237.listings l2
+            WHERE l2.category=l.category AND l2.id<>l.id AND l2.status='active' AND l2.price>0
+        ), l.price)", [$user['id']]);
+    $ec = intval($enq['n'] ?? 0);
+    $cc = intval($cart['n'] ?? 0);
+    $rc = intval($refs['n'] ?? 0);
+    $tc = intval($tips['n'] ?? 0);
+    ok(['enquiries'=>$ec,'cart_adds'=>$cc,'referrals'=>$rc,'price_tips'=>$tc,'total'=>$ec+$cc+$rc+$tc]);
+}
+
+// ── SELLER CART ACTIVITY ────────────────────────────────────
+if ($action === 'get_seller_cart_activity') {
+    $user = authUser();
+    if (!$user || $user['role'] !== 'seller') fail('Sellers only.');
+    $storeRow = q1("SELECT id FROM cammarket237.stores WHERE user_id=? LIMIT 1", [$user['id']]);
+    $sid = $storeRow ? intval($storeRow['id']) : 0;
+    $items = q("SELECT l.title, l.price, COUNT(DISTINCT ci.buyer_id) AS buyer_count
+        FROM cammarket237.cart_items ci
+        JOIN cammarket237.listings l ON l.id=ci.listing_id
+        WHERE l.store_id=? AND l.status='active'
+        GROUP BY l.id, l.title, l.price
+        ORDER BY buyer_count DESC, l.title ASC
+        LIMIT 15", [$sid]);
+    ok(['items' => $items]);
+}
+
 // ── GET SELLER ENQUIRIES ──────────────────────────────────
 if ($action === 'get_seller_enquiries') {
     $user = authUser();
@@ -2965,6 +3173,49 @@ if ($action === 'get_followed_stores') {
     ok(['stores' => $stores]);
 }
 
+// ── BROADCAST NOTIFICATION TO ALL BUYERS & SELLERS ───────
+function broadcastToAllUsers($excludeUserId, $listingId, $notifType, $message) {
+    try {
+        $users = q("SELECT id FROM cammarket237.users WHERE role IN ('buyer','seller') AND id != ?", [$excludeUserId]);
+        $stmt = db()->prepare("INSERT INTO cammarket237.cart_notifications (buyer_id,listing_id,notification_type,message) VALUES (?,?,?,?)");
+        foreach ($users as $u) {
+            try { $stmt->execute([$u['id'], $listingId, $notifType, $message]); } catch(Exception $e) {}
+        }
+    } catch(Exception $e) {}
+}
+
+// ── RATE-LIMITED BROADCAST (max 3 per seller per day) ────
+// Milestones (store_created, first_listing, fifth_listing) always
+// go through; generic new_listing broadcasts consume the daily cap.
+function rateLimitedBroadcast($sellerId, $listingId, $notifType, $message) {
+    try {
+        // Ensure log table exists
+        db()->exec("CREATE TABLE IF NOT EXISTS cammarket237.broadcast_log (
+            id SERIAL PRIMARY KEY,
+            seller_id INTEGER NOT NULL,
+            broadcast_type VARCHAR(50) NOT NULL,
+            created_at TIMESTAMP DEFAULT NOW()
+        )");
+
+        $milestones = ['store_created', 'first_listing', 'fifth_listing'];
+        $isMilestone = in_array($notifType, $milestones);
+
+        if (!$isMilestone) {
+            // Count generic broadcasts sent today for this seller
+            $row = q1("SELECT COUNT(*) AS n FROM cammarket237.broadcast_log
+                WHERE seller_id=? AND DATE(created_at)=CURRENT_DATE", [$sellerId]);
+            if (intval($row['n'] ?? 0) >= 3) return; // daily cap reached
+        }
+
+        broadcastToAllUsers($sellerId, $listingId, $notifType, $message);
+
+        // Log this broadcast
+        db()->prepare("INSERT INTO cammarket237.broadcast_log (seller_id, broadcast_type) VALUES (?,?)")
+            ->execute([$sellerId, $notifType]);
+
+    } catch(Exception $e) {}
+}
+
 // ── NOTIFY FOLLOWERS WHEN NEW ITEM POSTED ────────────────
 // Called internally after post_listing
 function notifyStoreFollowers($storeId, $listingId, $listingTitle, $price, $category) {
@@ -3102,54 +3353,82 @@ if ($action === 'create_deal') {
     $user = authUser();
     if (!$user || $user['role'] !== 'seller') fail('Sellers only.');
 
-    $listingId  = intval(p('listing_id'));
-    $discount   = floatval(p('discount_percent'));
-    $dealType   = p('deal_type') ?: 'custom';
-    $duration   = p('duration') ?: '24h';
+    $allItems = (p('all_items') === '1');
+    $discount = floatval(p('discount_percent'));
+    $duration = p('duration') ?: '24h';
 
-    if (!$listingId || $discount <= 0 || $discount > 90) fail('Invalid deal parameters.');
+    if ($discount <= 0 || $discount > 90) fail('Invalid discount.');
 
-    // Get listing
-    $listing = q1("SELECT * FROM cammarket237.listings WHERE id=? AND store_id IN (SELECT id FROM cammarket237.stores WHERE user_id=?)",
-        [$listingId, $user['id']]);
-    if (!$listing) fail('Listing not found or not yours.');
+    $store = q1("SELECT id FROM cammarket237.stores WHERE user_id=?", [$user['id']]);
+    if (!$store) fail('Store not found.');
+    $storeId = $store['id'];
 
-    $originalPrice = floatval($listing['price']);
-    $dealPrice = round($originalPrice * (1 - $discount/100));
-
-    // Calculate end time
     $hours = ['24h'=>24, '3d'=>72, '1w'=>168, '2w'=>336];
     $h = isset($hours[$duration]) ? $hours[$duration] : 24;
     $endsAt = date('Y-m-d H:i:s', strtotime('+'.$h.' hours'));
 
-    // Deactivate existing deal for this listing
-    db()->prepare("UPDATE cammarket237.listing_deals SET is_active=false WHERE listing_id=?")->execute([$listingId]);
-
-    // Create new deal
-    $store = q1("SELECT id FROM cammarket237.stores WHERE user_id=?", [$user['id']]);
-    db()->prepare("INSERT INTO cammarket237.listing_deals
-        (listing_id, store_id, seller_id, deal_type, discount_percent, original_price, deal_price, ends_at)
-        VALUES (?,?,?,?,?,?,?,?)")
-        ->execute([$listingId, $store['id'], $user['id'], $dealType, $discount, $originalPrice, $dealPrice, $endsAt]);
-
-    // Update listing price to deal price
-    db()->prepare("UPDATE cammarket237.listings SET price=?, original_price=?, price_drop_active=true WHERE id=?")
-        ->execute([$dealPrice, $originalPrice, $listingId]);
-
-    ok(['message' => 'Deal created!', 'deal_price' => $dealPrice, 'ends_at' => $endsAt, 'saves' => ($originalPrice - $dealPrice)]);
+    if ($allItems) {
+        $listings = q("SELECT id, price FROM cammarket237.listings WHERE store_id=? AND status='active' AND price > 0", [$storeId]);
+        if (empty($listings)) fail('No active listings in your store.');
+        // End any existing store_wide deals first and restore prices
+        $oldDeals = q("SELECT listing_id, original_price FROM cammarket237.listing_deals WHERE seller_id=? AND is_active=true AND deal_type='store_wide'", [$user['id']]);
+        foreach ($oldDeals as $od) {
+            db()->prepare("UPDATE cammarket237.listings SET price=?, price_drop_active=false WHERE id=?")->execute([$od['original_price'], $od['listing_id']]);
+        }
+        db()->prepare("UPDATE cammarket237.listing_deals SET is_active=false WHERE seller_id=? AND deal_type='store_wide'")->execute([$user['id']]);
+        // Create a deal for every active listing
+        $count = 0;
+        foreach ($listings as $l) {
+            $origPrice = floatval($l['price']);
+            $dealPrice = round($origPrice * (1 - $discount/100));
+            db()->prepare("UPDATE cammarket237.listing_deals SET is_active=false WHERE listing_id=?")->execute([$l['id']]);
+            db()->prepare("INSERT INTO cammarket237.listing_deals
+                (listing_id, store_id, seller_id, deal_type, discount_percent, original_price, deal_price, ends_at)
+                VALUES (?,?,?,?,?,?,?,?)")
+                ->execute([$l['id'], $storeId, $user['id'], 'store_wide', $discount, $origPrice, $dealPrice, $endsAt]);
+            db()->prepare("UPDATE cammarket237.listings SET price=?, original_price=?, price_drop_active=true WHERE id=?")
+                ->execute([$dealPrice, $origPrice, $l['id']]);
+            $count++;
+        }
+        ok(['message' => 'Store-wide deal created!', 'count' => $count, 'discount_percent' => $discount, 'ends_at' => $endsAt]);
+    } else {
+        $listingId = intval(p('listing_id'));
+        $dealType  = p('deal_type') ?: 'custom';
+        if (!$listingId) fail('Invalid listing.');
+        $listing = q1("SELECT * FROM cammarket237.listings WHERE id=? AND store_id=?", [$listingId, $storeId]);
+        if (!$listing) fail('Listing not found or not yours.');
+        $originalPrice = floatval($listing['price']);
+        $dealPrice = round($originalPrice * (1 - $discount/100));
+        db()->prepare("UPDATE cammarket237.listing_deals SET is_active=false WHERE listing_id=?")->execute([$listingId]);
+        db()->prepare("INSERT INTO cammarket237.listing_deals
+            (listing_id, store_id, seller_id, deal_type, discount_percent, original_price, deal_price, ends_at)
+            VALUES (?,?,?,?,?,?,?,?)")
+            ->execute([$listingId, $storeId, $user['id'], $dealType, $discount, $originalPrice, $dealPrice, $endsAt]);
+        db()->prepare("UPDATE cammarket237.listings SET price=?, original_price=?, price_drop_active=true WHERE id=?")
+            ->execute([$dealPrice, $originalPrice, $listingId]);
+        ok(['message' => 'Deal created!', 'deal_price' => $dealPrice, 'ends_at' => $endsAt, 'saves' => ($originalPrice - $dealPrice)]);
+    }
 }
 
 if ($action === 'end_deal') {
     $user = authUser();
     if (!$user || $user['role'] !== 'seller') fail('Sellers only.');
-    $listingId = intval(p('listing_id'));
-    $deal = q1("SELECT * FROM cammarket237.listing_deals WHERE listing_id=? AND seller_id=? AND is_active=true",
-        [$listingId, $user['id']]);
-    if (!$deal) fail('No active deal found.');
-    // Restore original price
-    db()->prepare("UPDATE cammarket237.listings SET price=?, price_drop_active=false WHERE id=?")->execute([intval($deal['original_price']), $listingId]);
-    db()->prepare("UPDATE cammarket237.listing_deals SET is_active=false WHERE id=?")->execute([$deal['id']]);
-    ok(['message' => 'Deal ended. Price restored.']);
+    if (p('all_store') === '1') {
+        $deals = q("SELECT listing_id, original_price FROM cammarket237.listing_deals WHERE seller_id=? AND is_active=true AND deal_type='store_wide'", [$user['id']]);
+        foreach ($deals as $deal) {
+            db()->prepare("UPDATE cammarket237.listings SET price=?, price_drop_active=false WHERE id=?")->execute([$deal['original_price'], $deal['listing_id']]);
+        }
+        db()->prepare("UPDATE cammarket237.listing_deals SET is_active=false WHERE seller_id=? AND deal_type='store_wide'")->execute([$user['id']]);
+        ok(['message' => 'Store deal ended. All prices restored.']);
+    } else {
+        $listingId = intval(p('listing_id'));
+        $deal = q1("SELECT * FROM cammarket237.listing_deals WHERE listing_id=? AND seller_id=? AND is_active=true",
+            [$listingId, $user['id']]);
+        if (!$deal) fail('No active deal found.');
+        db()->prepare("UPDATE cammarket237.listings SET price=?, price_drop_active=false WHERE id=?")->execute([intval($deal['original_price']), $listingId]);
+        db()->prepare("UPDATE cammarket237.listing_deals SET is_active=false WHERE id=?")->execute([$deal['id']]);
+        ok(['message' => 'Deal ended. Price restored.']);
+    }
 }
 
 if ($action === 'get_deals') {
@@ -3184,13 +3463,31 @@ if ($action === 'get_deals') {
 if ($action === 'get_my_deals') {
     $user = authUser();
     if (!$user) fail('Login required.');
+    // Individual listing deals (not store-wide)
     $deals = q("SELECT ld.*, l.title, lm.media_url AS main_photo,
         EXTRACT(EPOCH FROM (ld.ends_at - NOW())) AS seconds_left
         FROM cammarket237.listing_deals ld
         JOIN cammarket237.listings l ON l.id=ld.listing_id
         LEFT JOIN cammarket237.listing_media lm ON lm.listing_id=l.id AND lm.media_role='main_image'
-        WHERE ld.seller_id=? AND ld.is_active=true
+        WHERE ld.seller_id=? AND ld.is_active=true AND ld.deal_type != 'store_wide'
         ORDER BY ld.created_at DESC", [$user['id']]);
+    // Collapse all store-wide deals into one summary entry
+    $sw = q1("SELECT discount_percent, ends_at, COUNT(*) AS cnt,
+        EXTRACT(EPOCH FROM (ends_at - NOW())) AS seconds_left
+        FROM cammarket237.listing_deals
+        WHERE seller_id=? AND is_active=true AND deal_type='store_wide'
+        GROUP BY discount_percent, ends_at ORDER BY ends_at ASC LIMIT 1", [$user['id']]);
+    if ($sw) {
+        array_unshift($deals, [
+            'is_store_wide'    => true,
+            'title'            => 'Store-wide Deal ('.$sw['cnt'].' items)',
+            'discount_percent' => $sw['discount_percent'],
+            'deal_price'       => null,
+            'seconds_left'     => $sw['seconds_left'],
+            'main_photo'       => null,
+            'listing_id'       => 0
+        ]);
+    }
     ok(['deals' => $deals]);
 }
 
@@ -3395,54 +3692,82 @@ if ($action === 'create_deal') {
     $user = authUser();
     if (!$user || $user['role'] !== 'seller') fail('Sellers only.');
 
-    $listingId  = intval(p('listing_id'));
-    $discount   = floatval(p('discount_percent'));
-    $dealType   = p('deal_type') ?: 'custom';
-    $duration   = p('duration') ?: '24h';
+    $allItems = (p('all_items') === '1');
+    $discount = floatval(p('discount_percent'));
+    $duration = p('duration') ?: '24h';
 
-    if (!$listingId || $discount <= 0 || $discount > 90) fail('Invalid deal parameters.');
+    if ($discount <= 0 || $discount > 90) fail('Invalid discount.');
 
-    // Get listing
-    $listing = q1("SELECT * FROM cammarket237.listings WHERE id=? AND store_id IN (SELECT id FROM cammarket237.stores WHERE user_id=?)",
-        [$listingId, $user['id']]);
-    if (!$listing) fail('Listing not found or not yours.');
+    $store = q1("SELECT id FROM cammarket237.stores WHERE user_id=?", [$user['id']]);
+    if (!$store) fail('Store not found.');
+    $storeId = $store['id'];
 
-    $originalPrice = floatval($listing['price']);
-    $dealPrice = round($originalPrice * (1 - $discount/100));
-
-    // Calculate end time
     $hours = ['24h'=>24, '3d'=>72, '1w'=>168, '2w'=>336];
     $h = isset($hours[$duration]) ? $hours[$duration] : 24;
     $endsAt = date('Y-m-d H:i:s', strtotime('+'.$h.' hours'));
 
-    // Deactivate existing deal for this listing
-    db()->prepare("UPDATE cammarket237.listing_deals SET is_active=false WHERE listing_id=?")->execute([$listingId]);
-
-    // Create new deal
-    $store = q1("SELECT id FROM cammarket237.stores WHERE user_id=?", [$user['id']]);
-    db()->prepare("INSERT INTO cammarket237.listing_deals
-        (listing_id, store_id, seller_id, deal_type, discount_percent, original_price, deal_price, ends_at)
-        VALUES (?,?,?,?,?,?,?,?)")
-        ->execute([$listingId, $store['id'], $user['id'], $dealType, $discount, $originalPrice, $dealPrice, $endsAt]);
-
-    // Update listing price to deal price
-    db()->prepare("UPDATE cammarket237.listings SET price=?, original_price=?, price_drop_active=true WHERE id=?")
-        ->execute([$dealPrice, $originalPrice, $listingId]);
-
-    ok(['message' => 'Deal created!', 'deal_price' => $dealPrice, 'ends_at' => $endsAt, 'saves' => ($originalPrice - $dealPrice)]);
+    if ($allItems) {
+        $listings = q("SELECT id, price FROM cammarket237.listings WHERE store_id=? AND status='active' AND price > 0", [$storeId]);
+        if (empty($listings)) fail('No active listings in your store.');
+        // End any existing store_wide deals first and restore prices
+        $oldDeals = q("SELECT listing_id, original_price FROM cammarket237.listing_deals WHERE seller_id=? AND is_active=true AND deal_type='store_wide'", [$user['id']]);
+        foreach ($oldDeals as $od) {
+            db()->prepare("UPDATE cammarket237.listings SET price=?, price_drop_active=false WHERE id=?")->execute([$od['original_price'], $od['listing_id']]);
+        }
+        db()->prepare("UPDATE cammarket237.listing_deals SET is_active=false WHERE seller_id=? AND deal_type='store_wide'")->execute([$user['id']]);
+        // Create a deal for every active listing
+        $count = 0;
+        foreach ($listings as $l) {
+            $origPrice = floatval($l['price']);
+            $dealPrice = round($origPrice * (1 - $discount/100));
+            db()->prepare("UPDATE cammarket237.listing_deals SET is_active=false WHERE listing_id=?")->execute([$l['id']]);
+            db()->prepare("INSERT INTO cammarket237.listing_deals
+                (listing_id, store_id, seller_id, deal_type, discount_percent, original_price, deal_price, ends_at)
+                VALUES (?,?,?,?,?,?,?,?)")
+                ->execute([$l['id'], $storeId, $user['id'], 'store_wide', $discount, $origPrice, $dealPrice, $endsAt]);
+            db()->prepare("UPDATE cammarket237.listings SET price=?, original_price=?, price_drop_active=true WHERE id=?")
+                ->execute([$dealPrice, $origPrice, $l['id']]);
+            $count++;
+        }
+        ok(['message' => 'Store-wide deal created!', 'count' => $count, 'discount_percent' => $discount, 'ends_at' => $endsAt]);
+    } else {
+        $listingId = intval(p('listing_id'));
+        $dealType  = p('deal_type') ?: 'custom';
+        if (!$listingId) fail('Invalid listing.');
+        $listing = q1("SELECT * FROM cammarket237.listings WHERE id=? AND store_id=?", [$listingId, $storeId]);
+        if (!$listing) fail('Listing not found or not yours.');
+        $originalPrice = floatval($listing['price']);
+        $dealPrice = round($originalPrice * (1 - $discount/100));
+        db()->prepare("UPDATE cammarket237.listing_deals SET is_active=false WHERE listing_id=?")->execute([$listingId]);
+        db()->prepare("INSERT INTO cammarket237.listing_deals
+            (listing_id, store_id, seller_id, deal_type, discount_percent, original_price, deal_price, ends_at)
+            VALUES (?,?,?,?,?,?,?,?)")
+            ->execute([$listingId, $storeId, $user['id'], $dealType, $discount, $originalPrice, $dealPrice, $endsAt]);
+        db()->prepare("UPDATE cammarket237.listings SET price=?, original_price=?, price_drop_active=true WHERE id=?")
+            ->execute([$dealPrice, $originalPrice, $listingId]);
+        ok(['message' => 'Deal created!', 'deal_price' => $dealPrice, 'ends_at' => $endsAt, 'saves' => ($originalPrice - $dealPrice)]);
+    }
 }
 
 if ($action === 'end_deal') {
     $user = authUser();
     if (!$user || $user['role'] !== 'seller') fail('Sellers only.');
-    $listingId = intval(p('listing_id'));
-    $deal = q1("SELECT * FROM cammarket237.listing_deals WHERE listing_id=? AND seller_id=? AND is_active=true",
-        [$listingId, $user['id']]);
-    if (!$deal) fail('No active deal found.');
-    // Restore original price
-    db()->prepare("UPDATE cammarket237.listings SET price=?, price_drop_active=false WHERE id=?")->execute([intval($deal['original_price']), $listingId]);
-    db()->prepare("UPDATE cammarket237.listing_deals SET is_active=false WHERE id=?")->execute([$deal['id']]);
-    ok(['message' => 'Deal ended. Price restored.']);
+    if (p('all_store') === '1') {
+        $deals = q("SELECT listing_id, original_price FROM cammarket237.listing_deals WHERE seller_id=? AND is_active=true AND deal_type='store_wide'", [$user['id']]);
+        foreach ($deals as $deal) {
+            db()->prepare("UPDATE cammarket237.listings SET price=?, price_drop_active=false WHERE id=?")->execute([$deal['original_price'], $deal['listing_id']]);
+        }
+        db()->prepare("UPDATE cammarket237.listing_deals SET is_active=false WHERE seller_id=? AND deal_type='store_wide'")->execute([$user['id']]);
+        ok(['message' => 'Store deal ended. All prices restored.']);
+    } else {
+        $listingId = intval(p('listing_id'));
+        $deal = q1("SELECT * FROM cammarket237.listing_deals WHERE listing_id=? AND seller_id=? AND is_active=true",
+            [$listingId, $user['id']]);
+        if (!$deal) fail('No active deal found.');
+        db()->prepare("UPDATE cammarket237.listings SET price=?, price_drop_active=false WHERE id=?")->execute([intval($deal['original_price']), $listingId]);
+        db()->prepare("UPDATE cammarket237.listing_deals SET is_active=false WHERE id=?")->execute([$deal['id']]);
+        ok(['message' => 'Deal ended. Price restored.']);
+    }
 }
 
 if ($action === 'get_deals') {
@@ -3477,13 +3802,31 @@ if ($action === 'get_deals') {
 if ($action === 'get_my_deals') {
     $user = authUser();
     if (!$user) fail('Login required.');
+    // Individual listing deals (not store-wide)
     $deals = q("SELECT ld.*, l.title, lm.media_url AS main_photo,
         EXTRACT(EPOCH FROM (ld.ends_at - NOW())) AS seconds_left
         FROM cammarket237.listing_deals ld
         JOIN cammarket237.listings l ON l.id=ld.listing_id
         LEFT JOIN cammarket237.listing_media lm ON lm.listing_id=l.id AND lm.media_role='main_image'
-        WHERE ld.seller_id=? AND ld.is_active=true
+        WHERE ld.seller_id=? AND ld.is_active=true AND ld.deal_type != 'store_wide'
         ORDER BY ld.created_at DESC", [$user['id']]);
+    // Collapse all store-wide deals into one summary entry
+    $sw = q1("SELECT discount_percent, ends_at, COUNT(*) AS cnt,
+        EXTRACT(EPOCH FROM (ends_at - NOW())) AS seconds_left
+        FROM cammarket237.listing_deals
+        WHERE seller_id=? AND is_active=true AND deal_type='store_wide'
+        GROUP BY discount_percent, ends_at ORDER BY ends_at ASC LIMIT 1", [$user['id']]);
+    if ($sw) {
+        array_unshift($deals, [
+            'is_store_wide'    => true,
+            'title'            => 'Store-wide Deal ('.$sw['cnt'].' items)',
+            'discount_percent' => $sw['discount_percent'],
+            'deal_price'       => null,
+            'seconds_left'     => $sw['seconds_left'],
+            'main_photo'       => null,
+            'listing_id'       => 0
+        ]);
+    }
     ok(['deals' => $deals]);
 }
 
@@ -3646,5 +3989,261 @@ if ($action === 'check_pin_status') {
     if (!$user) fail('Login required.');
     $row = q1("SELECT recovery_pin_hash FROM cammarket237.users WHERE id=?", [$user['id']]);
     ok(['has_pin' => !empty($row['recovery_pin_hash'])]);
+}
+
+// ── SAVE PUSH SUBSCRIPTION ─────────────────────────────────
+if ($action === 'save_push_subscription') {
+    $user = authUser();
+    if (!$user) ok(['success' => false]);
+    $sub = p('subscription');
+    if (!$sub) ok(['success' => false]);
+    try {
+        db()->prepare("CREATE TABLE IF NOT EXISTS cammarket237.push_subscriptions (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL UNIQUE,
+            subscription TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT NOW()
+        )")->execute([]);
+        db()->prepare("INSERT INTO cammarket237.push_subscriptions (user_id, subscription)
+            VALUES (?,?) ON CONFLICT (user_id) DO UPDATE SET subscription=EXCLUDED.subscription, created_at=NOW()")
+            ->execute([$user['id'], $sub]);
+        ok(['success' => true]);
+    } catch(Exception $e) {
+        ok(['success' => false]);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GUESTHOUSE DISCOVERY
+// ═══════════════════════════════════════════════════════════════
+
+// ── FIND NEARBY GUESTHOUSES (haversine) ────────────────────────
+if ($action === 'get_nearby_guesthouses') {
+    $lat     = floatval($_GET['lat'] ?? 0);
+    $lng     = floatval($_GET['lng'] ?? 0);
+    $svc     = trim($_GET['service'] ?? '');
+    $exclude = intval($_GET['exclude'] ?? 0);
+    $allowed = ['offers_wifi','offers_breakfast','offers_airport_pickup','offers_generator',
+                'offers_meals','offers_laundry','offers_housekeeping','offers_local_transport',
+                'offers_tour_guide','offers_event_space'];
+    $svcFilter     = ($svc && in_array($svc, $allowed)) ? "AND l.$svc = TRUE" : '';
+    $excludeFilter = $exclude ? "AND l.id <> $exclude" : '';
+
+    $hasLoc = ($lat !== 0.0 || $lng !== 0.0);
+    $distExpr = $hasLoc
+        ? "ROUND(CAST(6371 * acos(GREATEST(-1, LEAST(1,
+               cos(radians($lat)) * cos(radians(l.latitude)) * cos(radians(l.longitude) - radians($lng))
+               + sin(radians($lat)) * sin(radians(l.latitude))
+           ))) AS numeric), 1)"
+        : 'NULL';
+
+    $sql = "SELECT sub.* FROM (
+        SELECT l.id, l.title, l.subtitle, l.price, l.town, s.region,
+               l.offers_wifi, l.offers_breakfast, l.offers_airport_pickup,
+               l.offers_generator, l.offers_meals, l.offers_laundry,
+               l.offers_housekeeping, l.offers_local_transport, l.offers_tour_guide,
+               l.host_bio, l.host_languages, l.year_built,
+               l.latitude, l.longitude,
+               s.store_name, s.whatsapp, s.id AS store_id,
+               (SELECT media_url FROM cammarket237.listing_media
+                WHERE listing_id=l.id AND media_role='main_image'
+                ORDER BY sort_order LIMIT 1) AS main_photo,
+               $distExpr AS distance_km
+        FROM cammarket237.listings l
+        LEFT JOIN cammarket237.stores s ON l.store_id=s.id
+        WHERE l.category='Guesthouses & Hotels'
+          AND l.status='active'
+          $svcFilter
+          $excludeFilter
+    ) sub
+    ORDER BY COALESCE(sub.distance_km, 99999), sub.id DESC
+    LIMIT 30";
+
+    $stmt = db()->query($sql);
+    ok(['listings' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ADVERTISING PLATFORM
+// ═══════════════════════════════════════════════════════════════
+
+// ── GET AD PACKAGES ────────────────────────────────────────────
+if ($action === 'get_ad_packages') {
+    $type = p('ad_type') ?: 'sponsored_notification';
+    $rows = db()->prepare("SELECT id, code, ad_type, name, description, price, currency_code,
+        duration_days, notification_count, audience_cap, display_order
+        FROM cammarket237.ad_packages
+        WHERE country_code='CM' AND active=TRUE AND ad_type=?
+        ORDER BY display_order")->execute([$type]) ? null : null;
+    $stmt = db()->prepare("SELECT id, code, ad_type, name, description, price, currency_code,
+        duration_days, notification_count, audience_cap
+        FROM cammarket237.ad_packages
+        WHERE country_code='CM' AND active=TRUE AND ad_type=?
+        ORDER BY display_order");
+    $stmt->execute([$type]);
+    ok(['packages' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+}
+
+// ── SUBMIT AD CAMPAIGN ─────────────────────────────────────────
+if ($action === 'submit_ad') {
+    $user = authUser();
+    if (!$user) fail('Please log in to submit an ad.');
+
+    $bizName    = trim(p('business_name') ?? '');
+    $bizPhone   = trim(p('contact_phone') ?? '');
+    $pkgId      = (int)(p('package_id') ?? 0);
+    $pushTitle  = trim(p('push_title') ?? '');
+    $pushBody   = trim(p('push_body') ?? '');
+    $pushImg    = trim(p('push_image_url') ?? '');
+    $pushCta    = trim(p('push_cta_label') ?? '') ?: 'Learn more';
+    $pushLink   = trim(p('push_link_path') ?? '');
+
+    if (!$bizName || !$bizPhone || !$pkgId || !$pushTitle || !$pushBody)
+        fail('Please fill all required fields.');
+    if (mb_strlen($pushTitle) > 80)  fail('Title too long (max 80 chars).');
+    if (mb_strlen($pushBody) > 200)  fail('Message too long (max 200 chars).');
+
+    $pkg = q1("SELECT * FROM cammarket237.ad_packages WHERE id=? AND active=TRUE", [$pkgId]);
+    if (!$pkg) fail('Invalid package.');
+
+    // Create or update advertiser account
+    $adv = q1("SELECT id FROM cammarket237.advertiser_accounts WHERE user_id=?", [$user['id']]);
+    if (!$adv) {
+        db()->prepare("INSERT INTO cammarket237.advertiser_accounts
+            (user_id, business_name, contact_name, contact_phone, country_code, status)
+            VALUES (?,?,?,?,'CM','pending')")
+            ->execute([$user['id'], $bizName, $user['full_name'] ?? '', $bizPhone]);
+        $advId = (int)db()->lastInsertId();
+    } else {
+        $advId = (int)$adv['id'];
+        db()->prepare("UPDATE cammarket237.advertiser_accounts
+            SET business_name=?, contact_phone=?, updated_at=NOW() WHERE id=?")
+            ->execute([$bizName, $bizPhone, $advId]);
+    }
+
+    db()->prepare("INSERT INTO cammarket237.ad_campaigns
+        (ad_type, advertiser_id, package_id, country_code, price, currency_code, status,
+         push_title, push_body, push_image_url, push_cta_label, push_link_path, target_country)
+        VALUES ('sponsored_notification',?,?,  'CM',?,         'XAF',        'submitted',
+                ?,          ?,         ?,              ?,            ?,              'CM')")
+        ->execute([$advId, $pkgId, (int)$pkg['price'],
+                   $pushTitle, $pushBody, $pushImg ?: null, $pushCta, $pushLink ?: null]);
+    $cid = (int)db()->lastInsertId();
+
+    ok(['success' => true, 'campaign_id' => $cid,
+        'price' => (int)$pkg['price'], 'package_name' => $pkg['name']]);
+}
+
+// ── GET ACTIVE SPONSORED AD (for buyer in-app card) ────────────
+if ($action === 'get_active_sponsored_ad') {
+    $user = authUser();
+    if (!$user) ok(['ad' => null]);
+
+    // Find running nationwide campaigns this user hasn't seen yet
+    $stmt = db()->prepare("
+        SELECT c.id, c.push_title, c.push_body, c.push_image_url,
+               c.push_cta_label, c.push_link_path,
+               a.business_name,
+               p.audience_cap
+        FROM cammarket237.ad_campaigns c
+        JOIN cammarket237.advertiser_accounts a ON a.id = c.advertiser_id
+        JOIN cammarket237.ad_packages p ON p.id = c.package_id
+        WHERE c.status = 'running'
+          AND c.target_country = 'CM'
+          AND (c.target_states IS NULL OR cardinality(c.target_states) = 0)
+          AND NOT EXISTS (
+              SELECT 1 FROM cammarket237.ad_user_received r
+              WHERE r.user_id = ? AND r.campaign_id = c.id
+          )
+        ORDER BY c.start_at DESC
+        LIMIT 1");
+    $stmt->execute([$user['id']]);
+    $ad = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$ad) { ok(['ad' => null]); }
+
+    // Record impression (ON CONFLICT DO NOTHING handles race conditions)
+    try {
+        db()->prepare("INSERT INTO cammarket237.ad_user_received (user_id, campaign_id) VALUES (?,?)")
+            ->execute([$user['id'], $ad['id']]);
+        db()->prepare("INSERT INTO cammarket237.ad_events (campaign_id, event_type, user_id, source_screen)
+            VALUES (?,'impression',?,'buyer_search')")->execute([$ad['id'], $user['id']]);
+        db()->prepare("UPDATE cammarket237.ad_campaigns SET impressions=impressions+1, updated_at=NOW() WHERE id=?")
+            ->execute([$ad['id']]);
+    } catch (Exception $e) { /* duplicate impression – ok */ }
+
+    ok(['ad' => $ad]);
+}
+
+// ── RECORD AD CLICK ────────────────────────────────────────────
+if ($action === 'record_ad_click') {
+    $user = authUser();
+    $cid  = (int)(p('campaign_id') ?? 0);
+    if ($user && $cid) {
+        try {
+            db()->prepare("INSERT INTO cammarket237.ad_events (campaign_id, event_type, user_id, source_screen)
+                VALUES (?,'click',?,'buyer_search')")->execute([$cid, $user['id']]);
+            db()->prepare("UPDATE cammarket237.ad_campaigns SET clicks=clicks+1, updated_at=NOW() WHERE id=?")
+                ->execute([$cid]);
+        } catch (Exception $e) {}
+    }
+    ok(['success' => true]);
+}
+
+// ── ADMIN: LIST ALL ADS ────────────────────────────────────────
+if ($action === 'admin_list_ads') {
+    if (p('admin_pass') !== ADMIN_PASS) fail('Unauthorized.');
+    $stmt = db()->query("
+        SELECT c.id, c.status, c.push_title, c.push_body, c.push_image_url,
+               c.push_cta_label, c.push_link_path,
+               c.price, c.currency_code, c.impressions, c.clicks,
+               c.payment_status, c.payment_reference,
+               c.rejection_reason, c.admin_notes,
+               c.created_at, c.start_at, c.end_at,
+               a.business_name, a.contact_phone,
+               p.name AS package_name, p.audience_cap
+        FROM cammarket237.ad_campaigns c
+        JOIN cammarket237.advertiser_accounts a ON a.id = c.advertiser_id
+        JOIN cammarket237.ad_packages p ON p.id = c.package_id
+        ORDER BY
+          CASE c.status WHEN 'submitted' THEN 0 WHEN 'running' THEN 1 ELSE 2 END,
+          c.created_at DESC
+    ");
+    ok(['campaigns' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+}
+
+// ── ADMIN: APPROVE AD + CONFIRM PAYMENT ───────────────────────
+if ($action === 'admin_approve_ad') {
+    if (p('admin_pass') !== ADMIN_PASS) fail('Unauthorized.');
+    $id     = (int)(p('campaign_id') ?? 0);
+    $payRef = trim(p('payment_reference') ?? '');
+    db()->prepare("UPDATE cammarket237.ad_campaigns SET
+        status='running', payment_status='confirmed',
+        payment_reference=NULLIF(?,''::VARCHAR),
+        payment_confirmed_at=NOW(), reviewed_at=NOW(),
+        start_at=NOW(), end_at=NOW() + INTERVAL '30 days', updated_at=NOW()
+        WHERE id=?")->execute([$payRef, $id]);
+    ok(['success' => true]);
+}
+
+// ── ADMIN: REJECT AD ──────────────────────────────────────────
+if ($action === 'admin_reject_ad') {
+    if (p('admin_pass') !== ADMIN_PASS) fail('Unauthorized.');
+    $id     = (int)(p('campaign_id') ?? 0);
+    $reason = trim(p('reason') ?? '');
+    db()->prepare("UPDATE cammarket237.ad_campaigns SET
+        status='rejected', rejection_reason=?, reviewed_at=NOW(), updated_at=NOW()
+        WHERE id=?")->execute([$reason, $id]);
+    ok(['success' => true]);
+}
+
+// ── ADMIN: STOP RUNNING AD ─────────────────────────────────────
+if ($action === 'admin_stop_ad') {
+    if (p('admin_pass') !== ADMIN_PASS) fail('Unauthorized.');
+    $id = (int)(p('campaign_id') ?? 0);
+    db()->prepare("UPDATE cammarket237.ad_campaigns SET
+        status='completed', end_at=NOW(), updated_at=NOW() WHERE id=?")
+        ->execute([$id]);
+    ok(['success' => true]);
 }
 
