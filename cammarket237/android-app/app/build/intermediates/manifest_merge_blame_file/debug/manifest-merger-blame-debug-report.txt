@@ -1,0 +1,113 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.cammarket237.app"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="21"
+9        android:targetSdkVersion="34" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:4:5-67
+11-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:4:22-64
+12    <uses-permission android:name="android.permission.CAMERA" />
+12-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:5:5-65
+12-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:5:22-62
+13    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+13-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:6:5-80
+13-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:6:22-77
+14    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+14-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:7:5-76
+14-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:7:22-73
+15
+16    <permission
+16-->[androidx.core:core:1.9.0] C:\Users\mcvit\.gradle\caches\transforms-3\761d68ccdd62ecb8703967694e2fec50\transformed\core-1.9.0\AndroidManifest.xml:22:5-24:47
+17        android:name="com.cammarket237.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+17-->[androidx.core:core:1.9.0] C:\Users\mcvit\.gradle\caches\transforms-3\761d68ccdd62ecb8703967694e2fec50\transformed\core-1.9.0\AndroidManifest.xml:23:9-81
+18        android:protectionLevel="signature" />
+18-->[androidx.core:core:1.9.0] C:\Users\mcvit\.gradle\caches\transforms-3\761d68ccdd62ecb8703967694e2fec50\transformed\core-1.9.0\AndroidManifest.xml:24:9-44
+19
+20    <uses-permission android:name="com.cammarket237.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+20-->[androidx.core:core:1.9.0] C:\Users\mcvit\.gradle\caches\transforms-3\761d68ccdd62ecb8703967694e2fec50\transformed\core-1.9.0\AndroidManifest.xml:26:5-97
+20-->[androidx.core:core:1.9.0] C:\Users\mcvit\.gradle\caches\transforms-3\761d68ccdd62ecb8703967694e2fec50\transformed\core-1.9.0\AndroidManifest.xml:26:22-94
+21
+22    <application
+22-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:9:5-38:19
+23        android:allowBackup="true"
+23-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:10:9-35
+24        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+24-->[androidx.core:core:1.9.0] C:\Users\mcvit\.gradle\caches\transforms-3\761d68ccdd62ecb8703967694e2fec50\transformed\core-1.9.0\AndroidManifest.xml:28:18-86
+25        android:debuggable="true"
+26        android:extractNativeLibs="true"
+27        android:icon="@mipmap/ic_launcher"
+27-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:11:9-43
+28        android:label="@string/app_name"
+28-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:12:9-41
+29        android:supportsRtl="true"
+29-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:13:9-35
+30        android:theme="@style/Theme.AppCompat.NoActionBar"
+30-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:15:9-59
+31        android:usesCleartextTraffic="false" >
+31-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:14:9-45
+32        <activity
+32-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:17:9-26:20
+33            android:name="com.cammarket237.app.MainActivity"
+33-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:18:13-41
+34            android:configChanges="orientation|screenSize|keyboardHidden"
+34-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:20:13-74
+35            android:exported="true" >
+35-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:19:13-36
+36            <intent-filter>
+36-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:22:13-25:29
+37                <action android:name="android.intent.action.MAIN" />
+37-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:23:17-69
+37-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:23:25-66
+38
+39                <category android:name="android.intent.category.LAUNCHER" />
+39-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:24:17-77
+39-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:24:27-74
+40            </intent-filter>
+41        </activity>
+42
+43        <provider
+43-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:28:9-36:20
+44            android:name="androidx.core.content.FileProvider"
+44-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:29:13-62
+45            android:authorities="com.cammarket237.app.fileprovider"
+45-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:30:13-68
+46            android:exported="false"
+46-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:31:13-37
+47            android:grantUriPermissions="true" >
+47-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:32:13-47
+48            <meta-data
+48-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:33:13-35:53
+49                android:name="android.support.FILE_PROVIDER_PATHS"
+49-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:34:17-67
+50                android:resource="@xml/filepaths" />
+50-->C:\Users\mcvit\cammarket237\android-app\app\src\main\AndroidManifest.xml:35:17-50
+51        </provider>
+52        <provider
+52-->[androidx.emoji2:emoji2:1.2.0] C:\Users\mcvit\.gradle\caches\transforms-3\cd0e31776a03b70e2d22563fb2144838\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:24:9-32:20
+53            android:name="androidx.startup.InitializationProvider"
+53-->[androidx.emoji2:emoji2:1.2.0] C:\Users\mcvit\.gradle\caches\transforms-3\cd0e31776a03b70e2d22563fb2144838\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:25:13-67
+54            android:authorities="com.cammarket237.app.androidx-startup"
+54-->[androidx.emoji2:emoji2:1.2.0] C:\Users\mcvit\.gradle\caches\transforms-3\cd0e31776a03b70e2d22563fb2144838\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:26:13-68
+55            android:exported="false" >
+55-->[androidx.emoji2:emoji2:1.2.0] C:\Users\mcvit\.gradle\caches\transforms-3\cd0e31776a03b70e2d22563fb2144838\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:27:13-37
+56            <meta-data
+56-->[androidx.emoji2:emoji2:1.2.0] C:\Users\mcvit\.gradle\caches\transforms-3\cd0e31776a03b70e2d22563fb2144838\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:29:13-31:52
+57                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+57-->[androidx.emoji2:emoji2:1.2.0] C:\Users\mcvit\.gradle\caches\transforms-3\cd0e31776a03b70e2d22563fb2144838\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:30:17-75
+58                android:value="androidx.startup" />
+58-->[androidx.emoji2:emoji2:1.2.0] C:\Users\mcvit\.gradle\caches\transforms-3\cd0e31776a03b70e2d22563fb2144838\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:31:17-49
+59            <meta-data
+59-->[androidx.lifecycle:lifecycle-process:2.4.1] C:\Users\mcvit\.gradle\caches\transforms-3\e796a336715a92aed9968dfcc4668a40\transformed\jetified-lifecycle-process-2.4.1\AndroidManifest.xml:31:13-33:52
+60                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+60-->[androidx.lifecycle:lifecycle-process:2.4.1] C:\Users\mcvit\.gradle\caches\transforms-3\e796a336715a92aed9968dfcc4668a40\transformed\jetified-lifecycle-process-2.4.1\AndroidManifest.xml:32:17-78
+61                android:value="androidx.startup" />
+61-->[androidx.lifecycle:lifecycle-process:2.4.1] C:\Users\mcvit\.gradle\caches\transforms-3\e796a336715a92aed9968dfcc4668a40\transformed\jetified-lifecycle-process-2.4.1\AndroidManifest.xml:33:17-49
+62        </provider>
+63    </application>
+64
+65</manifest>

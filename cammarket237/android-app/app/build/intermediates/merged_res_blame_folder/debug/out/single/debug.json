@@ -1,0 +1,22 @@
+[
+    {
+        "merged": "com.cammarket237.app-merged_res-20:/xml_filepaths.xml.flat",
+        "source": "com.cammarket237.app-main-22:/xml/filepaths.xml"
+    },
+    {
+        "merged": "com.cammarket237.app-merged_res-20:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "com.cammarket237.app-main-22:/mipmap-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.cammarket237.app-merged_res-20:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "com.cammarket237.app-main-22:/mipmap-xxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.cammarket237.app-merged_res-20:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "com.cammarket237.app-main-22:/mipmap-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.cammarket237.app-merged_res-20:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "com.cammarket237.app-main-22:/mipmap-xhdpi/ic_launcher.png"
+    }
+]
