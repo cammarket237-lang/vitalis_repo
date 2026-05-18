@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.cammarket237.app",
+    "sha256_cert_fingerprints": [
+      "2C:39:BE:D7:95:7C:8B:18:B3:83:8F:6E:FE:B6:27:B6:7D:DC:E4:95:59:E8:56:5D:E6:5E:C7:B9:22:DE:09:43"
+    ]
+  }
+}]

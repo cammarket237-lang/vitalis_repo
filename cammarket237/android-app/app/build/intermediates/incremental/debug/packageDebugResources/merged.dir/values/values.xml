@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorAccent">#FCD116</color>
+    <color name="colorPrimary">#007A5E</color>
+    <color name="colorPrimaryDark">#007A5E</color>
+    <string name="app_name">CamMarket237</string>
+    <string name="app_start_url">https://cammarket237.com</string>
+</resources>
