@@ -4035,7 +4035,7 @@ if ($action === 'get_nearby_guesthouses') {
                cos(radians($lat)) * cos(radians(l.latitude)) * cos(radians(l.longitude) - radians($lng))
                + sin(radians($lat)) * sin(radians(l.latitude))
            ))) AS numeric), 1)"
-        : 'NULL';
+        : 'NULL::numeric';
 
     $sql = "SELECT sub.* FROM (
         SELECT l.id, l.title, l.subtitle, l.price, l.town, s.region,
