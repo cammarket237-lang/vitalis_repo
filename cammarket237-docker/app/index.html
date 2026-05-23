@@ -1299,7 +1299,7 @@
           <option>Food &amp; Groceries</option><option>Furniture &amp; Home</option><option>Beauty &amp; Health</option>
           <option>Vehicles &amp; Parts</option><option>Agriculture</option><option>Farm/Agricultural Produce</option>
           <option>Books &amp; Stationery</option><option>Sports &amp; Fitness</option><option>Toys &amp; Kids</option>
-          <option>Guesthouses &amp; Hotels</option><option>Car Rental</option><option>Apartments &amp; Rentals</option>
+          <option>Guesthouses &amp; Hotels</option><option>Buy &amp; Sell Cars</option><option>Car Rental</option><option>Apartments &amp; Rentals</option>
           <option>Transport &amp; Drivers</option><option>Catering &amp; Food</option>
           <option>Photography &amp; Video</option><option>Cleaning Services</option>
           <option>Repairs &amp; Plumbing</option><option>Interior Design</option><option>Delivery Service</option><option>Services</option><option>Other</option>
@@ -1345,6 +1345,125 @@
           <label style="display:flex;align-items:center;gap:8px;font-size:13px;background:white;padding:8px 10px;border-radius:8px;cursor:pointer"><input type="checkbox" id="svc-tour" name="offers_tour_guide"> &#x1F5FA; Tour Guide</label>
         </div>
       </div>
+      <!-- CAR FIELDS (shown when category = Buy & Sell Cars) -->
+      <div id="car-fields" style="display:none;background:#fff8e1;border-radius:14px;padding:14px;margin-bottom:12px;border:1.5px solid #ffe082">
+        <div style="font-size:12px;font-weight:800;color:#e65100;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px">&#x1F697; Car Details</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Make *</label>
+            <select id="p-car-make" onchange="window.updateCarModels(this.value)" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select Make</option>
+              <option>Toyota</option><option>Honda</option><option>Mercedes-Benz</option>
+              <option>BMW</option><option>Nissan</option><option>Hyundai</option>
+              <option>Kia</option><option>Ford</option><option>Peugeot</option>
+              <option>Renault</option><option>Volkswagen</option><option>Mitsubishi</option>
+              <option>Suzuki</option><option>Lexus</option><option>Land Rover</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Model *</label>
+            <select id="p-car-model" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select make first</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Year *</label>
+            <input id="p-car-year" type="number" placeholder="e.g. 2019" min="1980" max="2025" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Mileage (km)</label>
+            <input id="p-car-mileage" type="number" placeholder="e.g. 65000" min="0" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Transmission</label>
+            <select id="p-car-transmission" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="manual">Manual</option>
+              <option value="automatic">Automatic</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Fuel Type</label>
+            <select id="p-car-fuel" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="petrol">Petrol</option>
+              <option value="diesel">Diesel</option>
+              <option value="electric">Electric</option>
+              <option value="hybrid">Hybrid</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="label" style="font-size:12px">Color</label>
+          <input id="p-car-color" type="text" placeholder="e.g. White, Silver, Black" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+        </div>
+      </div>
+
+      <!-- APARTMENT FIELDS (shown when category = Apartments & Rentals) -->
+      <div id="apartment-fields" style="display:none;background:#e3f2fd;border-radius:14px;padding:14px;margin-bottom:12px;border:1.5px solid #90caf9">
+        <div style="font-size:12px;font-weight:800;color:#1565c0;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px">&#x1F3E0; Property Details</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Bedrooms</label>
+            <select id="p-apt-beds" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="0">Studio</option>
+              <option value="1">1 Bedroom</option>
+              <option value="2">2 Bedrooms</option>
+              <option value="3">3 Bedrooms</option>
+              <option value="4">4 Bedrooms</option>
+              <option value="5">5+ Bedrooms</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Bathrooms</label>
+            <select id="p-apt-baths" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="1">1 Bathroom</option>
+              <option value="2">2 Bathrooms</option>
+              <option value="3">3+ Bathrooms</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Furnished</label>
+            <select id="p-apt-furnished" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="furnished">Furnished</option>
+              <option value="semi">Semi-furnished</option>
+              <option value="unfurnished">Unfurnished</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Property Type</label>
+            <select id="p-apt-type" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="self_contain">Self-Contain</option>
+              <option value="studio">Studio</option>
+              <option value="apartment">Apartment</option>
+              <option value="villa">Villa</option>
+              <option value="duplex">Duplex</option>
+              <option value="house">Full House</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="label" style="font-size:12px">Price Period</label>
+          <select id="p-apt-period" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+            <option value="">Select</option>
+            <option value="monthly">Per Month</option>
+            <option value="yearly">Per Year</option>
+            <option value="outright">Outright Purchase</option>
+          </select>
+        </div>
+      </div>
+
       <div style="display:flex;gap:10px">
         <div class="field" style="flex:1" id="pf-price"><label class="label" id="price-label" data-i18n="create.price">Price (FCFA) *</label><input id="p-price" type="number" placeholder="85000" min="0"/></div>
         <div class="field" style="flex:1"><label class="label" data-i18n="create.deliveryOptions">Price Type</label><select id="p-ptype"><option value="fixed" data-i18n="create.fixedPrice">Fixed</option><option value="negotiable" data-i18n="create.priceNegotiable">Negotiable</option></select></div>
@@ -1442,6 +1561,8 @@
           <div id="det-condition" style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;background:#e8f5e9;color:#1a7a3c;white-space:nowrap"></div>
         </div>
         <div id="det-price" style="font-size:24px;font-weight:900;color:#1a7a3c;margin-bottom:10px"></div>
+        <!-- Car / Apartment specs grid — populated by showItem -->
+        <div id="det-specs" style="display:none;background:#f5f5f5;border-radius:12px;padding:12px;margin-bottom:12px"></div>
         <div id="det-desc" style="font-size:14px;color:#555;line-height:1.6;margin-bottom:8px"></div>
         <div style="margin-bottom:14px">
           <button id="translate-listing-btn" onclick="window.translateListing()" style="background:#f0f4ff;border:1.5px solid #2980b9;color:#2980b9;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">&#x1F310; <span id="translate-listing-label" data-i18n="item.translate">Translate</span></button>
@@ -1910,9 +2031,6 @@
           <label class="label">Service Type *</label>
           <select id="ps-type" style="width:100%;padding:12px;border:1.5px solid #ddd;border-radius:10px;font-family:inherit;font-size:14px;background:white">
             <option value="">Select service type</option>
-            <option value="buy_sell_car">&#128663; Buy &amp; Sell Cars</option>
-            <option value="car_rental">&#128663; Car Rental</option>
-            <option value="apartment">&#127968; Apartment/House Rental</option>
             <option value="transport">&#128652; Driver/Transport</option>
             <option value="plumber">&#128295; Plumber/Electrician/Repairs</option>
             <option value="catering">&#127869;&#65039; Catering/Food Services</option>
@@ -5020,13 +5138,7 @@ window.go = function(id) {
     if (svcHubIntent) {
       sessionStorage.removeItem('_svc_hub_intent');
       window._currentServiceHub = svcHubIntent;
-      setTimeout(function() {
-        window.go('post-service');
-        setTimeout(function() {
-          var typeEl = document.getElementById('ps-type');
-          if (typeEl) typeEl.value = svcHubIntent;
-        }, 150);
-      }, 350);
+      setTimeout(function() { window.goListService && window.goListService(); }, 350);
     }
   }
   if (id === 'buyer-search') {
@@ -5923,6 +6035,28 @@ window.renderItem = function(item) {
   var price = item.price ? Number(item.price).toLocaleString() + ' FCFA' : '';
   var town  = esc(item.town  || '');
   var cond  = item.condition || '';
+  // Car subtitle: "2019 · Toyota · 65,000 km"
+  var carSubtitle = '';
+  var isCatCar = item.category && item.category.toLowerCase().includes('buy') && item.category.toLowerCase().includes('car');
+  var isCatApt = item.category && item.category.toLowerCase().includes('apartment');
+  if (isCatCar && item.metadata) {
+    var cm = typeof item.metadata === 'string' ? (function(){ try{return JSON.parse(item.metadata);}catch(e){return null;} })() : item.metadata;
+    if (cm) {
+      var parts = [cm.year, cm.make, cm.mileage ? Number(cm.mileage).toLocaleString()+' km' : ''].filter(Boolean);
+      if (parts.length) carSubtitle = parts.join(' · ');
+    }
+  }
+  if (isCatApt && item.metadata) {
+    var am = typeof item.metadata === 'string' ? (function(){ try{return JSON.parse(item.metadata);}catch(e){return null;} })() : item.metadata;
+    if (am) {
+      var aptParts = [
+        am.bedrooms !== undefined && am.bedrooms !== '' ? (am.bedrooms == 0 ? 'Studio' : am.bedrooms+'bd') : '',
+        am.bathrooms ? am.bathrooms+'ba' : '',
+        am.furnished === 'furnished' ? 'Furnished' : am.furnished === 'unfurnished' ? 'Unfurnished' : ''
+      ].filter(Boolean);
+      if (aptParts.length) carSubtitle = aptParts.join(' · ');
+    }
+  }
   var condBg = cond==='new'?'#e8f5e9':(cond==='used'?'#fff3cd':'#f0f0f0'); var condColor = cond==='new'?'#1a7a3c':(cond==='used'?'#856404':'#666'); var condBadge = cond ? '<span style="font-size:8px;font-weight:700;padding:1px 5px;border-radius:6px;background:'+condBg+';color:'+condColor+'">'+esc(cond).toUpperCase()+'</span>' : '';
   var img = item.main_photo
     ? '<img src="' + item.main_photo + '" style="width:100%;height:100px;object-fit:cover;border-radius:10px 10px 0 0" onerror="this.src=&apos;&apos;"/>'
@@ -5935,6 +6069,7 @@ window.renderItem = function(item) {
     + '<div style="font-weight:700;color:#0f1923;font-size:11px;flex:1;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + name + '</div>'
     + (item.is_sold ? '<span style="background:#e74c3c;color:white;font-size:9px;font-weight:700;padding:2px 6px;border-radius:6px">SOLD</span>' : condBadge)
     + '</div>'
+    + (carSubtitle ? '<div style="font-size:10px;color:#e65100;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(carSubtitle) + '</div>' : '')
     + '<div style="color:' + (item.is_sold?'#aaa':'#1a7a3c') + ';font-weight:800;font-size:13px;margin-bottom:2px">' + (item.is_sold?'<s>'+price+'</s>':price) + '</div>'
     + '<div style="display:flex;justify-content:space-between;align-items:center">'
     + '<div style="font-size:10px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + town + '</div>'
@@ -6039,6 +6174,50 @@ window.showItem = async function(raw) {
   if (tbtn) tbtn.disabled = false;
   if (cond && item.condition) { cond.textContent = item.condition.toUpperCase(); cond.style.display = 'inline-block'; }
   else if (cond) cond.style.display = 'none';
+
+  // Car / Apartment specs grid
+  var specsEl = document.getElementById('det-specs');
+  if (specsEl) {
+    var meta = item.metadata;
+    if (typeof meta === 'string') { try { meta = JSON.parse(meta); } catch(e) { meta = null; } }
+    var isCatCar = item.category && item.category.toLowerCase().includes('buy') && item.category.toLowerCase().includes('car');
+    var isCatApt = item.category && item.category.toLowerCase().includes('apartment');
+    var specsHtml = '';
+    if (isCatCar && meta && (meta.make || meta.model || meta.year)) {
+      var cap = function(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; };
+      var rows = [
+        meta.make         ? ['Make',        meta.make]                                       : null,
+        meta.model        ? ['Model',       meta.model]                                      : null,
+        meta.year         ? ['Year',        meta.year]                                       : null,
+        meta.mileage      ? ['Mileage',     Number(meta.mileage).toLocaleString() + ' km']  : null,
+        meta.transmission ? ['Gearbox',     cap(meta.transmission)]                          : null,
+        meta.fuel         ? ['Fuel',        cap(meta.fuel)]                                  : null,
+        meta.color        ? ['Color',       meta.color]                                      : null
+      ].filter(Boolean);
+      specsHtml = '<div style="font-size:11px;font-weight:800;color:#e65100;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">&#x1F697; Car Specs</div>'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'
+        + rows.map(function(r){ return '<div style="background:white;border-radius:8px;padding:7px 10px"><div style="font-size:10px;color:#aaa;font-weight:600">'+r[0]+'</div><div style="font-size:13px;font-weight:700;color:#0f1923">'+r[1]+'</div></div>'; }).join('')
+        + '</div>';
+    } else if (isCatApt && meta && (meta.bedrooms !== undefined || meta.bathrooms || meta.furnished)) {
+      var aptLabels = {furnished:'Furnished',semi:'Semi-furnished',unfurnished:'Unfurnished',
+        self_contain:'Self-Contain',studio:'Studio',apartment:'Apartment',villa:'Villa',duplex:'Duplex',house:'Full House',
+        monthly:'Per Month',yearly:'Per Year',outright:'Outright'};
+      var beds = meta.bedrooms !== undefined && meta.bedrooms !== '' ? (meta.bedrooms == 0 ? 'Studio' : meta.bedrooms + ' Bed' + (meta.bedrooms > 1 ? 's' : '')) : null;
+      var aptRows = [
+        beds                                ? ['Bedrooms',  beds]                                       : null,
+        meta.bathrooms                      ? ['Bathrooms', meta.bathrooms + ' Bath']                   : null,
+        meta.furnished && aptLabels[meta.furnished]   ? ['Furnished',    aptLabels[meta.furnished]]     : null,
+        meta.property_type && aptLabels[meta.property_type] ? ['Type',  aptLabels[meta.property_type]] : null,
+        meta.price_period && aptLabels[meta.price_period]   ? ['Period',aptLabels[meta.price_period]]  : null
+      ].filter(Boolean);
+      specsHtml = '<div style="font-size:11px;font-weight:800;color:#1565c0;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">&#x1F3E0; Property Details</div>'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'
+        + aptRows.map(function(r){ return '<div style="background:white;border-radius:8px;padding:7px 10px"><div style="font-size:10px;color:#aaa;font-weight:600">'+r[0]+'</div><div style="font-size:13px;font-weight:700;color:#0f1923">'+r[1]+'</div></div>'; }).join('')
+        + '</div>';
+    }
+    specsEl.innerHTML = specsHtml;
+    specsEl.style.display = specsHtml ? 'block' : 'none';
+  }
 
   // Seller card
   var sn = document.getElementById('det-store-name');
@@ -6743,6 +6922,26 @@ window.submitPost = async function() {
     if (window._ghSubmitExtra) {
       Object.keys(window._ghSubmitExtra).forEach(function(k) { fd.append(k, window._ghSubmitExtra[k] || ''); });
       window._ghSubmitExtra = null;
+    }
+    // Car / Apartment metadata
+    if (cat === 'Buy & Sell Cars') {
+      fd.append('metadata', JSON.stringify({
+        make:         (document.getElementById('p-car-make')         || {}).value || '',
+        model:        (document.getElementById('p-car-model')        || {}).value || '',
+        year:         (document.getElementById('p-car-year')         || {}).value || '',
+        mileage:      (document.getElementById('p-car-mileage')      || {}).value || '',
+        transmission: (document.getElementById('p-car-transmission') || {}).value || '',
+        fuel:         (document.getElementById('p-car-fuel')         || {}).value || '',
+        color:        (document.getElementById('p-car-color')        || {}).value || ''
+      }));
+    } else if (cat === 'Apartments & Rentals') {
+      fd.append('metadata', JSON.stringify({
+        bedrooms:      (document.getElementById('p-apt-beds')      || {}).value || '',
+        bathrooms:     (document.getElementById('p-apt-baths')     || {}).value || '',
+        furnished:     (document.getElementById('p-apt-furnished') || {}).value || '',
+        property_type: (document.getElementById('p-apt-type')      || {}).value || '',
+        price_period:  (document.getElementById('p-apt-period')    || {}).value || ''
+      }));
     }
     var d = await (await fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token': freshToken || _sessionToken || localStorage.getItem('cm237_token') || ''}})).json();
     if (ck) ck.style.display = 'none';
@@ -9736,13 +9935,59 @@ var _currentGuesthouse = null;
 
 // Show/hide guesthouse-specific form fields based on category selection
 window.onCategoryChange = function(val) {
-  var ghFields = document.getElementById('guesthouse-fields');
+  var ghFields  = document.getElementById('guesthouse-fields');
+  var carFields = document.getElementById('car-fields');
+  var aptFields = document.getElementById('apartment-fields');
   var condField = document.getElementById('pf-condition');
   var priceLabel = document.getElementById('price-label');
-  var isGH = val === 'Guesthouses & Hotels';
-  if (ghFields)   ghFields.style.display = isGH ? 'block' : 'none';
-  if (condField)  condField.style.display = isGH ? 'none'  : '';
-  if (priceLabel) priceLabel.textContent  = isGH ? 'Price per night (FCFA) *' : window.t('create.price') || 'Price (FCFA) *';
+  var titleInput = document.getElementById('p-title');
+  var ltype = document.getElementById('p-ltype');
+  var isGH  = val === 'Guesthouses & Hotels';
+  var isCar = val === 'Buy & Sell Cars';
+  var isApt = val === 'Apartments & Rentals';
+  if (ghFields)  ghFields.style.display  = isGH  ? 'block' : 'none';
+  if (carFields) carFields.style.display = isCar ? 'block' : 'none';
+  if (aptFields) aptFields.style.display = isApt ? 'block' : 'none';
+  if (condField) condField.style.display = isGH  ? 'none'  : '';
+  if (priceLabel) priceLabel.textContent = isGH  ? 'Price per night (FCFA) *'
+    : isApt ? 'Rent / Price (FCFA) *'
+    : window.t('create.price') || 'Price (FCFA) *';
+  if (titleInput) titleInput.placeholder = isCar ? 'e.g. Toyota Corolla 2019 Manual'
+    : isApt ? 'e.g. 2-Bedroom Self-Contain in Bonanjo'
+    : isGH  ? 'e.g. Green Valley Guesthouse Buea'
+    : 'e.g. Samsung Galaxy A35 128GB';
+  if (ltype) {
+    if (isApt) ltype.value = 'rent';
+    else if (isCar) ltype.value = 'sale';
+  }
+};
+
+var _CAR_MODELS = {
+  'Toyota':       ['Corolla','Camry','Hilux','Land Cruiser','Prado','RAV4','Fortuner','Yaris','Auris','Avensis','HiAce','Highlander','Venza','Rush','Innova','Wish','Prius','4Runner','Sequoia','Tundra','FJ Cruiser','C-HR','Sienna','Tacoma','Other'],
+  'Honda':        ['Accord','Civic','CR-V','Pilot','HR-V','Jazz/Fit','Odyssey','Element','Legend','Crosstour','Ridgeline','Passport','BR-V','Other'],
+  'Mercedes-Benz':['C-Class','E-Class','S-Class','A-Class','B-Class','CLA','CLS','GLC','GLE','GLS','ML-Class','GL-Class','G-Class','Vito','Sprinter','AMG GT','Other'],
+  'BMW':          ['1 Series','2 Series','3 Series','4 Series','5 Series','6 Series','7 Series','X1','X2','X3','X4','X5','X6','X7','M3','M4','M5','Z4','Other'],
+  'Nissan':       ['Altima','Maxima','Sentra','Versa','Pathfinder','Murano','Armada','Patrol','Navara','X-Trail','Rogue','Micra','Note','Juke','Qashqai','Frontier','Titan','GTR','Other'],
+  'Hyundai':      ['Elantra','Sonata','Accent','Tucson','Santa Fe','Creta','i10','i20','i30','Azera','Kona','Venue','Veloster','Other'],
+  'Kia':          ['Rio','Cerato','Optima','Sportage','Sorento','Soul','Carnival','Seltos','Picanto','Stinger','Telluride','Other'],
+  'Ford':         ['Focus','Fusion','Fiesta','Mustang','Explorer','Escape','Edge','Expedition','Ranger','F-150','EcoSport','Bronco','Transit','Puma','Other'],
+  'Peugeot':      ['206','207','208','301','308','405','406','408','508','2008','3008','4008','5008','Partner','Boxer','Expert','Other'],
+  'Renault':      ['Clio','Megane','Laguna','Scenic','Kangoo','Duster','Captur','Logan','Symbol','Fluence','Koleos','Sandero','Kwid','Other'],
+  'Volkswagen':   ['Golf','Passat','Jetta','Polo','Tiguan','Touareg','Touran','Caddy','Amarok','T-Roc','Arteon','Up','Other'],
+  'Mitsubishi':   ['Lancer','Galant','Outlander','Pajero','L200','ASX','Colt','Mirage','Eclipse Cross','Triton','Other'],
+  'Suzuki':       ['Swift','Baleno','Alto','Vitara','Grand Vitara','Jimny','Ertiga','Celerio','S-Cross','Ciaz','Ignis','Other'],
+  'Lexus':        ['IS','ES','GS','LS','NX','RX','GX','LX','UX','RC','LC','Other'],
+  'Land Rover':   ['Range Rover','Range Rover Sport','Range Rover Evoque','Discovery','Discovery Sport','Defender','Freelander','Other'],
+  'Other':        ['Other (specify in description)']
+};
+
+window.updateCarModels = function(make) {
+  var sel = document.getElementById('p-car-model');
+  if (!sel) return;
+  var models = _CAR_MODELS[make] || [];
+  if (!models.length) { sel.innerHTML = '<option value="">Select make first</option>'; return; }
+  sel.innerHTML = '<option value="">Select Model</option>'
+    + models.map(function(m){ return '<option value="'+m+'">'+m+'</option>'; }).join('');
 };
 
 // Guesthouse detail screen
@@ -10002,9 +10247,9 @@ var _ghCardMap = {};  // id → listing object (avoids JSON-in-onclick issues)
 // GENERIC SERVICE HUB
 // ═══════════════════════════════════════════════════════════
 var SERVICE_HUB_CFG = {
-  buy_sell_car: { icon:'&#x1F697;', color:'#c0392b', tkey:'buySellCar' },
-  car_rental:   { icon:'&#x1F698;', color:'#0f1923', tkey:'carRental' },
-  apartment:    { icon:'&#x1F3E0;', color:'#2980b9', tkey:'apartment' },
+  buy_sell_car: { icon:'&#x1F697;', color:'#c0392b', tkey:'buySellCar', prodCat:'Buy & Sell Cars' },
+  car_rental:   { icon:'&#x1F698;', color:'#0f1923', tkey:'carRental',  prodCat:'Car Rental' },
+  apartment:    { icon:'&#x1F3E0;', color:'#2980b9', tkey:'apartment',  prodCat:'Apartments & Rentals' },
   transport:    { icon:'&#x1F68C;', color:'#8e44ad', tkey:'transport' },
   plumber:      { icon:'&#x1F527;', color:'#e67e22', tkey:'plumber' },
   catering:     { icon:'&#x1F37D;&#xFE0F;', color:'#c0392b', tkey:'catering' },
