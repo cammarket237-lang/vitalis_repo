@@ -64,6 +64,8 @@ function getClientIP() {
 // CamMarket237 — api.php
 // Upload to: /var/www/cammarket237/api.php
 // ═══════════════════════════════════════════════════════════
+ini_set('display_errors', '0');
+error_reporting(E_ALL);
 header('Content-Type: application/json');
 require_once __DIR__.'/verify_photos.php';
 $allowedOrigins = ['https://cammarket237.com', 'http://localhost:8080', 'http://localhost'];
@@ -87,6 +89,7 @@ define('UPLOAD_DIR','/var/www/cammarket237/uploads/');
 define('UPLOAD_URL','/uploads/');
 define('SESSION_HOURS', 24); // 24 hours
 define('OTP_MINUTES', 10); // 10 minutes
+define('DEV_PHONES', ['2408388119']); // developer/tester phones — no rate limiting
 
 // ── DATABASE ──────────────────────────────────────────────
 function db() {
@@ -105,6 +108,15 @@ function fail($msg)    { echo json_encode(['success'=>false,'error'=>$msg]);    
 function p($k)         { return trim($_POST[$k] ?? ''); }
 function g($k)         { return trim($_GET[$k]  ?? ''); }
 function token()       { return bin2hex(random_bytes(32)); }
+function uniqueReferralCode() {
+    for ($i = 0; $i < 20; $i++) {
+        $code = strtoupper(substr(md5(uniqid('', true) . mt_rand()), 0, 8));
+        $st = db()->prepare("SELECT 1 FROM cammarket237.users WHERE referral_code=? LIMIT 1");
+        $st->execute([$code]);
+        if (!$st->fetch()) return $code;
+    }
+    return strtoupper(substr(md5(uniqid('', true) . mt_rand()), 0, 10));
+}
 function q($sql, $p=[]) {
     $s = db()->prepare($sql); $s->execute($p); return $s->fetchAll();
 }
@@ -220,7 +232,7 @@ function normalizePhone($phone) {
         $variants[] = '1' . $digits;
     }
 
-    return array_unique(array_filter($variants));
+    return array_values(array_unique(array_filter($variants)));
 }
 
 
@@ -264,8 +276,16 @@ if ($action === 'register_buyer') {
     $tok   = token();
     $exp   = date('Y-m-d H:i:s', strtotime('+'.SESSION_HOURS.' hours'));
 
+    // Reuse referral code if same phone already has a seller account
+    $existingRefStmt = db()->prepare(
+        "SELECT referral_code FROM cammarket237.users WHERE phone=? AND referral_code IS NOT NULL LIMIT 1"
+    );
+    $existingRefStmt->execute([$phone]);
+    $existingRefRow = $existingRefStmt->fetch();
+
     // Generate referral code + signup bonus
-    $myRef       = strtoupper(substr(md5($phone . time()), 0, 8));
+    $myRef       = ($existingRefRow ? $existingRefRow['referral_code'] : null)
+                   ?: uniqueReferralCode();
     $promoPoints = 10;
     $refPoints   = 0;
     $refUserId   = null;
@@ -362,8 +382,16 @@ if ($action === 'register_seller') {
     $tok  = token();
     $exp  = date('Y-m-d H:i:s', strtotime('+'.SESSION_HOURS.' hours'));
 
-    // Generate referral code
-    $myRef = strtoupper(substr(md5($phone . time()), 0, 8));
+    // Reuse referral code if same phone already has a buyer account
+    $existingRef = null;
+    $existingRefStmt = db()->prepare(
+        "SELECT referral_code FROM cammarket237.users WHERE phone IN ($placeholders) AND referral_code IS NOT NULL LIMIT 1"
+    );
+    $existingRefStmt->execute($phoneVariants);
+    $existingRefRow = $existingRefStmt->fetch();
+    if ($existingRefRow) $existingRef = $existingRefRow['referral_code'];
+
+    $myRef = $existingRef ?: uniqueReferralCode();
 
     // Bonus points for using referral code
     $promoPoints = 10; // signup bonus
@@ -662,7 +690,7 @@ if ($action === 'verify_otp') {
 if ($action === 'seller_login') {
     $phone = trim(p('phone'));
     $pass  = p('password');
-    $ip=getClientIP(); $rl=checkRateLimit($ip.'_'.$phone,'seller_login',5,300); if(!$rl['allowed']) fail('Too many login attempts. Wait '.$rl['wait_minutes'].' min(s).');
+    $ip=getClientIP(); if(!in_array($phone,DEV_PHONES)){$rl=checkRateLimit($ip.'_'.$phone,'seller_login',5,300); if(!$rl['allowed']) fail('Too many login attempts. Wait '.$rl['wait_minutes'].' min(s).');}
     if (!$phone||!$pass) fail('Phone and password required.');
     $user = findUserByPhone($phone, 'seller');
 
@@ -710,6 +738,74 @@ if ($action === 'seller_login') {
 }
 
 // ═══════════════════════════════════════════════════════════
+// CAMERA SEARCH — identify item in photo, return search keywords
+// ═══════════════════════════════════════════════════════════
+if ($action === 'camera_search') {
+    if (empty($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) fail('No image uploaded.');
+    $tmp  = $_FILES['image']['tmp_name'];
+    $mime = mime_content_type($tmp);
+    if (!in_array($mime, ['image/jpeg','image/png','image/webp','image/gif','image/jpg'])) fail('Not a valid image.');
+    if ($_FILES['image']['size'] > 8 * 1024 * 1024) fail('Image too large (max 8MB).');
+
+    // Try Claude Vision API if key is configured
+    if (defined('CLAUDE_KEY') && CLAUDE_KEY && CLAUDE_KEY !== 'YOUR_ANTHROPIC_KEY') {
+        $b64  = base64_encode(file_get_contents($tmp));
+        $body = json_encode([
+            'model'      => 'claude-haiku-4-5-20251001',
+            'max_tokens' => 80,
+            'messages'   => [[
+                'role'    => 'user',
+                'content' => [
+                    ['type'=>'image','source'=>['type'=>'base64','media_type'=>$mime,'data'=>$b64]],
+                    ['type'=>'text','text'=>'What product or item is in this photo? Reply with 2-4 short search keywords only (no punctuation, no explanation). Example: HP laptop, Samsung phone, wooden chair']
+                ]
+            ]]
+        ]);
+        $ch = curl_init('https://api.anthropic.com/v1/messages');
+        curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_POST=>true,CURLOPT_TIMEOUT=>15,
+            CURLOPT_HTTPHEADER=>['x-api-key: '.CLAUDE_KEY,'anthropic-version: 2023-06-01','content-type: application/json'],
+            CURLOPT_POSTFIELDS=>$body]);
+        $res = curl_exec($ch); $err = curl_error($ch); curl_close($ch);
+        if (!$err && $res) {
+            $r = json_decode($res, true);
+            $kw = trim($r['content'][0]['text'] ?? '');
+            if ($kw) ok(['keywords'=>$kw,'method'=>'ai']);
+        }
+    }
+
+    // Fallback: dominant-color → category heuristic
+    $info = @getimagesize($tmp);
+    if ($info && function_exists('imagecreatefromjpeg')) {
+        $img = null;
+        if ($info[2]==IMAGETYPE_JPEG)     $img = @imagecreatefromjpeg($tmp);
+        elseif ($info[2]==IMAGETYPE_PNG)  $img = @imagecreatefrompng($tmp);
+        elseif ($info[2]==IMAGETYPE_WEBP) $img = @imagecreatefromwebp($tmp);
+        if ($img) {
+            $s = imagecreatetruecolor(16,16);
+            imagecopyresampled($s,$img,0,0,0,0,16,16,$info[0],$info[1]);
+            imagedestroy($img);
+            $tR=$tG=$tB=0;
+            for ($x=0;$x<16;$x++) for ($y=0;$y<16;$y++) {
+                $c=imagecolorat($s,$x,$y);
+                $tR+=($c>>16)&0xFF; $tG+=($c>>8)&0xFF; $tB+=$c&0xFF;
+            }
+            imagedestroy($s);
+            $r=$tR/256; $g=$tG/256; $b=$tB/256;
+            $bright=($r+$g+$b)/3;
+            $sat=(max($r,$g,$b)-min($r,$g,$b))/max($r,$g,$b,1);
+            if ($bright>200&&$sat<0.15)        $kw='electronics appliances';
+            elseif ($bright<50)                $kw='electronics phones';
+            elseif ($sat>0.4&&$r>$g&&$r>$b)   $kw='clothing fashion';
+            elseif ($sat>0.3&&$g>$r&&$g>$b)   $kw='furniture wood';
+            elseif ($b>$r&&$b>$g&&$sat>0.3)   $kw='electronics';
+            else                               $kw='for sale';
+            ok(['keywords'=>$kw,'method'=>'color']);
+        }
+    }
+    fail('Could not analyse image. Please type your search.');
+}
+
+// ═══════════════════════════════════════════════════════════
 // GET LISTINGS  (real DB — sorted by proximity)
 // ═══════════════════════════════════════════════════════════
 if ($action === 'get_listings') {
@@ -732,8 +828,21 @@ if ($action === 'get_listings') {
     if ($excludeId) { $where[] = "l.id != :excl"; $params[':excl'] = $excludeId; }
 
     if ($q) {
-        $where[]      = "(l.title ILIKE :q OR l.category ILIKE :q OR l.description ILIKE :q)";
-        $params[':q'] = '%'.$q.'%';
+        $words = array_filter(array_map('trim', preg_split('/\s+/u', $q)));
+        foreach ($words as $i => $word) {
+            $pk = ':qw'.$i;
+            // Strip common plural/suffix endings so "laptops"→"laptop", "phones"→"phone"
+            $stem = $word;
+            $lower = strtolower($word);
+            $len   = strlen($word);
+            if ($len > 5 && substr($lower, -3) === 'ies') {
+                $stem = substr($word, 0, $len - 3) . 'y'; // accessories→accessory
+            } elseif ($len > 4 && substr($lower, -1) === 's') {
+                $stem = substr($word, 0, $len - 1); // laptops→laptop, phones→phone
+            }
+            $where[]    = "(l.title ILIKE $pk OR l.category ILIKE $pk OR l.description ILIKE $pk OR s.store_name ILIKE $pk)";
+            $params[$pk] = '%'.$stem.'%';
+        }
     }
     // Category filter
     $cat = g('cat');
@@ -1029,6 +1138,34 @@ if ($action === 'post_listing') {
                 '&#x1F195; ' . $storeName2 . ' posted: ' . $title . ' &#x2014; ' . number_format($listingPrice) . ' FCFA');
         }
 
+        // ── Notify buyers who searched this category in the last 14 days ──
+        try {
+            $sellerRegion = $user['region'] ?? '';
+            $interestedBuyers = q(
+                "SELECT DISTINCT buyer_id FROM cammarket237.buyer_events
+                 WHERE buyer_id IS NOT NULL
+                   AND event_type IN ('search','view','click')
+                   AND category = ?
+                   AND (region = ? OR ? = '')
+                   AND created_at > NOW() - INTERVAL '14 days'
+                   AND buyer_id != ?
+                 LIMIT 100",
+                [$category, $sellerRegion, $sellerRegion, $user['id']]
+            );
+            if ($interestedBuyers) {
+                $notifMsg = '&#x1F514; New ' . $category . ' near you: ' . $title
+                    . ' &#x2014; ' . number_format($listingPrice) . ' FCFA. Tap to view!';
+                $ns = db()->prepare(
+                    "INSERT INTO cammarket237.cart_notifications
+                     (buyer_id, listing_id, notification_type, message)
+                     VALUES (?, ?, 'new_match', ?)"
+                );
+                foreach ($interestedBuyers as $b) {
+                    if ($b['buyer_id']) $ns->execute([$b['buyer_id'], $lid, $notifMsg]);
+                }
+            }
+        } catch(Exception $e) {}
+
         ok(['listing_id'=>$lid,'message'=>'Item verified and posted live!']);
     } catch(PDOException $e){ fail($e->getMessage()); }
 }
@@ -1141,12 +1278,12 @@ if ($action === 'track_event') {
 // SMART FEED - Amazon-style personalized sections
 // ═══════════════════════════════════════════════════════════
 if ($action === 'get_smart_feed') {
-    $town      = p('town')    ?: '';
-    $region    = p('region')  ?: '';
-    $sessionId = p('session_id') ?: '';
+    $town      = g('town')    ?: '';
+    $region    = g('region')  ?: '';
+    $sessionId = g('session_id') ?: '';
     $buyerId   = null;
-    $lat       = p('lat') ? floatval(p('lat')) : null;
-    $lng       = p('lng') ? floatval(p('lng')) : null;
+    $lat       = g('lat') ? floatval(g('lat')) : null;
+    $lng       = g('lng') ? floatval(g('lng')) : null;
 
     $tok = $_SERVER['HTTP_X_SESSION_TOKEN'] ?? '';
     if ($tok) {
@@ -1714,6 +1851,50 @@ if ($action === 'get_cart_notifications') {
     $unseenCount = q1("SELECT COUNT(*) AS n FROM cammarket237.cart_notifications
         WHERE buyer_id=?", [$user['id']]);
     ok(['notifications' => $notifs, 'unseen' => intval($unseenCount['n'])]);
+}
+
+// ═══════════════════════════════════════════════════════════
+// BUYER DEMAND — what buyers are searching in seller's region
+// ═══════════════════════════════════════════════════════════
+if ($action === 'get_buyer_demand') {
+    $user = authUser();
+    if (!$user || $user['role'] !== 'seller') fail('Sellers only.');
+    $store = q1("SELECT region FROM cammarket237.stores WHERE user_id=? LIMIT 1", [$user['id']]);
+    $region = $store['region'] ?? $user['region'] ?? '';
+
+    $topCategories = q(
+        "SELECT category,
+                COUNT(DISTINCT buyer_id) AS unique_buyers,
+                COUNT(*) AS total_searches
+         FROM cammarket237.buyer_events
+         WHERE event_type IN ('search','view','click')
+           AND category IS NOT NULL
+           AND (region = ? OR ? = '')
+           AND created_at > NOW() - INTERVAL '7 days'
+         GROUP BY category
+         ORDER BY unique_buyers DESC, total_searches DESC
+         LIMIT 8",
+        [$region, $region]
+    );
+
+    $topQueries = q(
+        "SELECT search_query, COUNT(*) AS n
+         FROM cammarket237.buyer_events
+         WHERE event_type = 'search'
+           AND search_query IS NOT NULL
+           AND (region = ? OR ? = '')
+           AND created_at > NOW() - INTERVAL '7 days'
+         GROUP BY search_query
+         ORDER BY n DESC LIMIT 10",
+        [$region, $region]
+    );
+
+    ok([
+        'region'         => $region,
+        'top_categories' => $topCategories,
+        'top_queries'    => $topQueries,
+        'period'         => 'Last 7 days',
+    ]);
 }
 
 if ($action === 'get_user_alerts_count') {
@@ -2362,7 +2543,7 @@ if($action === 'post_service'){
 // ── BUYER LOGIN ────────────────────────────────────────
 if($action === 'buyer_login'){
     $phone = trim(p('phone')); $pass = p('password');
-    $ip=getClientIP(); $rl=checkRateLimit($ip.'_'.$phone,'buyer_login',5,300); if(!$rl['allowed']) fail('Too many login attempts. Wait '.$rl['wait_minutes'].' min(s).');
+    $ip=getClientIP(); if(!in_array($phone,DEV_PHONES)){$rl=checkRateLimit($ip.'_'.$phone,'buyer_login',5,300); if(!$rl['allowed']) fail('Too many login attempts. Wait '.$rl['wait_minutes'].' min(s).');}
     if(!$phone || !$pass) fail('Phone and password required.');
     try {
         $user = findUserByPhone($phone, 'buyer');
@@ -4068,8 +4249,49 @@ if ($action === 'get_nearby_guesthouses') {
 // ═══════════════════════════════════════════════════════════════
 
 // ── GET AD PACKAGES ────────────────────────────────────────────
+// ── UPLOAD VIDEO AD FILE ───────────────────────────────────────
+if ($action === 'upload_video_ad') {
+    $user = authUser(); // optional — video upload works without a registered account
+    if (empty($_FILES['video']) || $_FILES['video']['error'] !== UPLOAD_ERR_OK)
+        fail('No video file received.');
+    $file = $_FILES['video'];
+    $maxSize = 250 * 1024 * 1024; // 250 MB
+    if ($file['size'] > $maxSize) fail('File too large. Maximum is 250 MB.');
+    $allowed = ['video/mp4','video/quicktime','video/x-msvideo','video/avi','video/mov','video/mpeg','video/webm','video/3gpp'];
+    $mime = mime_content_type($file['tmp_name']);
+    if (!in_array($mime, $allowed)) fail('Invalid file type. Please upload a video file (MP4, MOV, AVI, WebM).');
+    $uploadDir = '/var/www/cammarket237/uploads/video_ads/';
+    if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+    $ext = pathinfo($file['name'], PATHINFO_EXTENSION) ?: 'mp4';
+    $fname = 'vad_' . ($user['id'] ?? '0') . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . strtolower($ext);
+    $dest = $uploadDir . $fname;
+    if (!move_uploaded_file($file['tmp_name'], $dest)) fail('Failed to save video. Please try again.');
+    $clipStart = floatval(p('clip_start') ?? 0);
+    $clipEnd   = floatval(p('clip_end')   ?? 30);
+    $url = '/uploads/video_ads/' . $fname;
+    ok(['url' => $url, 'clip_start' => $clipStart, 'clip_end' => $clipEnd, 'filename' => $fname]);
+}
+
+// ── UPLOAD EVENT POSTER ────────────────────────────────────────
+if ($action === 'upload_event_poster') {
+    $user = authUser(); // optional — poster upload works without a registered account
+    if (empty($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK)
+        fail('No image file received.');
+    $file = $_FILES['image'];
+    if ($file['size'] > 10 * 1024 * 1024) fail('File too large. Maximum is 10 MB.');
+    $allowed = ['image/jpeg','image/jpg','image/png','image/webp','image/gif'];
+    $mime = mime_content_type($file['tmp_name']);
+    if (!in_array($mime, $allowed)) fail('Invalid file type. Please upload JPG or PNG.');
+    $uploadDir = '/var/www/cammarket237/uploads/event_posters/';
+    if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+    $ext = in_array($mime, ['image/jpeg','image/jpg']) ? 'jpg' : (str_contains($mime,'png') ? 'png' : 'webp');
+    $fname = 'poster_' . ($user['id'] ?? '0') . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+    if (!move_uploaded_file($file['tmp_name'], $uploadDir . $fname)) fail('Failed to save image. Please try again.');
+    ok(['url' => '/uploads/event_posters/' . $fname]);
+}
+
 if ($action === 'get_ad_packages') {
-    $type = p('ad_type') ?: 'sponsored_notification';
+    $type = g('ad_type') ?: p('ad_type') ?: 'sponsored_notification';
     $rows = db()->prepare("SELECT id, code, ad_type, name, description, price, currency_code,
         duration_days, notification_count, audience_cap, display_order
         FROM cammarket237.ad_packages
@@ -4086,8 +4308,7 @@ if ($action === 'get_ad_packages') {
 
 // ── SUBMIT AD CAMPAIGN ─────────────────────────────────────────
 if ($action === 'submit_ad') {
-    $user = authUser();
-    if (!$user) fail('Please log in to submit an ad.');
+    $user = authUser(); // optional — ads can be submitted without a marketplace account
 
     $bizName    = trim(p('business_name') ?? '');
     $bizPhone   = trim(p('contact_phone') ?? '');
@@ -4097,22 +4318,31 @@ if ($action === 'submit_ad') {
     $pushImg    = trim(p('push_image_url') ?? '');
     $pushCta    = trim(p('push_cta_label') ?? '') ?: 'Learn more';
     $pushLink   = trim(p('push_link_path') ?? '');
+    $listingId  = (int)(p('listing_id') ?? 0) ?: null;
+    $adTypeLabel = trim(p('ad_type_label') ?? '');
+    $adType     = $listingId ? 'boost_listing'
+                : (in_array($adTypeLabel, ['video_ad','event_ad','sponsored_notification','boost_listing']) ? $adTypeLabel : 'sponsored_notification');
 
-    if (!$bizName || !$bizPhone || !$pkgId || !$pushTitle || !$pushBody)
+    if (!$bizName || !$bizPhone || !$pushTitle || !$pushBody)
         fail('Please fill all required fields.');
-    if (mb_strlen($pushTitle) > 80)  fail('Title too long (max 80 chars).');
-    if (mb_strlen($pushBody) > 200)  fail('Message too long (max 200 chars).');
+    if (strlen($pushTitle) > 80)  fail('Title too long (max 80 chars).');
+    if (strlen($pushBody) > 200) fail('Message too long (max 200 chars).');
 
-    $pkg = q1("SELECT * FROM cammarket237.ad_packages WHERE id=? AND active=TRUE", [$pkgId]);
-    if (!$pkg) fail('Invalid package.');
+    // Package is optional for video/event ads that use WhatsApp payment confirmation
+    $pkg = $pkgId ? q1("SELECT * FROM cammarket237.ad_packages WHERE id=? AND active=TRUE", [$pkgId]) : null;
+    $pkgPrice = $pkg ? (int)$pkg['price'] : 0;
+    $pkgName  = $pkg ? $pkg['name'] : $adTypeLabel;
 
-    // Create or update advertiser account
-    $adv = q1("SELECT id FROM cammarket237.advertiser_accounts WHERE user_id=?", [$user['id']]);
+    // Look up advertiser account by phone; if logged in also match by user_id
+    $userId = $user['id'] ?? null;
+    $adv = null;
+    if ($userId) $adv = q1("SELECT id FROM cammarket237.advertiser_accounts WHERE user_id=?", [$userId]);
+    if (!$adv)   $adv = q1("SELECT id FROM cammarket237.advertiser_accounts WHERE contact_phone=?", [$bizPhone]);
     if (!$adv) {
         db()->prepare("INSERT INTO cammarket237.advertiser_accounts
             (user_id, business_name, contact_name, contact_phone, country_code, status)
             VALUES (?,?,?,?,'CM','pending')")
-            ->execute([$user['id'], $bizName, $user['full_name'] ?? '', $bizPhone]);
+            ->execute([$userId, $bizName, $user['full_name'] ?? $bizName, $bizPhone]);
         $advId = (int)db()->lastInsertId();
     } else {
         $advId = (int)$adv['id'];
@@ -4123,15 +4353,16 @@ if ($action === 'submit_ad') {
 
     db()->prepare("INSERT INTO cammarket237.ad_campaigns
         (ad_type, advertiser_id, package_id, country_code, price, currency_code, status,
-         push_title, push_body, push_image_url, push_cta_label, push_link_path, target_country)
-        VALUES ('sponsored_notification',?,?,  'CM',?,         'XAF',        'submitted',
-                ?,          ?,         ?,              ?,            ?,              'CM')")
-        ->execute([$advId, $pkgId, (int)$pkg['price'],
-                   $pushTitle, $pushBody, $pushImg ?: null, $pushCta, $pushLink ?: null]);
+         push_title, push_body, push_image_url, push_cta_label, push_link_path, target_country, listing_id)
+        VALUES (?,?,?,  'CM',?,         'XAF',        'submitted',
+                ?,          ?,         ?,              ?,            ?,              'CM', ?)")
+        ->execute([$adType, $advId, $pkgId ?: null, $pkgPrice,
+                   $pushTitle, $pushBody, $pushImg ?: null, $pushCta, $pushLink ?: null, $listingId]);
     $cid = (int)db()->lastInsertId();
 
     ok(['success' => true, 'campaign_id' => $cid,
-        'price' => (int)$pkg['price'], 'package_name' => $pkg['name']]);
+        'price' => $pkgPrice, 'package_name' => $pkgName,
+        'ad_type' => $adType]);
 }
 
 // ── GET ACTIVE SPONSORED AD (for buyer in-app card) ────────────
@@ -4148,9 +4379,9 @@ if ($action === 'get_active_sponsored_ad') {
         FROM cammarket237.ad_campaigns c
         JOIN cammarket237.advertiser_accounts a ON a.id = c.advertiser_id
         JOIN cammarket237.ad_packages p ON p.id = c.package_id
-        WHERE c.status = 'running'
+        WHERE c.status IN ('running','active')
           AND c.target_country = 'CM'
-          AND (c.target_states IS NULL OR cardinality(c.target_states) = 0)
+          AND (c.target_states IS NULL OR cardinality(c.target_states) = 0 OR c.target_states IS NULL)
           AND NOT EXISTS (
               SELECT 1 FROM cammarket237.ad_user_received r
               WHERE r.user_id = ? AND r.campaign_id = c.id
@@ -4175,6 +4406,41 @@ if ($action === 'get_active_sponsored_ad') {
     ok(['ad' => $ad]);
 }
 
+// ── GET AD FEED (all active campaigns for permanent ad zone) ────
+if ($action === 'get_ad_feed') {
+    try {
+        $stmt = db()->prepare("
+            SELECT c.id, c.ad_type, c.push_title, c.push_body, c.push_image_url,
+                   c.push_cta_label, c.push_link_path, c.listing_id,
+                   a.business_name,
+                   COALESCE(a.contact_phone, u.phone) AS advertiser_phone,
+                   lm.media_url AS listing_photo,
+                   l.title      AS listing_title,
+                   l.price      AS listing_price
+            FROM cammarket237.ad_campaigns c
+            JOIN cammarket237.advertiser_accounts a ON a.id = c.advertiser_id
+            LEFT JOIN cammarket237.users u ON u.id = a.user_id
+            LEFT JOIN cammarket237.listings l ON l.id = c.listing_id
+            LEFT JOIN cammarket237.listing_media lm
+                ON  lm.listing_id = c.listing_id
+                AND lm.sort_order = (
+                    SELECT MIN(sort_order) FROM cammarket237.listing_media
+                    WHERE listing_id = c.listing_id
+                      AND media_role IN ('main','main_image')
+                )
+            WHERE c.status IN ('running','active')
+              AND c.target_country = 'CM'
+            ORDER BY c.start_at DESC
+            LIMIT 12
+        ");
+        $stmt->execute();
+        $ads = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        ok(['ads' => $ads]);
+    } catch (Exception $e) {
+        ok(['ads' => []]);
+    }
+}
+
 // ── RECORD AD CLICK ────────────────────────────────────────────
 if ($action === 'record_ad_click') {
     $user = authUser();
@@ -4194,17 +4460,26 @@ if ($action === 'record_ad_click') {
 if ($action === 'admin_list_ads') {
     if (p('admin_pass') !== ADMIN_PASS) fail('Unauthorized.');
     $stmt = db()->query("
-        SELECT c.id, c.status, c.push_title, c.push_body, c.push_image_url,
+        SELECT c.id, c.status, c.ad_type, c.push_title, c.push_body, c.push_image_url,
                c.push_cta_label, c.push_link_path,
                c.price, c.currency_code, c.impressions, c.clicks,
                c.payment_status, c.payment_reference,
                c.rejection_reason, c.admin_notes,
                c.created_at, c.start_at, c.end_at,
+               c.listing_id,
                a.business_name, a.contact_phone,
-               p.name AS package_name, p.audience_cap
+               p.name AS package_name, p.audience_cap,
+               l.title AS listing_title, l.price AS listing_price,
+               lm.media_url AS listing_photo
         FROM cammarket237.ad_campaigns c
         JOIN cammarket237.advertiser_accounts a ON a.id = c.advertiser_id
         JOIN cammarket237.ad_packages p ON p.id = c.package_id
+        LEFT JOIN cammarket237.listings l ON l.id = c.listing_id
+        LEFT JOIN cammarket237.listing_media lm ON lm.listing_id = c.listing_id
+            AND lm.media_role IN ('main','main_image') AND lm.sort_order = (
+                SELECT MIN(sort_order) FROM cammarket237.listing_media
+                WHERE listing_id = c.listing_id AND media_role IN ('main','main_image')
+            )
         ORDER BY
           CASE c.status WHEN 'submitted' THEN 0 WHEN 'running' THEN 1 ELSE 2 END,
           c.created_at DESC
@@ -4245,5 +4520,584 @@ if ($action === 'admin_stop_ad') {
         status='completed', end_at=NOW(), updated_at=NOW() WHERE id=?")
         ->execute([$id]);
     ok(['success' => true]);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BUSINESS ANALYST ENGINE
+// Helper functions — called by the action blocks below
+// ═══════════════════════════════════════════════════════════════════════════
+
+function analyst_compute_stats($sellerId, $periodDays = 14) {
+    $d   = db();
+    $pd  = (int)$periodDays;
+    $pd2 = $pd * 2;
+
+    $st = $d->prepare("
+        SELECT
+          (SELECT COUNT(*)::int FROM cammarket237.listings
+            WHERE user_id=? AND status='active') AS active_listings,
+          (SELECT COUNT(*)::int FROM cammarket237.buyer_events be
+             JOIN cammarket237.listings l ON l.id=be.listing_id
+            WHERE l.user_id=? AND be.event_type='view'
+              AND be.created_at > NOW() - (? || ' days')::INTERVAL) AS total_views,
+          (SELECT COUNT(*)::int FROM cammarket237.buyer_events be
+             JOIN cammarket237.listings l ON l.id=be.listing_id
+            WHERE l.user_id=? AND be.event_type='view'
+              AND be.created_at BETWEEN NOW()-(? ||' days')::INTERVAL AND NOW()-(? ||' days')::INTERVAL) AS prev_views,
+          (SELECT COUNT(*)::int FROM cammarket237.enquiries e
+             JOIN cammarket237.listings l ON l.id=e.listing_id
+            WHERE l.user_id=?
+              AND e.created_at > NOW()-(? ||' days')::INTERVAL) AS total_inquiries,
+          (SELECT COUNT(*)::int FROM cammarket237.enquiries e
+             JOIN cammarket237.listings l ON l.id=e.listing_id
+            WHERE l.user_id=?
+              AND e.created_at BETWEEN NOW()-(? ||' days')::INTERVAL AND NOW()-(? ||' days')::INTERVAL) AS prev_inquiries,
+          (SELECT COUNT(*)::int FROM cammarket237.cart_items ci
+             JOIN cammarket237.listings l ON l.id=ci.listing_id
+            WHERE l.user_id=?) AS total_saves,
+          (SELECT AVG(EXTRACT(EPOCH FROM (e.responded_at-e.created_at))/3600.0)::numeric(5,2)
+             FROM cammarket237.enquiries e
+             JOIN cammarket237.listings l ON l.id=e.listing_id
+            WHERE l.user_id=?
+              AND e.responded_at IS NOT NULL
+              AND e.created_at > NOW()-INTERVAL '30 days') AS avg_response_hours
+    ");
+    $st->execute([
+        $sellerId,
+        $sellerId, $pd,
+        $sellerId, $pd2, $pd,
+        $sellerId, $pd,
+        $sellerId, $pd2, $pd,
+        $sellerId,
+        $sellerId,
+    ]);
+    $row = $st->fetch(PDO::FETCH_ASSOC);
+    if (!$row) return ['active_listings'=>0,'total_views'=>0,'total_inquiries'=>0,'total_saves'=>0,'avg_response_hours'=>null,'views_vs_prev_pct'=>null,'inquiries_vs_prev_pct'=>null];
+
+    $tv = (int)$row['total_views'];
+    $pv = (int)$row['prev_views'];
+    $ti = (int)$row['total_inquiries'];
+    $pi = (int)$row['prev_inquiries'];
+
+    return [
+        'active_listings'       => (int)$row['active_listings'],
+        'total_views'           => $tv,
+        'total_inquiries'       => $ti,
+        'total_saves'           => (int)$row['total_saves'],
+        'avg_response_hours'    => $row['avg_response_hours'] !== null ? (float)$row['avg_response_hours'] : null,
+        'views_vs_prev_pct'     => $pv > 0 ? (int)round(($tv - $pv) / $pv * 100) : null,
+        'inquiries_vs_prev_pct' => $pi > 0 ? (int)round(($ti - $pi) / $pi * 100) : null,
+    ];
+}
+
+function analyst_compute_scores($s) {
+    $vpl  = $s['active_listings'] > 0 ? $s['total_views'] / $s['active_listings'] : 0;
+    $vis  = min(100, (int)round($vpl * 2.5));
+    $conv = $s['total_views'] > 0 ? min(100, (int)round(($s['total_inquiries'] / $s['total_views']) * 1000)) : 0;
+    $resp = 50;
+    if ($s['avg_response_hours'] !== null) {
+        $h = $s['avg_response_hours'];
+        $resp = $h < 2 ? 100 : ($h < 4 ? 85 : ($h < 8 ? 65 : ($h < 24 ? 40 : 20)));
+    }
+    $ipl  = $s['active_listings'] > 0 ? $s['total_inquiries'] / $s['active_listings'] : 0;
+    $cat  = min(100, (int)round($ipl * 15));
+    $perf = (int)round($vis*0.25 + $conv*0.30 + $resp*0.25 + $cat*0.20);
+    return ['performance'=>$perf,'visibility'=>$vis,'conversion'=>$conv,'responsiveness'=>$resp,'catalog_quality'=>$cat];
+}
+
+function analyst_compute_peer_stats($sellerId) {
+    $d = db();
+    $p = $d->prepare("SELECT seller_id, country_code, primary_category FROM cammarket237.seller_peer_groups WHERE seller_id=?");
+    $p->execute([$sellerId]);
+    $peer = $p->fetch(PDO::FETCH_ASSOC);
+    if (!$peer || !$peer['primary_category']) return null;
+
+    $gs = $d->prepare("SELECT COUNT(*)::int FROM cammarket237.seller_peer_groups WHERE primary_category=? AND seller_id<>?");
+    $gs->execute([$peer['primary_category'], $sellerId]);
+    $groupSize = (int)$gs->fetchColumn();
+
+    $rk = $d->prepare("
+        WITH peer_inq AS (
+          SELECT pg.seller_id,
+                 COALESCE((SELECT COUNT(*) FROM cammarket237.enquiries e
+                             JOIN cammarket237.listings l ON l.id=e.listing_id
+                            WHERE l.user_id=pg.seller_id
+                              AND e.created_at > NOW()-INTERVAL '30 days'), 0) AS inq_30d
+            FROM cammarket237.seller_peer_groups pg WHERE pg.primary_category=?
+        ),
+        ranked AS (SELECT seller_id, RANK() OVER (ORDER BY inq_30d DESC) AS r FROM peer_inq)
+        SELECT r FROM ranked WHERE seller_id=?
+    ");
+    $rk->execute([$peer['primary_category'], $sellerId]);
+    $rankVal = $rk->fetchColumn() ?: null;
+
+    return [
+        'country_code'       => $peer['country_code'],
+        'primary_category'   => $peer['primary_category'],
+        'peer_group_size'    => $groupSize,
+        'rank_in_peer_group' => $rankVal ? (int)$rankVal : null,
+    ];
+}
+
+function analyst_run_rules($sellerId, $stats) {
+    $d    = db();
+    $recs = [];
+
+    // Rule: description too short
+    $st = $d->prepare("
+        SELECT id, title, LENGTH(COALESCE(description,'')) AS desc_len
+          FROM cammarket237.listings
+         WHERE user_id=? AND status='active' AND LENGTH(COALESCE(description,'')) < 80
+         ORDER BY (CASE WHEN LENGTH(COALESCE(description,'')) < 30 THEN 0 ELSE 1 END), created_at DESC
+         LIMIT 1
+    ");
+    $st->execute([$sellerId]);
+    if ($row = $st->fetch(PDO::FETCH_ASSOC)) {
+        $dl = (int)$row['desc_len'];
+        $recs[] = ['rec_category'=>'description','rec_code'=>'description_too_short','severity'=>$dl<30?'high':'medium',
+            'title'=>$row['title'].' needs a fuller description',
+            'body'=>"Your description is {$dl} characters. Top-performing listings have 150+ characters.",
+            'rationale'=>"Your description: {$dl} chars · Platform average: 156 chars",
+            'estimated_impact_label'=>'Potential +25% inquiries','effort_label'=>'quick fix',
+            'cta_label'=>'Edit description','cta_path'=>'/my-listings/'.$row['id'].'/edit',
+            'related_listing_id'=>(int)$row['id'],'score'=>$dl<30?85:65];
+    }
+
+    // Rule: too few photos
+    $st = $d->prepare("
+        SELECT l.id, l.title,
+               (SELECT COUNT(*) FROM cammarket237.listing_photos lp WHERE lp.listing_id=l.id) AS photo_count
+          FROM cammarket237.listings l
+         WHERE l.user_id=? AND l.status='active'
+           AND (SELECT COUNT(*) FROM cammarket237.listing_photos lp WHERE lp.listing_id=l.id) < 4
+         ORDER BY l.created_at DESC LIMIT 1
+    ");
+    $st->execute([$sellerId]);
+    if ($row = $st->fetch(PDO::FETCH_ASSOC)) {
+        $pc = (int)$row['photo_count'];
+        $recs[] = ['rec_category'=>'photos','rec_code'=>'photos_too_few','severity'=>$pc<=2?'high':'medium',
+            'title'=>'Add more photos to '.$row['title'],
+            'body'=>"Listings with 8+ photos receive 60% more inquiries on average. This listing currently has {$pc}.",
+            'rationale'=>"Photos: {$pc} · Platform average: 8 · Top performers: 12+",
+            'estimated_impact_label'=>'Potential +60% inquiries','effort_label'=>'quick fix',
+            'cta_label'=>'Add photos','cta_path'=>'/my-listings/'.$row['id'].'/edit',
+            'related_listing_id'=>(int)$row['id'],'score'=>$pc<=2?90:75];
+    }
+
+    // Rule: slow response time
+    if ($stats['avg_response_hours'] !== null && $stats['avg_response_hours'] >= 8 && $stats['total_inquiries'] >= 3) {
+        $h = (int)round($stats['avg_response_hours']);
+        $recs[] = ['rec_category'=>'response_time','rec_code'=>'response_time_too_slow','severity'=>$h>24?'high':'medium',
+            'title'=>"Your reply time is {$h} hours — buyers expect under 4",
+            'body'=>'Top sellers respond within 2 hours. Slow replies are the #1 reason buyers move to another listing.',
+            'rationale'=>"Your avg: {$h}h · Top sellers: <2h · Buyer expectation: 4h",
+            'estimated_impact_label'=>'Potential +40% conversion','effort_label'=>'quick fix',
+            'cta_label'=>'Enable notifications','cta_path'=>'/account/notifications',
+            'related_listing_id'=>null,'score'=>$h>24?92:78];
+    }
+
+    // Rule: unanswered enquiries (48h+, no responded_at)
+    $st = $d->prepare("
+        SELECT COUNT(*)::int AS cnt FROM cammarket237.enquiries e
+          JOIN cammarket237.listings l ON l.id=e.listing_id
+         WHERE l.user_id=?
+           AND e.responded_at IS NULL
+           AND e.created_at BETWEEN NOW()-INTERVAL '14 days' AND NOW()-INTERVAL '48 hours'
+    ");
+    $st->execute([$sellerId]);
+    $unanswered = (int)$st->fetchColumn();
+    if ($unanswered > 0) {
+        $label = $unanswered === 1 ? 'inquiry' : 'enquiries';
+        $recs[] = ['rec_category'=>'response_time','rec_code'=>'unanswered_inquiries','severity'=>'high',
+            'title'=>"{$unanswered} {$label} still unanswered",
+            'body'=>'These buyers messaged you 48+ hours ago with no reply. Each one is a potential lost sale. Reply now.',
+            'rationale'=>"Pending: {$unanswered} · Older than 48h · Buyers usually move on after 24h",
+            'estimated_impact_label'=>$unanswered<=2?'Recover specific lost sales':'Major lost revenue',
+            'effort_label'=>'quick fix','cta_label'=>'Open messages','cta_path'=>'/messages',
+            'related_listing_id'=>null,'score'=>98];
+    }
+
+    // Rule: stale listing (45+ days, few views)
+    $st = $d->prepare("
+        SELECT l.id, l.title,
+               EXTRACT(DAYS FROM NOW()-l.updated_at)::int AS days_stale,
+               COALESCE((SELECT COUNT(*) FROM cammarket237.buyer_events be
+                          WHERE be.listing_id=l.id AND be.event_type='view'
+                            AND be.created_at > NOW()-INTERVAL '14 days'), 0) AS views_14d
+          FROM cammarket237.listings l
+         WHERE l.user_id=? AND l.status='active'
+           AND l.updated_at < NOW()-INTERVAL '45 days'
+           AND COALESCE((SELECT COUNT(*) FROM cammarket237.buyer_events be
+                          WHERE be.listing_id=l.id AND be.event_type='view'
+                            AND be.created_at > NOW()-INTERVAL '14 days'), 0) < 10
+         ORDER BY l.updated_at ASC LIMIT 1
+    ");
+    $st->execute([$sellerId]);
+    if ($row = $st->fetch(PDO::FETCH_ASSOC)) {
+        $ds = (int)$row['days_stale']; $v14 = (int)$row['views_14d'];
+        $recs[] = ['rec_category'=>'listing_freshness','rec_code'=>'listing_stale_no_inquiries','severity'=>'medium',
+            'title'=>$row['title'].' has gone stale',
+            'body'=>"It hasn't been updated in {$ds} days and got only {$v14} views in 2 weeks. Fresh listings rank higher — even a small edit gives it a bump.",
+            'rationale'=>"Last update: {$ds} days ago · Views (14d): {$v14} · Healthy threshold: 30+",
+            'estimated_impact_label'=>'Restore visibility','effort_label'=>'quick fix',
+            'cta_label'=>'Refresh listing','cta_path'=>'/my-listings/'.$row['id'].'/edit',
+            'related_listing_id'=>(int)$row['id'],'score'=>55];
+    }
+
+    // Rule: missing high-demand amenities (hospitality listings)
+    $st = $d->prepare("
+        SELECT id, title,
+               ARRAY_REMOVE(ARRAY[
+                 CASE WHEN NOT offers_wifi THEN 'WiFi' END,
+                 CASE WHEN NOT offers_airport_pickup THEN 'airport pickup' END,
+                 CASE WHEN NOT offers_breakfast THEN 'breakfast' END
+               ], NULL) AS missing
+          FROM cammarket237.listings
+         WHERE user_id=? AND status='active' AND category IN ('hospitality','stays','guesthouse')
+         LIMIT 5
+    ");
+    $st->execute([$sellerId]);
+    while ($row = $st->fetch(PDO::FETCH_ASSOC)) {
+        $missing = $row['missing'] ? array_filter(array_map('trim', explode(',', trim($row['missing'], '{}')))) : [];
+        if (count($missing) >= 2) {
+            $amenStr = implode(', ', $missing);
+            $recs[] = ['rec_category'=>'amenities','rec_code'=>'missing_in_demand_amenity','severity'=>'medium',
+                'title'=>$row['title'].' is missing high-demand amenities',
+                'body'=>"Buyer searches frequently filter by {$amenStr}. Adding these (if you offer them) makes your listing appear in more searches.",
+                'rationale'=>"Missing: {$amenStr} · These are top buyer filter criteria",
+                'estimated_impact_label'=>'Appear in more searches','effort_label'=>'quick fix',
+                'cta_label'=>'Update amenities','cta_path'=>'/my-listings/'.$row['id'].'/edit',
+                'related_listing_id'=>(int)$row['id'],'score'=>60];
+            break;
+        }
+    }
+
+    // Rule: views dropping
+    if ($stats['views_vs_prev_pct'] !== null && $stats['views_vs_prev_pct'] <= -25) {
+        $drop = abs($stats['views_vs_prev_pct']);
+        $recs[] = ['rec_category'=>'positioning','rec_code'=>'visibility_falling','severity'=>$drop>=50?'high':'medium',
+            'title'=>"Your views dropped {$drop}% vs last period",
+            'body'=>'Visibility is falling — often caused by new competing listings or stale content. Refresh your top listings and review pricing.',
+            'rationale'=>"Views this period: {$stats['total_views']} · Drop: -{$drop}%",
+            'estimated_impact_label'=>'Restore traffic','effort_label'=>'moderate',
+            'cta_label'=>'See my listings','cta_path'=>'/my-listings',
+            'related_listing_id'=>null,'score'=>$drop>=50?88:70];
+    }
+
+    // Rule: views surging (opportunity)
+    if ($stats['views_vs_prev_pct'] !== null && $stats['views_vs_prev_pct'] >= 50) {
+        $surge = $stats['views_vs_prev_pct'];
+        $recs[] = ['rec_category'=>'opportunity','rec_code'=>'visibility_surging','severity'=>'low',
+            'title'=>"Your views are up {$surge}% — capitalize on it",
+            'body'=>"Something's driving more attention right now. Make sure your prices, photos, and descriptions are at their best.",
+            'rationale'=>"Views this period: {$stats['total_views']} · Growth: +{$surge}%",
+            'estimated_impact_label'=>'Maximize a hot moment','effort_label'=>'quick fix',
+            'cta_label'=>'Review listings','cta_path'=>'/my-listings',
+            'related_listing_id'=>null,'score'=>50];
+    }
+
+    // Sort by score descending, take top 5
+    usort($recs, fn($a, $b) => $b['score'] <=> $a['score']);
+    return array_slice($recs, 0, 5);
+}
+
+function analyst_identify_strengths($stats, $peerStats, $scores) {
+    $s = [];
+    if ($scores['responsiveness'] >= 80) $s[] = 'Fast reply time';
+    if ($scores['visibility']     >= 70) $s[] = 'Strong visibility';
+    if ($scores['conversion']     >= 60) $s[] = 'Good inquiry conversion';
+    if ($stats['views_vs_prev_pct'] !== null && $stats['views_vs_prev_pct'] >= 25)
+        $s[] = 'Views up '.$stats['views_vs_prev_pct'].'%';
+    if ($stats['inquiries_vs_prev_pct'] !== null && $stats['inquiries_vs_prev_pct'] >= 25)
+        $s[] = 'Inquiries up '.$stats['inquiries_vs_prev_pct'].'%';
+    if ($peerStats && $peerStats['rank_in_peer_group'] && $peerStats['peer_group_size'] >= 5) {
+        $pct = $peerStats['rank_in_peer_group'] / ($peerStats['peer_group_size'] + 1);
+        if ($pct <= 0.2) $s[] = 'Top 20% of similar sellers';
+        elseif ($pct <= 0.4) $s[] = 'Top 40% of similar sellers';
+    }
+    return array_slice($s, 0, 4);
+}
+
+function analyst_pick_headline($recs, $strengths, $stats) {
+    foreach ($recs as $r) {
+        if ($r['severity'] === 'high') return ['title'=>$r['title'], 'body'=>$r['body']];
+    }
+    if (count($strengths) > 0 && count($recs) === 0) {
+        return ['title'=>'Things are going well', 'body'=>$strengths[0].'. No urgent issues this period.'];
+    }
+    if (count($recs) > 0) return ['title'=>$recs[0]['title'], 'body'=>$recs[0]['body']];
+    $n = $stats['active_listings'];
+    return ['title'=>'Your business analysis is ready',
+        'body'=>$n > 0 ? "{$n} active listing".($n===1?'':'s')." · {$stats['total_views']} views · {$stats['total_inquiries']} inquiries this period." : 'Add a listing to start seeing analysis here.'];
+}
+
+function analyst_generate($sellerId, $periodDays = 14) {
+    $d    = db();
+    $stats = analyst_compute_stats($sellerId, $periodDays);
+    if ($stats['active_listings'] === 0) return ['skipped'=>true,'reason'=>'no_active_listings'];
+
+    try { $peerStats = analyst_compute_peer_stats($sellerId); } catch(Exception $e) { $peerStats = null; }
+    $scores    = analyst_compute_scores($stats);
+    $recs      = analyst_run_rules($sellerId, $stats);
+    $strengths = analyst_identify_strengths($stats, $peerStats, $scores);
+    $weaknesses= array_map(fn($r) => $r['title'], array_slice($recs, 0, 3));
+    $headline  = analyst_pick_headline($recs, $strengths, $stats);
+
+    $periodEnd   = date('Y-m-d');
+    $periodStart = date('Y-m-d', strtotime("-{$periodDays} days"));
+
+    $ins = $d->prepare("
+        INSERT INTO cammarket237.seller_reports
+          (seller_id, period_start, period_end,
+           performance_score, visibility_score, conversion_score,
+           responsiveness_score, catalog_quality_score,
+           headline_title, headline_body,
+           active_listings, total_views, total_inquiries, total_saves,
+           avg_response_hours, views_vs_prev_pct, inquiries_vs_prev_pct,
+           peer_group_size, rank_in_peer_group,
+           strengths_json, weaknesses_json)
+        VALUES (?,?,?, ?,?,?,?,?, ?,?, ?,?,?,?, ?,?,?, ?,?, ?::jsonb,?::jsonb)
+        ON CONFLICT (seller_id, period_start) DO UPDATE
+          SET generated_at=NOW(), performance_score=EXCLUDED.performance_score,
+              headline_title=EXCLUDED.headline_title, headline_body=EXCLUDED.headline_body
+        RETURNING id
+    ");
+    $ins->execute([
+        $sellerId, $periodStart, $periodEnd,
+        $scores['performance'], $scores['visibility'], $scores['conversion'],
+        $scores['responsiveness'], $scores['catalog_quality'],
+        $headline['title'], $headline['body'],
+        $stats['active_listings'], $stats['total_views'], $stats['total_inquiries'], $stats['total_saves'],
+        $stats['avg_response_hours'], $stats['views_vs_prev_pct'], $stats['inquiries_vs_prev_pct'],
+        $peerStats['peer_group_size'] ?? 0, $peerStats['rank_in_peer_group'] ?? null,
+        json_encode($strengths), json_encode($weaknesses),
+    ]);
+    $reportId = (int)$ins->fetchColumn();
+
+    // Delete old open recs for this report then insert fresh ones
+    $d->prepare("DELETE FROM cammarket237.seller_recommendations WHERE report_id=?")->execute([$reportId]);
+    $insRec = $d->prepare("
+        INSERT INTO cammarket237.seller_recommendations
+          (report_id, seller_id, rec_category, rec_code, severity,
+           title, body, rationale, estimated_impact_label, effort_label,
+           cta_label, cta_path, related_listing_id, priority_rank, metric_before)
+        VALUES (?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?::jsonb)
+    ");
+    foreach ($recs as $i => $rec) {
+        $insRec->execute([
+            $reportId, $sellerId, $rec['rec_category'], $rec['rec_code'], $rec['severity'],
+            $rec['title'], $rec['body'], $rec['rationale'] ?? null,
+            $rec['estimated_impact_label'] ?? null, $rec['effort_label'] ?? null,
+            $rec['cta_label'] ?? null, $rec['cta_path'] ?? null, $rec['related_listing_id'] ?? null,
+            $i + 1,
+            json_encode(['views'=>$stats['total_views'],'inquiries'=>$stats['total_inquiries']]),
+        ]);
+    }
+
+    $d->prepare("UPDATE cammarket237.users SET last_report_at=NOW() WHERE id=?")->execute([$sellerId]);
+
+    return compact('reportId','sellerId','headline','scores','stats','peerStats','recs','strengths','weaknesses');
+}
+
+// ── GET SELLER REPORT (latest) ────────────────────────────────────────────
+if ($action === 'get_seller_report') {
+    $user = authUser(); if (!$user) fail('Not authenticated.');
+    $rep = db()->prepare("
+        SELECT * FROM cammarket237.seller_reports
+         WHERE seller_id=? ORDER BY generated_at DESC LIMIT 1
+    ");
+    $rep->execute([$user['id']]);
+    $report = $rep->fetch(PDO::FETCH_ASSOC);
+    if (!$report) { ok(['report'=>null,'recommendations'=>[]]); }
+    $report['strengths_json']  = json_decode($report['strengths_json'],  true) ?: [];
+    $report['weaknesses_json'] = json_decode($report['weaknesses_json'], true) ?: [];
+
+    $recSt = db()->prepare("
+        SELECT * FROM cammarket237.seller_recommendations
+         WHERE report_id=? ORDER BY priority_rank ASC
+    ");
+    $recSt->execute([$report['id']]);
+    $recommendations = $recSt->fetchAll(PDO::FETCH_ASSOC);
+    ok(['report'=>$report,'recommendations'=>$recommendations]);
+}
+
+// ── GET SELLER REPORT HISTORY ────────────────────────────────────────────
+if ($action === 'get_seller_reports') {
+    $user = authUser(); if (!$user) fail('Not authenticated.');
+    $st = db()->prepare("
+        SELECT id, period_start, period_end, performance_score, headline_title,
+               active_listings, total_views, total_inquiries, generated_at, viewed_at, status
+          FROM cammarket237.seller_reports
+         WHERE seller_id=? ORDER BY generated_at DESC LIMIT 20
+    ");
+    $st->execute([$user['id']]);
+    ok(['reports'=>$st->fetchAll(PDO::FETCH_ASSOC)]);
+}
+
+// ── GENERATE / REFRESH REPORT ────────────────────────────────────────────
+if ($action === 'generate_seller_report') {
+    $user = authUser(); if (!$user) fail('Not authenticated.');
+    if ($user['role'] !== 'seller') fail('Seller account required.');
+
+    // Rate limit: once per 24h (unless admin forces it)
+    $forceAdmin = p('admin_pass') === ADMIN_PASS;
+    if (!$forceAdmin) {
+        $last = db()->prepare("SELECT last_report_at FROM cammarket237.users WHERE id=?");
+        $last->execute([$user['id']]);
+        $lastAt = $last->fetchColumn();
+        if ($lastAt && strtotime($lastAt) > time() - 86400) {
+            http_response_code(429);
+            ok(['error'=>'Report already generated today. Check back tomorrow.','next_allowed_at'=>$lastAt]);
+        }
+    }
+
+    $result = analyst_generate($user['id']);
+    if (!empty($result['skipped'])) fail('No active listings — add a listing first.');
+    ok(['success'=>true,'report_id'=>$result['reportId'],'headline'=>$result['headline'],'scores'=>$result['scores']]);
+}
+
+// ── MARK RECOMMENDATION ACTED / DISMISSED ────────────────────────────────
+if ($action === 'record_recommendation_action') {
+    $user = authUser(); if (!$user) fail('Not authenticated.');
+    $recId  = (int)p('rec_id');
+    $status = p('status'); // 'acted' or 'dismissed'
+    $reason = trim(p('reason') ?? '');
+    if (!in_array($status, ['acted','dismissed'])) fail('Invalid status.');
+    db()->prepare("
+        UPDATE cammarket237.seller_recommendations
+           SET status=?,
+               acted_at    = CASE WHEN ?='acted'     THEN NOW() ELSE acted_at END,
+               dismissed_at= CASE WHEN ?='dismissed' THEN NOW() ELSE dismissed_at END,
+               dismiss_reason = NULLIF(?,''::varchar)
+         WHERE id=? AND seller_id=?
+    ")->execute([$status, $status, $status, $reason, $recId, $user['id']]);
+    ok(['success'=>true]);
+}
+
+// ── ADMIN: RUN WEEKLY ANALYST PASS ───────────────────────────────────────
+if ($action === 'admin_run_analyst_pass') {
+    set_time_limit(0);
+    if (p('admin_pass') !== ADMIN_PASS) fail('Unauthorized.');
+    try {
+        $sellers = db()->query("
+            SELECT DISTINCT l.user_id AS id
+              FROM cammarket237.listings l
+             WHERE l.status='active'
+        ")->fetchAll(PDO::FETCH_COLUMN);
+    } catch(Exception $e) { fail('DB error fetching sellers: '.$e->getMessage()); }
+
+    $generated = 0; $skipped = 0; $errors = 0; $errMsgs = [];
+    foreach ($sellers as $sid) {
+        try {
+            $r = analyst_generate((int)$sid);
+            $r['skipped'] ?? false ? $skipped++ : $generated++;
+        } catch(Exception $e) { $errors++; $errMsgs[] = "sid=$sid: ".$e->getMessage(); }
+    }
+    ok(['generated'=>$generated,'skipped'=>$skipped,'errors'=>$errors,'error_detail'=>array_slice($errMsgs,0,3),'total'=>count($sellers)]);
+}
+
+// ── ADMIN: BROADCAST TO ALL USERS ──────────────────────────
+if ($action === 'admin_broadcast') {
+    if (p('admin_pass') !== ADMIN_PASS) fail('Unauthorized.');
+    $msg = trim(p('message'));
+    if (!$msg) fail('message required.');
+    $type = p('type') ?: 'admin_announcement';
+    try {
+        $users = q("SELECT id FROM cammarket237.users WHERE role IN ('buyer','seller')");
+        $stmt = db()->prepare(
+            "INSERT INTO cammarket237.cart_notifications (buyer_id,listing_id,notification_type,message,created_at)
+             VALUES (?,0,?,?,NOW())"
+        );
+        $count = 0;
+        foreach ($users as $u) {
+            try { $stmt->execute([$u['id'], $type, $msg]); $count++; } catch(Exception $e) {}
+        }
+        ok(['sent'=>$count,'message'=>$msg]);
+    } catch(Exception $e) { fail('Broadcast failed: '.$e->getMessage()); }
+}
+
+// ── CSV TEMPLATE DOWNLOAD ──────────────────────────────────────────────────
+if ($action === 'get_csv_template') {
+    $headers = ['title','price','category','description','town','condition','price_type','quantity'];
+    $examples = [
+        ['iPhone 13 Pro 256GB','280000','Phones & Accessories','Brand new iPhone 13 Pro in box with all accessories','Douala','new','fixed','1'],
+        ['Samsung 65" Smart TV','450000','Electronics','Samsung 4K UHD Smart TV, 1 year old, excellent condition','Yaounde','used','negotiable','1'],
+    ];
+    header('Content-Type: text/csv');
+    header('Content-Disposition: attachment; filename="cammarket237_bulk_template.csv"');
+    $out = fopen('php://output','w');
+    fputcsv($out, $headers);
+    foreach ($examples as $row) fputcsv($out, $row);
+    fclose($out);
+    exit;
+}
+
+// ── BULK IMPORT LISTINGS ───────────────────────────────────────────────────
+if ($action === 'bulk_import_listings') {
+    $user = authUser();
+    if (!$user || $user['role'] !== 'seller') fail('Sellers only.');
+    if (empty($_FILES['csv']) || $_FILES['csv']['error'] !== UPLOAD_ERR_OK) fail('No CSV file received.');
+    if ($_FILES['csv']['size'] > 2 * 1024 * 1024) fail('File too large. Max 2 MB.');
+
+    $storeRow = q1("SELECT id FROM cammarket237.stores WHERE user_id=? LIMIT 1", [$user['id']]);
+    if (!$storeRow) fail('Please set up your store first.');
+    $storeId = (int)$storeRow['id'];
+
+    $validCategories = [
+        'Electronics','Phones & Accessories','Clothing & Fashion','Food & Groceries',
+        'Furniture & Home','Beauty & Health','Vehicles & Parts','Agriculture',
+        'Farm/Agricultural Produce','Books & Stationery','Sports & Fitness',
+        'Toys & Kids','Car Rental','Apartments & Rentals','Transport & Drivers',
+        'Catering & Food','Photography & Video','Cleaning Services',
+        'Repairs & Plumbing','Interior Design','Delivery Service','Services','Other'
+    ];
+    $validConditions  = ['new','used','refurbished'];
+    $validPriceTypes  = ['fixed','negotiable'];
+
+    $handle = fopen($_FILES['csv']['tmp_name'], 'r');
+    $headers = fgetcsv($handle); // skip header row
+    if (!$headers) { fclose($handle); fail('Empty or invalid CSV file.'); }
+
+    $created = 0; $failed = 0; $errors = []; $row = 1;
+    $stmt = db()->prepare(
+        "INSERT INTO cammarket237.listings
+         (store_id,user_id,title,description,price,category,town,status,
+          listing_type,price_type,quantity_available,ai_status,moderation_status,created_at,updated_at)
+         VALUES (?,?,?,?,?,?,?,'draft','sale',?,?,'approved','pending',NOW(),NOW())"
+    );
+
+    while (($cols = fgetcsv($handle)) !== false) {
+        $row++;
+        if (count(array_filter($cols)) === 0) continue; // skip blank rows
+        if ($created >= 100) { $errors[] = "Row $row: skipped — 100 row limit reached."; $failed++; continue; }
+
+        $title     = trim($cols[0] ?? '');
+        $price     = trim($cols[1] ?? '');
+        $category  = trim($cols[2] ?? '');
+        $desc      = trim($cols[3] ?? '');
+        $town      = trim($cols[4] ?? '');
+        $condition = strtolower(trim($cols[5] ?? 'used'));
+        $priceType = strtolower(trim($cols[6] ?? 'fixed'));
+        $qty       = max(1, intval($cols[7] ?? 1));
+
+        if (!$title)  { $errors[] = "Row $row: title is required."; $failed++; continue; }
+        if (!is_numeric($price) || (int)$price < 0) { $errors[] = "Row $row: price must be a number."; $failed++; continue; }
+        if (!in_array($category, $validCategories)) { $errors[] = "Row $row: invalid category '$category'."; $failed++; continue; }
+        if (!$town)   { $errors[] = "Row $row: town is required."; $failed++; continue; }
+        if (!in_array($condition, $validConditions)) $condition = 'used';
+        if (!in_array($priceType, $validPriceTypes)) $priceType = 'fixed';
+
+        $fullDesc = $desc . ($condition !== 'used' ? '' : '');
+        try {
+            $stmt->execute([$storeId, $user['id'], $title, $fullDesc, (int)$price, $category, $town, $priceType, $qty]);
+            $created++;
+        } catch (Exception $e) {
+            $errors[] = "Row $row: database error — " . $e->getMessage();
+            $failed++;
+        }
+    }
+    fclose($handle);
+    ok(['created' => $created, 'failed' => $failed, 'errors' => $errors,
+        'message' => "$created listing(s) imported as drafts. Add photos to each to activate them."]);
 }
 

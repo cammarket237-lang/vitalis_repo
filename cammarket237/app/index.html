@@ -16,7 +16,7 @@
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{min-height:100vh;background:#fdf8ee;font-family:Georgia,'Times New Roman',serif;display:flex;flex-direction:column;align-items:center}
-    .header{width:100%;background:#0f1923;padding:15px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:4px solid #fcd116;position:sticky;top:0;z-index:200}
+    .header{width:100%;background:#0f1923;padding:15px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:4px solid #fcd116;position:sticky;top:0;z-index:2100}
     .logo{font-size:20px;font-weight:700}
     .logo .g{color:#1a7a3c}.logo .m{color:#ce1126}.logo .y{color:#fcd116}
     .avatar{width:36px;height:36px;border-radius:50%;background:#1a7a3c;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;cursor:pointer}
@@ -69,6 +69,17 @@
     .search-bar input{flex:1;padding:11px 13px;border:1.5px solid #e0d8c8;border-radius:10px;font-size:14px;outline:none;font-family:inherit;background:#fafaf7}
     .search-bar input:focus{border-color:#1a7a3c}
     .search-bar button{padding:11px 15px;background:#1a7a3c;border:none;border-radius:10px;color:#fff;font-size:14px;cursor:pointer;font-family:inherit}
+    .sb-icon{padding:0;width:42px;height:42px;background:#f5f2ec;border:1.5px solid #e0d8c8;border-radius:10px;color:#555;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+    .sb-icon:hover{background:#e8e4dc}
+    .sb-icon.listening{background:#fde8e8;border-color:#e74c3c;animation:sb-pulse .55s ease-in-out infinite alternate}
+    @keyframes sb-pulse{from{transform:scale(1)}to{transform:scale(1.13)}}
+    .cam-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:3000;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .18s}
+    .cam-sheet{background:#fff;border-radius:20px 20px 0 0;padding:20px 18px 32px;width:100%;max-width:500px;max-height:80vh;overflow-y:auto}
+    .cam-chip{display:inline-flex;align-items:center;gap:5px;border:1.5px solid #e0d8c8;border-radius:20px;padding:8px 14px;font-size:13px;font-weight:700;color:#333;cursor:pointer;background:#fafaf7;transition:all .15s;margin:4px}
+    .cam-chip:hover,.cam-chip:active{background:#1a7a3c;color:#fff;border-color:#1a7a3c}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes adSlide{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+    .ads-banner-btn{background:linear-gradient(90deg,#e67e22,#f39c12,#e74c3c,#f39c12,#e67e22);background-size:300% 100%;animation:adSlide 3s ease infinite;color:white;border:none;padding:13px 16px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:space-between;width:100%;box-sizing:border-box}
     .loc-badge{display:inline-flex;align-items:center;gap:5px;background:#f0faf4;border:1px solid #1a7a3c;border-radius:20px;padding:5px 12px;font-size:12px;color:#1a7a3c;margin-bottom:12px}
     .section-label{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:1px;margin:13px 0 7px;padding-bottom:4px;border-bottom:1px solid #f0ebe0;display:flex;align-items:center;gap:6px}
     /* Item cards */
@@ -76,6 +87,12 @@
     .item-card{border:1.5px solid #eee;border-radius:12px;padding:12px;display:flex;gap:11px;align-items:flex-start;background:#fafaf7;position:relative;cursor:pointer;transition:border-color .15s}
     .item-card:hover{border-color:#1a7a3c}
     .item-card.nearby{border-color:#1a7a3c;background:#f8fdf9}
+    .itm{border:1.5px solid #eee;border-radius:12px;background:#fafaf7;cursor:pointer;overflow:hidden;transition:border-color .15s;position:relative}
+    .itm:hover{border-color:#1a7a3c}
+    .itm *{cursor:pointer}
+    .itm .shr{opacity:0;transition:opacity .18s;pointer-events:none}
+    .itm:hover .shr{opacity:1;pointer-events:auto}
+    @media(hover:none){.itm .shr{opacity:.45;pointer-events:auto}}
     .item-img{width:56px;height:56px;border-radius:8px;background:#e8e0d0;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
     .item-name{font-weight:700;color:#0f1923;font-size:14px;margin-bottom:2px}
     .item-price{color:#1a7a3c;font-weight:700;font-size:14px;margin-bottom:3px}
@@ -89,8 +106,11 @@
     .login-link{text-align:center;margin-top:12px;font-size:12px;color:#999}
     .login-link a{color:#1a7a3c;font-weight:600;cursor:pointer;text-decoration:none}
     /* buyer map */
-    #buyer-map{height:0;border-radius:10px;margin-bottom:12px;border:1.5px solid #e0d8c8;transition:height .3s;overflow:hidden}
+    #buyer-map{height:0;border-radius:10px;margin-bottom:12px;border:1.5px solid #e0d8c8;transition:height .3s;overflow:hidden;position:relative;z-index:1;isolation:isolate}
     #buyer-map.open{height:160px}
+    #buyer-map .leaflet-top,#buyer-map .leaflet-bottom,
+    #dash-map .leaflet-top,#dash-map .leaflet-bottom{z-index:1!important}
+    #buyer-map .leaflet-pane,#dash-map .leaflet-pane{z-index:1!important}
     .map-toggle{font-size:12px;color:#1a7a3c;cursor:pointer;margin-bottom:10px;display:inline-flex;align-items:center;gap:4px}
 
     .range-pills,.pill{display:flex;gap:7px;flex-wrap:wrap}
@@ -143,6 +163,53 @@
       padding: 3px 8px; border-radius: 20px;
       letter-spacing: 0.5px;
     }
+    /* ── Permanent Ad Zone ───────────────────────────────── */
+    /* #ad-banner is fixed; .screen gets padding-top injected by JS */
+    .screen.ad-offset{padding-top:var(--ad-banner-h,0px)}
+    .adz-media-wrap{overflow:hidden;background:#111;position:relative}
+    /* 360-sweep: 3 layers of same image at different 3D rotateY angles */
+    .adz-shots{position:relative;overflow:hidden;height:110px;background:#111}
+    .adz-shot{position:absolute;inset:0;width:100%;height:110px;object-fit:cover;opacity:0;will-change:transform,opacity;backface-visibility:hidden}
+    .shot-a{animation:shotA 5.4s ease-in-out forwards}
+    .shot-b{animation:shotB 5.4s ease-in-out forwards}
+    .shot-c{animation:shotC 5.4s ease-in-out forwards}
+    /* A: enter from left side (-28°), push right to center */
+    @keyframes shotA{
+      0%  {opacity:1;transform:perspective(700px) rotateY(-28deg) scale(1.12)}
+      33% {opacity:1;transform:perspective(700px) rotateY(-5deg)  scale(1.2)}
+      43% {opacity:0;transform:perspective(700px) rotateY(5deg)   scale(1.2)}
+      100%{opacity:0}
+    }
+    /* B: cross from center through to right side (+28°) */
+    @keyframes shotB{
+      0%  {opacity:0}
+      33% {opacity:0;transform:perspective(700px) rotateY(5deg)  scale(1.16)}
+      43% {opacity:1;transform:perspective(700px) rotateY(5deg)  scale(1.16)}
+      66% {opacity:1;transform:perspective(700px) rotateY(26deg) scale(1.08)}
+      76% {opacity:0;transform:perspective(700px) rotateY(28deg) scale(1.08)}
+      100%{opacity:0}
+    }
+    /* C: fast full-swing from right all the way back to left — completes the 360 */
+    @keyframes shotC{
+      0%  {opacity:0}
+      66% {opacity:0;transform:perspective(700px) rotateY(28deg)  scale(1.05)}
+      76% {opacity:1;transform:perspective(700px) rotateY(28deg)  scale(1.05)}
+      100%{opacity:1;transform:perspective(700px) rotateY(-28deg) scale(1.18)}
+    }
+    /* Glare sweep that fires during the 360-snap in Shot C */
+    .adz-shine{position:absolute;inset:0;z-index:5;pointer-events:none;
+      background:linear-gradient(108deg,transparent 20%,rgba(255,255,255,.38) 50%,transparent 80%);
+      background-size:300% 100%;animation:adShine 5.4s ease-in-out forwards}
+    @keyframes adShine{
+      0%,64% {background-position:-200% 0;opacity:0}
+      72%    {background-position:-80%  0;opacity:1}
+      88%    {background-position:120%  0;opacity:1}
+      96%    {background-position:220%  0;opacity:0}
+      100%   {opacity:0}
+    }
+    .adz-no-img{height:60px;display:flex;align-items:center;justify-content:center;font-size:36px;animation:noImgPulse 2s ease-in-out infinite alternate}
+    @keyframes noImgPulse{0%{transform:scale(1)}100%{transform:scale(1.12)}}
+    .adz-video{width:100%;height:110px;object-fit:cover;display:block}
 
   </style>
 </head>
@@ -246,6 +313,25 @@
 
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════
+     GLOBAL PERSISTENT AD BANNER — fixed below header, persists
+     across all screens, content scrolls underneath
+     ═══════════════════════════════════════════════════════════ -->
+<div id="ad-banner" style="display:none;position:fixed;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:2000;box-shadow:0 4px 20px rgba(0,0,0,.18);background:white">
+  <div class="adz-media-wrap">
+    <div id="adz-media" style="position:relative"></div>
+    <div style="position:absolute;top:0;left:0;right:0;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,rgba(0,0,0,.55),transparent);pointer-events:none;z-index:2">
+      <span id="adz-badge" style="font-size:9px;font-weight:800;color:white;background:rgba(255,255,255,.18);padding:3px 9px;border-radius:20px;letter-spacing:.8px">&#x1F4E3; SPONSORED</span>
+      <button onclick="window.go('advertise-hub')" style="font-size:10px;color:rgba(255,255,255,.9);background:rgba(255,255,255,.2);border:none;border-radius:20px;padding:3px 10px;cursor:pointer;font-weight:700;pointer-events:all;font-family:inherit">Advertise &#x276F;</button>
+    </div>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.2);z-index:2">
+      <div id="adz-prog" style="height:100%;background:#e67e22;width:0%"></div>
+    </div>
+  </div>
+  <div id="adz-info" style="background:white;padding:12px 14px 6px"></div>
+  <div id="adz-dots" style="display:flex;justify-content:center;gap:6px;padding:6px 0 10px;background:white;min-height:22px"></div>
+</div>
+
 
 <div class="card">
 
@@ -266,10 +352,10 @@
     <!-- Buyer / Seller buttons at TOP -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
       <button onclick="window.go('buyer-auth')" style="background:#1a7a3c;color:white;border:none;border-radius:14px;padding:16px 10px;cursor:pointer;font-family:inherit;font-weight:800;font-size:15px">
-        &#128;&#x1F6D2; <span data-i18n="signup.buyer">Buyer</span><br><span style="font-size:11px;font-weight:400;opacity:0.85" data-i18n="nav.browse">Shop &amp; browse</span>
+        &#x1F6D2; <span data-i18n="signup.buyer">Buy things</span><br><span style="font-size:11px;font-weight:400;opacity:0.85">&#x1F511; Login</span>
       </button>
-      <button onclick="window.go('seller-auth');window.sellerTab('login')" style="background:#0f1923;color:white;border:none;border-radius:14px;padding:16px 10px;cursor:pointer;font-family:inherit;font-weight:800;font-size:15px">
-        &#x1F3EA; <span data-i18n="signup.seller">Seller</span><br><span style="font-size:11px;font-weight:400;opacity:0.85" data-i18n="btn.postListing">Post &amp; sell</span>
+      <button onclick="window.go('seller-auth')" style="background:#0f1923;color:white;border:none;border-radius:14px;padding:16px 10px;cursor:pointer;font-family:inherit;font-weight:800;font-size:15px">
+        &#x1F3EA; <span data-i18n="signup.seller">Sell things</span><br><span style="font-size:11px;font-weight:400;opacity:0.85">&#x1F511; Login</span>
       </button>
     </div>
 
@@ -382,6 +468,40 @@
         <div style="font-weight:800;font-size:11px" data-i18n="service.more">More Services</div>
         <div style="font-size:9px;opacity:0.8;margin-top:1px" data-i18n="service.moreDesc">All others</div>
       </button>
+      <div style="grid-column:1/-1;border-radius:14px;overflow:hidden;border:2px solid #f39c12">
+        <button onclick="window.go('advertise-hub')" class="ads-banner-btn" style="border-radius:0;width:100%;margin-bottom:0">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:24px">&#x1F4E3;</span>
+            <div style="text-align:left">
+              <div style="font-weight:800;font-size:13px" data-i18n="service.advertise">Advertise</div>
+              <div style="font-size:10px;opacity:0.88;margin-top:1px" data-i18n="service.advertiseDesc">Boost your reach</div>
+            </div>
+          </div>
+          <span style="font-size:18px;opacity:0.9">&#x276F;</span>
+        </button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#f39c12">
+          <button onclick="window.go('sponsored-ad')" style="background:#fff8f0;border:none;padding:11px 8px;cursor:pointer;font-family:inherit;text-align:center">
+            <div style="font-size:18px;margin-bottom:3px">&#x1F514;</div>
+            <div style="font-weight:700;font-size:11px;color:#c0392b">Sponsored</div>
+            <div style="font-size:9px;color:#888;margin-top:1px">Notification</div>
+          </button>
+          <button onclick="window.go('boost-listing')" style="background:#fff8f0;border:none;padding:11px 8px;cursor:pointer;font-family:inherit;text-align:center">
+            <div style="font-size:18px;margin-bottom:3px">&#x2B50;</div>
+            <div style="font-weight:700;font-size:11px;color:#e67e22">Boost My</div>
+            <div style="font-size:9px;color:#888;margin-top:1px">Listing</div>
+          </button>
+          <button onclick="window.go('video-ad')" style="background:#fff8f0;border:none;padding:11px 8px;cursor:pointer;font-family:inherit;text-align:center">
+            <div style="font-size:18px;margin-bottom:3px">&#x1F3AC;</div>
+            <div style="font-weight:700;font-size:11px;color:#8e44ad">Video Ad</div>
+            <div style="font-size:9px;color:#888;margin-top:1px">Short clip</div>
+          </button>
+          <button onclick="window.go('event-ad')" style="background:#fff8f0;border:none;padding:11px 8px;cursor:pointer;font-family:inherit;text-align:center">
+            <div style="font-size:18px;margin-bottom:3px">&#x1F389;</div>
+            <div style="font-weight:700;font-size:11px;color:#1a7a3c">Promote</div>
+            <div style="font-size:9px;color:#888;margin-top:1px">an Event</div>
+          </button>
+        </div>
+      </div>
     </div>
     <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
       <button onclick="window.browseAsGuest()" style="width:100%;padding:15px;border:2.5px dashed #9b59b6;border-radius:16px;background:linear-gradient(135deg,#f8f0ff,#ede0fb);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s">
@@ -422,6 +542,7 @@
       <button class="tab active" id="btab-login" onclick="window.buyerTab('login')" data-i18n="btn.login">Login</button>
       <button class="tab" id="btab-register" onclick="window.buyerTab('register')" data-i18n="btn.signUp">Register</button>
     </div>
+    <div id="buyer-reg-success" style="display:none;background:#e8f5e9;border:1.5px solid #1a7a3c;border-radius:10px;padding:10px 14px;margin-bottom:8px;color:#1a7a3c;font-size:13px;font-weight:600;text-align:center"></div>
 
     <!-- LOGIN - phone + password -->
     <div id="buyer-login">
@@ -532,6 +653,7 @@
             &#x1F514;
             <span id="notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#e74c3c;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;align-items:center;justify-content:center">0</span>
           </div>
+          <button onclick="window.go('advertise-hub')" style="background:linear-gradient(135deg,#e67e22,#f39c12);color:white;border:none;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer;font-weight:700">&#x1F4E3; Ads</button>
           <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer" onclick="window.go('set-pin')" title="Set Recovery PIN">&#x1F510; PIN</button>
           <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer" onclick="window.signOut()" data-i18n="nav.logout">Sign out</button>
           <button class="lang-btn" data-lang="en" onclick="window.setLanguage('en')" style="padding:4px 8px;border:none;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;background:#1a7a3c;color:white">EN</button>
@@ -577,21 +699,7 @@
       </div>
     </div>
 
-    <!-- Sponsored Ad Card (injected by loadActiveSponsoredAd) -->
-    <div id="sponsored-ad-card" style="display:none;background:#fffbf0;border:2px solid #e67e22;border-radius:14px;padding:14px 16px;margin-bottom:12px;position:relative">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span style="font-size:10px;font-weight:800;color:#e67e22;text-transform:uppercase;letter-spacing:1.5px;background:#fff4e0;padding:3px 8px;border-radius:20px">&#x1F4E3; Sponsored &bull; All Cameroon &#x1F1E8;&#x1F1F2;</span>
-        <button onclick="window.dismissSponsoredAd()" style="background:none;border:none;color:#aaa;font-size:18px;cursor:pointer;line-height:1;padding:0">&#x2715;</button>
-      </div>
-      <div id="sponsored-ad-img-wrap" style="display:none;margin-bottom:8px"><img id="sponsored-ad-img" src="" alt="" style="width:100%;border-radius:10px;max-height:160px;object-fit:cover"></div>
-      <div style="font-size:13px;color:#888;margin-bottom:2px" id="sponsored-ad-biz"></div>
-      <div style="font-size:16px;font-weight:800;color:#0f1923;margin-bottom:5px" id="sponsored-ad-title"></div>
-      <div style="font-size:13px;color:#444;line-height:1.5;margin-bottom:10px" id="sponsored-ad-body"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-        <button id="sponsored-ad-cta-btn" onclick="window.sponsoredAdClick()" style="flex:1;background:linear-gradient(135deg,#e67e22,#f39c12);color:white;border:none;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit"></button>
-        <button onclick="window.go('advertise-hub')" style="background:#f5f5f5;color:#888;border:none;border-radius:10px;padding:10px 12px;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap">Advertise like this</button>
-      </div>
-    </div>
+    <!-- Ad banner is now the global #ad-banner fixed element -->
 
     <div id="welcome-msg" style="font-size:15px;font-weight:700;color:#1a7a3c;text-align:center;padding:6px 0;margin-bottom:4px;display:none"></div>
 
@@ -675,6 +783,9 @@
         autocomplete="off"
         style="position:relative;z-index:101"/>
       <div id="search-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border-radius:0 0 14px 14px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:200;max-height:300px;overflow-y:auto;border:1px solid #eee;border-top:none"></div>
+      <button id="voice-btn" class="sb-icon" onclick="window.startVoiceSearch()" title="Voice search">🎤</button>
+      <button class="sb-icon" onclick="document.getElementById('cam-file-input').click()" title="Camera search">📷</button>
+      <input type="file" id="cam-file-input" accept="image/*" capture="environment" style="display:none" onchange="window.handleCamSearch(this)">
       <button onclick="window.doSearch()" data-i18n="btn.search">Search</button>
     </div>
 
@@ -731,6 +842,7 @@
       <button class="tab" id="stab-register" onclick="window.sellerTab('register')" data-i18n="btn.signUp">Register</button>
       <button class="tab active" id="stab-login" onclick="window.sellerTab('login')" data-i18n="btn.login">Login</button>
     </div>
+    <div id="seller-reg-success" style="display:none;background:#e8f5e9;border:1.5px solid #1a7a3c;border-radius:10px;padding:10px 14px;margin-bottom:8px;color:#1a7a3c;font-size:13px;font-weight:600;text-align:center"></div>
 
     <!-- REGISTER -->
     <div id="seller-register" style="display:none">
@@ -853,7 +965,7 @@
           <span id="seller-notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#e74c3c;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;align-items:center;justify-content:center">0</span>
         </div>
         <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer" onclick="window.go('set-pin')" title="Set Recovery PIN">&#x1F510; <span data-i18n="dash.pin">PIN</span></button>
-        <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer" onclick="window.go('role')" data-i18n="nav.logout">Sign out</button>
+        <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer" onclick="window.signOut()" data-i18n="nav.logout">Sign out</button>
       </div>
     </div>
     <div style="display:flex;gap:5px;margin-bottom:8px">
@@ -893,12 +1005,14 @@
     <div class="alert-g" id="dash-gps-box" style="margin-bottom:14px">
       <div class="at">&#128225; <span data-i18n="dash.gpsLocation">GPS Location</span></div>
       <div id="dash-gps-info" style="font-size:12px;color:#555"></div>
-      <div id="dash-map" style="height:140px;border-radius:10px;margin-top:8px;border:1.5px solid #c8e6c9"></div>
+      <div id="dash-map" style="height:140px;border-radius:10px;margin-top:8px;border:1.5px solid #c8e6c9;position:relative;z-index:1;isolation:isolate"></div>
     </div>
 
     <div style="font-size:12px;color:#888;margin-bottom:10px" data-i18n="dash.visibilityNote">
       &#127757; Your items are visible to all buyers in Cameroon. Buyers in your town see them first.
     </div>
+
+    <!-- Ad banner is now the global #ad-banner fixed element -->
 
     <!-- Search -->
     <div class="search-bar">
@@ -952,6 +1066,16 @@
         <span id="seller-enquiry-badge" style="display:none;position:absolute;right:14px;background:#e74c3c;color:white;border-radius:50%;width:22px;height:22px;align-items:center;justify-content:center;font-size:11px;font-weight:900">0</span>
       </button>
 
+      <!-- Business Analyst Button -->
+      <button onclick="window.go('business-analyst');window.loadBusinessAnalyst()" style="width:100%;padding:13px;background:linear-gradient(135deg,#2c3e50,#1a252f);color:white;border:none;border-radius:14px;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="font-size:22px">&#x1F4CA;</span>
+        <div style="text-align:left">
+          <div>Business Analyst</div>
+          <div style="font-size:11px;font-weight:400;opacity:0.85">Weekly insights &amp; recommendations</div>
+        </div>
+        <span style="margin-left:auto">&#x276F;</span>
+      </button>
+
       <!-- Live Stream Button -->
       <button onclick="window.openGoLive()" style="width:100%;padding:14px;background:linear-gradient(135deg,#e74c3c,#c0392b);color:white;border:none;border-radius:14px;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px">
         <span style="font-size:20px">&#x1F4F9;</span>
@@ -966,6 +1090,19 @@
         <div style="font-size:13px;font-weight:700;color:#0f1923;margin-bottom:10px;border-bottom:1px solid #eee;padding-bottom:8px" data-i18n="dash.myPostedItems">My Posted Items</div>
         <div id="my-listings-list"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- BUSINESS ANALYST SCREEN -->
+  <div class="screen" id="screen-business-analyst">
+    <div style="padding:20px 20px 100px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <button onclick="window.go('seller-dash')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer">&#8592; Back</button>
+        <button id="ba-gen-btn" onclick="window.generateAnalystReport()" style="background:linear-gradient(135deg,#1a7a3c,#27ae60);color:white;border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">&#x1F504; New Report</button>
+      </div>
+      <div id="ba-screen-title" style="font-size:20px;font-weight:900;color:#0f1923;margin-bottom:4px">&#x1F4CA; Business Analyst</div>
+      <div id="ba-screen-sub" style="font-size:12px;color:#888;margin-bottom:20px">Personalized insights for your store</div>
+      <div id="ba-content"></div>
     </div>
   </div>
 
@@ -1065,6 +1202,15 @@
       </div>
       <div class="title" style="margin-bottom:4px" data-i18n="create.title">Post Item for Sale</div>
       <div class="sub" data-i18n="create.subtitle">3 photos required (front, back, side/detail) + optional video. All 3 must pass AI verification before going live.</div>
+
+      <!-- Post Item Tabs -->
+      <div style="display:flex;gap:0;margin:12px 0 16px;border:1.5px solid #1a7a3c;border-radius:10px;overflow:hidden">
+        <button id="post-tab-single" onclick="window.switchPostTab('single')" style="flex:1;padding:10px;border:none;background:#1a7a3c;color:white;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">&#128230; Single Item</button>
+        <button id="post-tab-bulk" onclick="window.switchPostTab('bulk')" style="flex:1;padding:10px;border:none;background:white;color:#1a7a3c;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">&#x1F4C2; Bulk Upload</button>
+      </div>
+
+      <!-- SINGLE ITEM TAB -->
+      <div id="post-tab-single-content">
       <!-- Cameroon phone restriction notice -->
       <div id="cameroon-phone-banner" style="display:none;background:#fff8e1;border:1.5px solid #f59e0b;border-radius:12px;padding:14px 16px;margin-top:10px;margin-bottom:4px;gap:10px;align-items:flex-start">
         <div style="font-size:22px;line-height:1">&#x1F1E8;&#x1F1F2;</div>
@@ -1234,6 +1380,41 @@
       <div style="position:sticky;bottom:0;background:#fff;padding:12px 0 4px;margin-top:10px">
         <button class="btn btn-green" id="post-btn" onclick="window.submitPost()" data-i18n="create.publishListing">&#128640; Post Item for Sale</button>
       </div>
+      </div><!-- end post-tab-single-content -->
+
+      <!-- BULK UPLOAD TAB -->
+      <div id="post-tab-bulk-content" style="display:none">
+        <div style="background:#f0faf4;border:1.5px solid #c8e6c9;border-radius:14px;padding:16px;margin-bottom:14px">
+          <div style="font-size:13px;font-weight:800;color:#1a7a3c;margin-bottom:6px">&#x1F4CB; How it works</div>
+          <div style="font-size:12px;color:#333;line-height:1.7">
+            1. Download the template spreadsheet below<br>
+            2. Fill in your items (one per row) in Excel or Google Sheets<br>
+            3. Save as CSV and upload it here<br>
+            4. All items are created as drafts — add photos to each to go live
+          </div>
+        </div>
+
+        <a id="bulk-template-link" href="/api.php?action=get_csv_template" download="cammarket237_template.csv" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:13px;background:linear-gradient(135deg,#2980b9,#1a5276);color:white;text-decoration:none;border-radius:14px;font-size:14px;font-weight:800;margin-bottom:14px;box-sizing:border-box">
+          &#x2B07;&#xFE0F; Download Template Spreadsheet
+        </a>
+
+        <div style="margin-bottom:14px">
+          <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:6px">&#x1F4CE; Upload your filled CSV file</div>
+          <div id="bulk-file-box" onclick="document.getElementById('bulk-csv-input').click()" style="border:2px dashed #1a7a3c;border-radius:14px;padding:28px 16px;text-align:center;cursor:pointer;background:#fafff9">
+            <div style="font-size:32px;margin-bottom:6px">&#x1F4C2;</div>
+            <div id="bulk-file-name" style="font-size:13px;font-weight:700;color:#1a7a3c">Tap to select CSV file</div>
+            <div style="font-size:11px;color:#888;margin-top:4px">Max 100 items · CSV format only</div>
+          </div>
+          <input type="file" id="bulk-csv-input" accept=".csv,text/csv" style="display:none" onchange="window.onBulkFileSelected(this)">
+        </div>
+
+        <div id="bulk-result" style="display:none;border-radius:12px;padding:14px;margin-bottom:14px;font-size:13px"></div>
+
+        <div style="position:sticky;bottom:0;background:#fff;padding:12px 0 4px">
+          <button id="bulk-submit-btn" onclick="window.submitBulkImport()" style="width:100%;padding:15px;background:linear-gradient(135deg,#1a7a3c,#27ae60);color:white;border:none;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit">&#128640; Import Listings</button>
+        </div>
+      </div><!-- end post-tab-bulk-content -->
+
     </div>
   </div>
 
@@ -3061,7 +3242,7 @@
   <!-- ═══════════════════════════════════════════ -->
   <div class="screen" id="screen-advertise-hub">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <button onclick="history.back()||window.go('seller-dash')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer">&#8592; <span data-i18n="btn.back">Back</span></button>
+      <button onclick="var _u=JSON.parse(localStorage.getItem('cm237_user')||'{}');window.go(_u.role==='seller'?'seller-dash':'buyer-search')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer">&#8592; <span data-i18n="btn.back">Back</span></button>
       <div style="font-size:17px;font-weight:800;color:#0f1923">&#x1F4E3; Advertise on CamMarket237</div>
     </div>
 
@@ -3096,41 +3277,41 @@
     </div>
 
     <!-- Boost My Listing -->
-    <div style="background:white;border:2px solid #eee;border-radius:14px;padding:16px;margin-bottom:10px;opacity:0.6;display:flex;align-items:flex-start;gap:14px">
+    <div onclick="window.go('boost-listing')" style="background:white;border:2px solid #f39c12;border-radius:14px;padding:16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:14px;cursor:pointer">
       <div style="font-size:32px;line-height:1">&#x2B50;</div>
       <div style="flex:1">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
           <div style="font-size:15px;font-weight:800;color:#0f1923">Boost My Listing</div>
-          <span style="background:#aaa;color:white;font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;text-transform:uppercase">Coming Soon</span>
+          <span style="background:#27ae60;color:white;font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;text-transform:uppercase">Live</span>
         </div>
         <div style="font-size:12px;color:#555;line-height:1.5;margin-bottom:8px">Pin your listing to the top of search results for 7–30 days. Maximum visibility for your products.</div>
-        <div style="font-size:13px;font-weight:700;color:#aaa">From 5,000 FCFA &middot; Available soon</div>
+        <div style="font-size:13px;font-weight:700;color:#e67e22">From 5,000 FCFA &middot; Tap to get started &#x276F;</div>
       </div>
     </div>
 
     <!-- Video Ad -->
-    <div style="background:white;border:2px solid #eee;border-radius:14px;padding:16px;margin-bottom:10px;opacity:0.6;display:flex;align-items:flex-start;gap:14px">
+    <div onclick="window.go('video-ad')" style="background:white;border:2px solid #8e44ad;border-radius:14px;padding:16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:14px;cursor:pointer">
       <div style="font-size:32px;line-height:1">&#x1F3AC;</div>
       <div style="flex:1">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
           <div style="font-size:15px;font-weight:800;color:#0f1923">Video Ad</div>
-          <span style="background:#aaa;color:white;font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;text-transform:uppercase">Coming Soon</span>
+          <span style="background:#27ae60;color:white;font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;text-transform:uppercase">Live</span>
         </div>
         <div style="font-size:12px;color:#555;line-height:1.5;margin-bottom:8px">15-second video shown in the buyer feed. High-impact for product launches and brand awareness.</div>
-        <div style="font-size:13px;font-weight:700;color:#aaa">From 50,000 FCFA &middot; Available soon</div>
+        <div style="font-size:13px;font-weight:700;color:#8e44ad">From 50,000 FCFA &middot; Tap to get started &#x276F;</div>
       </div>
     </div>
 
     <!-- Promote an Event -->
-    <div style="background:white;border:2px solid #eee;border-radius:14px;padding:16px;margin-bottom:18px;opacity:0.6;display:flex;align-items:flex-start;gap:14px">
+    <div onclick="window.go('event-ad')" style="background:white;border:2px solid #1a7a3c;border-radius:14px;padding:16px;margin-bottom:18px;display:flex;align-items:flex-start;gap:14px;cursor:pointer">
       <div style="font-size:32px;line-height:1">&#x1F389;</div>
       <div style="flex:1">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
           <div style="font-size:15px;font-weight:800;color:#0f1923">Promote an Event</div>
-          <span style="background:#aaa;color:white;font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;text-transform:uppercase">Coming Soon</span>
+          <span style="background:#27ae60;color:white;font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;text-transform:uppercase">Live</span>
         </div>
         <div style="font-size:12px;color:#555;line-height:1.5;margin-bottom:8px">Promote concerts, bar nights, sporting events, and more to users near the venue.</div>
-        <div style="font-size:13px;font-weight:700;color:#aaa">From 35,000 FCFA &middot; Available soon</div>
+        <div style="font-size:13px;font-weight:700;color:#1a7a3c">From 35,000 FCFA &middot; Tap to get started &#x276F;</div>
       </div>
     </div>
 
@@ -3243,6 +3424,242 @@
       Submit Ad for Review &#x2192;
     </button>
     <div style="text-align:center;font-size:11px;color:#aaa;margin-bottom:20px">We review all ads within 24 hours. No payment until approved.</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- BOOST MY LISTING SCREEN                    -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="screen" id="screen-boost-listing">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button onclick="window.go('advertise-hub')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer">&#8592; <span data-i18n="btn.back">Back</span></button>
+      <div style="font-size:17px;font-weight:800;color:#0f1923">&#x2B50; Boost My Listing</div>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">1. Select a listing to boost</div>
+    <div id="boost-listings-container" style="margin-bottom:18px">
+      <div style="text-align:center;padding:24px;color:#aaa;font-size:13px">Loading your listings…</div>
+    </div>
+    <input type="hidden" id="boost-listing-id" value="">
+    <div id="boost-step2" style="display:none">
+      <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">2. Choose your package</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px" id="boost-package-grid">
+        <div style="border:2px solid #eee;border-radius:12px;padding:14px;text-align:center;color:#aaa">Loading…</div>
+      </div>
+      <input type="hidden" id="boost-selected-package-id" value="">
+      <input type="hidden" id="boost-selected-package-name" value="">
+      <input type="hidden" id="boost-selected-package-price" value="">
+      <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">3. Your business</div>
+      <div style="background:#f9f9f9;border-radius:12px;padding:14px;margin-bottom:18px;display:flex;flex-direction:column;gap:10px">
+        <div>
+          <label style="font-size:12px;color:#666;font-weight:600;display:block;margin-bottom:4px">Business / Store name <span style="color:#e74c3c">*</span></label>
+          <input id="boost-biz-name" type="text" placeholder="e.g. Mon Boutique Douala" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:12px;color:#666;font-weight:600;display:block;margin-bottom:4px">WhatsApp / Phone <span style="color:#e74c3c">*</span></label>
+          <input id="boost-biz-phone" type="tel" placeholder="e.g. 677 000 000" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box">
+        </div>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px">4. Notification content</div>
+      <div style="font-size:11px;color:#aaa;margin-bottom:8px">Pre-filled from your listing — edit as needed</div>
+      <div style="background:#f9f9f9;border-radius:12px;padding:14px;margin-bottom:18px;display:flex;flex-direction:column;gap:12px">
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <label style="font-size:12px;color:#666;font-weight:600">Title <span style="color:#e74c3c">*</span></label>
+            <span id="boost-title-count" style="font-size:11px;color:#aaa">0/60</span>
+          </div>
+          <input id="boost-push-title" type="text" maxlength="60" placeholder="e.g. iPhone 14 Pro — Bon état!" oninput="document.getElementById('boost-title-count').textContent=this.value.length+'/60'" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box">
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <label style="font-size:12px;color:#666;font-weight:600">Message <span style="color:#e74c3c">*</span></label>
+            <span id="boost-body-count" style="font-size:11px;color:#aaa">0/150</span>
+          </div>
+          <textarea id="boost-push-body" maxlength="150" rows="3" placeholder="Décrivez l'article brièvement — prix, état, quartier…" oninput="document.getElementById('boost-body-count').textContent=this.value.length+'/150'" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box;resize:none"></textarea>
+        </div>
+        <div>
+          <label style="font-size:12px;color:#666;font-weight:600;display:block;margin-bottom:4px">Image URL <span style="font-size:10px;color:#aaa">(auto-filled from listing)</span></label>
+          <input id="boost-push-img" type="url" placeholder="https://…" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box">
+        </div>
+      </div>
+      <button id="boost-submit-btn" onclick="window.submitBoostAd()" style="width:100%;padding:15px;background:linear-gradient(135deg,#27ae60,#2ecc71);color:white;border:none;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:10px">
+        Submit Boost for Review &#x2192;
+      </button>
+      <div style="text-align:center;font-size:11px;color:#aaa;margin-bottom:20px">Reviewed within 24 hours. No payment until approved.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- VIDEO AD SCREEN                            -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="screen" id="screen-video-ad">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button onclick="window.go('advertise-hub')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer">&#8592; Back</button>
+      <div style="font-size:17px;font-weight:800;color:#0f1923">&#x1F3AC; Video Ad</div>
+    </div>
+    <div style="background:linear-gradient(135deg,#6c3483,#8e44ad);border-radius:16px;padding:18px;margin-bottom:18px;color:white;text-align:center">
+      <div style="font-size:36px;margin-bottom:8px">&#x1F3AC;</div>
+      <div style="font-size:16px;font-weight:900;margin-bottom:6px">Up to 30-Second Video Ad</div>
+      <div style="font-size:12px;opacity:0.85;line-height:1.6">Your video plays in the buyer feed across all of Cameroon.<br>Perfect for product launches and brand awareness.</div>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">1. Choose your package</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px">
+      <div id="vpkg-1" onclick="window.selectVideoPkg(1,'Starter Video','50000')" style="border:2px solid #eee;border-radius:12px;padding:14px;text-align:center;cursor:pointer">
+        <div style="font-size:13px;font-weight:800;color:#0f1923;margin-bottom:4px">Starter</div>
+        <div style="font-size:11px;color:#666;margin-bottom:8px">5,000 users &middot; 3 days</div>
+        <div style="font-size:16px;font-weight:900;color:#8e44ad">50,000 FCFA</div>
+      </div>
+      <div id="vpkg-2" onclick="window.selectVideoPkg(2,'Pro Video','100000')" style="border:2px solid #eee;border-radius:12px;padding:14px;text-align:center;cursor:pointer">
+        <div style="font-size:13px;font-weight:800;color:#0f1923;margin-bottom:4px">Pro</div>
+        <div style="font-size:11px;color:#666;margin-bottom:8px">20,000 users &middot; 7 days</div>
+        <div style="font-size:16px;font-weight:900;color:#8e44ad">100,000 FCFA</div>
+      </div>
+    </div>
+    <input type="hidden" id="vpkg-id" value="1">
+    <input type="hidden" id="vpkg-name" value="Starter Video">
+    <input type="hidden" id="vpkg-price" value="50000">
+    <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">2. Your business</div>
+    <div style="background:#f9f9f9;border-radius:12px;padding:14px;margin-bottom:18px;display:flex;flex-direction:column;gap:10px">
+      <div>
+        <label style="font-size:12px;color:#666;font-weight:600;display:block;margin-bottom:4px">Business name <span style="color:#e74c3c">*</span></label>
+        <input id="vad-biz-name" type="text" placeholder="e.g. Mon Boutique Yaoundé" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:12px;color:#666;font-weight:600;display:block;margin-bottom:4px">WhatsApp / Phone <span style="color:#e74c3c">*</span></label>
+        <input id="vad-biz-phone" type="tel" placeholder="e.g. 677 000 000" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box">
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">3. Your video <span style="color:#e74c3c">*</span></div>
+    <div style="background:#f9f9f9;border-radius:12px;padding:14px;margin-bottom:6px">
+      <label style="display:flex;align-items:center;justify-content:center;gap:10px;background:white;border:2px dashed #8e44ad;border-radius:12px;padding:16px;cursor:pointer;margin-bottom:12px">
+        <span style="font-size:26px">&#x1F3AC;</span>
+        <span style="font-size:13px;font-weight:700;color:#8e44ad">Choose or record video</span>
+        <input type="file" id="vad-file-upload" accept="video/*" style="display:none" onchange="window.handleVideoSelected(this)">
+      </label>
+      <div id="vad-preview-wrap" style="display:none">
+        <video id="vad-preview" controls style="width:100%;border-radius:10px;max-height:200px;background:#000;margin-bottom:10px"></video>
+        <div id="vad-duration-info" style="font-size:12px;color:#555;margin-bottom:8px;text-align:center"></div>
+        <div id="vad-trim-wrap" style="display:none;background:#fff4e0;border:1.5px solid #e67e22;border-radius:10px;padding:12px;margin-bottom:8px">
+          <div style="font-size:12px;font-weight:700;color:#e67e22;margin-bottom:8px">&#x2702;&#xFE0F; Select a 30-second clip</div>
+          <div style="font-size:11px;color:#555;margin-bottom:10px">Your video is longer than 30 seconds. Drag the sliders to choose which part to use.</div>
+          <div style="margin-bottom:8px">
+            <label style="font-size:11px;color:#666;font-weight:600;display:block;margin-bottom:4px">Start at: <span id="vad-start-label">0s</span></label>
+            <input type="range" id="vad-start" min="0" value="0" step="0.5" style="width:100%;accent-color:#8e44ad" oninput="window.updateVideoTrim()">
+          </div>
+          <div>
+            <label style="font-size:11px;color:#666;font-weight:600;display:block;margin-bottom:4px">End at: <span id="vad-end-label">30s</span></label>
+            <input type="range" id="vad-end" min="0" value="30" step="0.5" style="width:100%;accent-color:#8e44ad" oninput="window.updateVideoTrim()">
+          </div>
+          <div style="margin-top:8px;text-align:center;font-size:12px;font-weight:700;color:#8e44ad" id="vad-clip-duration">Clip: 30s</div>
+        </div>
+        <button onclick="window.clearVideoSelection()" style="width:100%;background:#f5f5f5;border:none;border-radius:8px;padding:8px;font-size:12px;color:#888;cursor:pointer;font-family:inherit">&#x2715; Remove video &amp; choose another</button>
+      </div>
+      <div id="vad-no-video-hint" style="text-align:center;font-size:12px;color:#aaa;padding:4px 0">No video selected yet</div>
+    </div>
+    <input type="hidden" id="vad-clip-start" value="0">
+    <input type="hidden" id="vad-clip-end" value="30">
+    <div style="font-size:10px;color:#aaa;margin-bottom:18px;text-align:center">Max 30 seconds &middot; MP4, MOV, AVI accepted &middot; Max 250 MB</div>
+    <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">4. Ad details</div>
+    <div style="background:#f9f9f9;border-radius:12px;padding:14px;margin-bottom:18px;display:flex;flex-direction:column;gap:12px">
+      <div>
+        <label style="font-size:12px;color:#666;font-weight:600;display:block;margin-bottom:4px">Ad title / headline <span style="color:#e74c3c">*</span></label>
+        <input id="vad-title" type="text" maxlength="60" placeholder="e.g. New Collection — Grand Opening!" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:12px;color:#666;font-weight:600;display:block;margin-bottom:4px">Describe what your video shows <span style="color:#e74c3c">*</span></label>
+        <textarea id="vad-desc" rows="3" maxlength="300" placeholder="e.g. A 30-second clip showing our restaurant, menu highlights, and opening special." style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box;resize:none"></textarea>
+      </div>
+    </div>
+    <div style="background:#f0eaf7;border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:#6c3483;line-height:1.6">
+      &#x2139;&#xFE0F; Our team reviews your video for content quality before it goes live. We may contact you via WhatsApp to make adjustments.
+    </div>
+    <button id="vad-submit-btn" onclick="window.submitVideoAd()" style="width:100%;padding:15px;background:linear-gradient(135deg,#8e44ad,#6c3483);color:white;border:none;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:10px">
+      Submit Video Ad &#x2192;
+    </button>
+    <div style="text-align:center;font-size:11px;color:#aaa;margin-bottom:20px">Reviewed within 48 hours. No payment until approved.</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- PROMOTE AN EVENT SCREEN                    -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="screen" id="screen-event-ad">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button onclick="window.go('advertise-hub')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer">&#8592; Back</button>
+      <div style="font-size:17px;font-weight:800;color:#0f1923">&#x1F389; Promote an Event</div>
+    </div>
+    <div style="background:linear-gradient(135deg,#1a5276,#2980b9);border-radius:16px;padding:18px;margin-bottom:18px;color:white;text-align:center">
+      <div style="font-size:36px;margin-bottom:8px">&#x1F389;</div>
+      <div style="font-size:16px;font-weight:900;margin-bottom:6px">Event Promotion</div>
+      <div style="font-size:12px;opacity:0.85;line-height:1.6">Reach buyers near your venue.<br>Concerts, bar nights, markets, sports, and more.</div>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">1. Choose your package</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px">
+      <div id="epkg-1" onclick="window.selectEventPkg(1,'Event Starter','35000')" style="border:2px solid #eee;border-radius:12px;padding:14px;text-align:center;cursor:pointer">
+        <div style="font-size:13px;font-weight:800;color:#0f1923;margin-bottom:4px">Starter</div>
+        <div style="font-size:11px;color:#666;margin-bottom:8px">5,000 nearby users</div>
+        <div style="font-size:16px;font-weight:900;color:#2980b9">35,000 FCFA</div>
+      </div>
+      <div id="epkg-2" onclick="window.selectEventPkg(2,'Event Premium','65000')" style="border:2px solid #eee;border-radius:12px;padding:14px;text-align:center;cursor:pointer">
+        <div style="font-size:13px;font-weight:800;color:#0f1923;margin-bottom:4px">Premium</div>
+        <div style="font-size:11px;color:#666;margin-bottom:8px">20,000 nearby users</div>
+        <div style="font-size:16px;font-weight:900;color:#2980b9">65,000 FCFA</div>
+      </div>
+    </div>
+    <input type="hidden" id="epkg-id" value="1">
+    <input type="hidden" id="epkg-name" value="Event Starter">
+    <input type="hidden" id="epkg-price" value="35000">
+    <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">2. Organiser details</div>
+    <div style="background:#f9f9f9;border-radius:12px;padding:14px;margin-bottom:18px;display:flex;flex-direction:column;gap:10px">
+      <div>
+        <label style="font-size:12px;color:#666;font-weight:600;display:block;margin-bottom:4px">Organiser / Business name <span style="color:#e74c3c">*</span></label>
+        <input id="ead-organiser" type="text" placeholder="e.g. Club Premium Douala" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:12px;color:#666;font-weight:600;display:block;margin-bottom:4px">WhatsApp / Phone <span style="color:#e74c3c">*</span></label>
+        <input id="ead-phone" type="tel" placeholder="e.g. 677 000 000" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box">
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">3. Event details</div>
+    <div style="background:#f9f9f9;border-radius:12px;padding:14px;margin-bottom:18px;display:flex;flex-direction:column;gap:12px">
+      <div>
+        <label style="font-size:12px;color:#666;font-weight:600;display:block;margin-bottom:4px">Event name <span style="color:#e74c3c">*</span></label>
+        <input id="ead-name" type="text" maxlength="60" placeholder="e.g. Summer Night Concert 2026" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label style="font-size:12px;color:#666;font-weight:600;display:block;margin-bottom:4px">Event date <span style="color:#e74c3c">*</span></label>
+          <input id="ead-date" type="date" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:12px;color:#666;font-weight:600;display:block;margin-bottom:4px">Time</label>
+          <input id="ead-time" type="time" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box">
+        </div>
+      </div>
+      <div>
+        <label style="font-size:12px;color:#666;font-weight:600;display:block;margin-bottom:4px">Venue / Location <span style="color:#e74c3c">*</span></label>
+        <input id="ead-venue" type="text" placeholder="e.g. Palais des Congrès, Yaoundé" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:12px;color:#666;font-weight:600;display:block;margin-bottom:4px">Event description <span style="color:#e74c3c">*</span></label>
+        <textarea id="ead-desc" rows="3" maxlength="200" placeholder="e.g. Live music, DJ, food and drinks. Tickets 5,000 FCFA at the door." style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box;resize:none"></textarea>
+      </div>
+      <div>
+        <label style="font-size:12px;color:#666;font-weight:600;display:block;margin-bottom:6px">Event poster / flyer <span style="font-size:10px;color:#aaa">(optional)</span></label>
+        <label style="display:flex;align-items:center;justify-content:center;gap:10px;background:#f5f5f5;border:2px dashed #2980b9;border-radius:10px;padding:14px;cursor:pointer;margin-bottom:8px">
+          <span style="font-size:24px">&#x1F5BC;&#xFE0F;</span>
+          <span style="font-size:13px;font-weight:700;color:#2980b9">Choose poster / flyer</span>
+          <input type="file" id="ead-file-upload" accept="image/*" style="display:none" onchange="window.handlePosterSelected(this)">
+        </label>
+        <div id="ead-poster-preview-wrap" style="display:none;position:relative;margin-bottom:6px">
+          <img id="ead-poster-preview" src="" alt="Poster preview" style="width:100%;border-radius:10px;max-height:180px;object-fit:cover">
+          <button onclick="window.clearPosterSelection()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit">&#x2715; Remove</button>
+        </div>
+        <div id="ead-poster-hint" style="font-size:10px;color:#aaa;text-align:center">JPG, PNG accepted &middot; Max 10 MB</div>
+        <input type="hidden" id="ead-img" value="">
+      </div>
+    </div>
+    <button id="ead-submit-btn" onclick="window.submitEventAd()" style="width:100%;padding:15px;background:linear-gradient(135deg,#2980b9,#1a5276);color:white;border:none;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:10px">
+      Submit Event for Review &#x2192;
+    </button>
+    <div style="text-align:center;font-size:11px;color:#aaa;margin-bottom:20px">Reviewed within 24 hours. No payment until approved.</div>
   </div>
 
   <!-- ═══════════════════════════════════════════ -->
@@ -3564,6 +3981,7 @@ window.TRANSLATIONS = {
     'service.cleaning':'Cleaning','service.cleaningDesc':'Home & office',
     'service.guesthouses':'Guesthouses','service.guesthousesDesc':'Hotels & stays',
     'service.more':'More Services','service.moreDesc':'All others',
+    'service.advertise':'Advertise','service.advertiseDesc':'Boost your reach',
     'service.searchPh':'Search services...','service.searchBtn':'Search',
     'service.findNearYou':'Find {{label}} near you',
     'svc.myTown':'My Town','svc.myRegion':'My Region','svc.nationwide':'Nationwide',
@@ -3919,6 +4337,7 @@ window.TRANSLATIONS = {
     'service.cleaning':'Nettoyage','service.cleaningDesc':'Maison et bureau',
     'service.guesthouses':'Maisons d\'hôtes','service.guesthousesDesc':'Hôtels & séjours',
     'service.more':'Plus de services','service.moreDesc':'Tous les autres',
+    'service.advertise':'Publicité','service.advertiseDesc':'Augmentez votre portée',
     'service.searchPh':'Rechercher des services...','service.searchBtn':'Rechercher',
     'service.findNearYou':'Trouver {{label}} près de chez vous',
     'svc.myTown':'Ma ville','svc.myRegion':'Ma région','svc.nationwide':'Tout le pays',
@@ -4270,6 +4689,7 @@ window.TRANSLATIONS = {
     'service.cleaning':'Cleaning','service.cleaningDesc':'House and office',
     'service.guesthouses':'Guest House','service.guesthousesDesc':'Hotel & lodge',
     'service.more':'More Services','service.moreDesc':'All others',
+    'service.advertise':'Advertise','service.advertiseDesc':'Make people see you',
     'service.searchPh':'Search services...','service.searchBtn':'Search',
     'service.findNearYou':'Find {{label}} wey dey near you',
     'svc.myTown':'My Town','svc.myRegion':'My Region','svc.nationwide':'All Cameroon',
@@ -4536,7 +4956,15 @@ var CATS = ["Electronics","Phones & Accessories","Clothing & Fashion","Food & Gr
   "Cleaning Services","Repairs & Plumbing","Interior Design","Delivery Service","Services","Other"];
 
 // \u2500\u2500 STATE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+var _ADS_DISABLED = (location.hostname === 'cammarket237.com');
 var _sessionToken = '', _currentUser = null, _currentStore = null;
+
+function waOpen(url) {
+  var a = document.createElement('a');
+  a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+window._itemCache = {};
 var _buyerTown = '', _buyerRegion = '', _buyerGPS = null, _buyerRange = 'national';
 var _sellerTown = '', _sellerRegion = '', _sellerGPS = null, _sellerStoreId = null;
 var _sellerCats = [], _physicalStore = '', _bulkOn = false;
@@ -4561,10 +4989,13 @@ window.isCameroonPhone = function(phone) {
 };
 
 window.go = function(id) {
+  if (id === 'buyer-auth')  { window.location.href = '/cammarket_login_classic.html?role=buyer';  return; }
+  if (id === 'seller-auth') { window.location.href = '/cammarket_login_classic.html?role=seller'; return; }
   document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
   var el = document.getElementById('screen-' + id);
   if (el) el.classList.add('active');
   window.scrollTo(0, 0);
+  window._adHandleScreenChange && window._adHandleScreenChange(id);
   if (id === 'cart') setTimeout(function(){ if(window.loadCart) window.loadCart(); }, 100);
   if (id === 'post-item') {
     var u = _currentUser || JSON.parse(localStorage.getItem('cm237_user') || 'null');
@@ -4578,6 +5009,7 @@ window.go = function(id) {
     window.showPromoStrip && window.showPromoStrip(id);
   }
   if (id === 'seller-dash') {
+    setTimeout(function(){ window.loadAdCarousel && window.loadAdCarousel(); }, 600);
     setTimeout(function(){ window.loadSellerNotifBadge && window.loadSellerNotifBadge(); }, 400);
     var ghIntent = sessionStorage.getItem('_gh_intent');
     if (ghIntent === 'list') {
@@ -4598,7 +5030,7 @@ window.go = function(id) {
     }
   }
   if (id === 'buyer-search') {
-    setTimeout(function(){ window.loadActiveSponsoredAd && window.loadActiveSponsoredAd(); }, 600);
+    setTimeout(function(){ window.loadAdCarousel && window.loadAdCarousel(); }, 600);
     var ghIntent2 = sessionStorage.getItem('_gh_intent');
     if (ghIntent2 === 'find') {
       sessionStorage.removeItem('_gh_intent');
@@ -4628,8 +5060,28 @@ window.go = function(id) {
   if (id === 'guesthouse-hub') {
     setTimeout(function(){ window.renderGuesthouseHub && window.renderGuesthouseHub(); }, 0);
   }
+  if (id === 'sponsored-ad' || id === 'boost-listing' || id === 'video-ad' || id === 'event-ad' || id === 'advertise-hub') {
+    var _adTok = localStorage.getItem('cm237_token') || _sessionToken || '';
+    if (!_adTok) {
+      document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+      var _roleEl = document.getElementById('screen-role');
+      if (_roleEl) _roleEl.classList.add('active');
+      window.scrollTo(0, 0);
+      setTimeout(function(){ alert('Please log in to access Ads.'); }, 100);
+      return;
+    }
+  }
   if (id === 'sponsored-ad') {
     window.loadAdPackages && window.loadAdPackages();
+  }
+  if (id === 'boost-listing') {
+    window.loadBoostListingScreen && window.loadBoostListingScreen();
+  }
+  if (id === 'video-ad') {
+    window.selectVideoPkg && window.selectVideoPkg(1,'Starter Video','50000');
+  }
+  if (id === 'event-ad') {
+    window.selectEventPkg && window.selectEventPkg(1,'Event Starter','35000');
   }
   if (id === 'advertise-hub') {
     window.loadAdvertiseStats && window.loadAdvertiseStats();
@@ -4681,26 +5133,25 @@ window.saveSession = function(user, store) {
   localStorage.setItem('cm237_store', JSON.stringify(store || null));
 };
 
-window.signOut = async function() {
-  // Invalidate session on server
+window.signOut = function() {
+  // Fire server invalidation in background — don't wait for it
   var tok = localStorage.getItem('cm237_token') || _sessionToken || '';
   if (tok) {
-    try {
-      var fd = new FormData();
-      fd.append('action', 'logout');
-      await fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token':tok}});
-    } catch(e) {}
+    var fd = new FormData();
+    fd.append('action', 'logout');
+    fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token':tok}}).catch(function(){});
   }
-  // Clear ALL local storage
+  // Clear state and navigate immediately
   _currentUser = null; _currentStore = null; _sessionToken = ''; _isGuest = false;
+  window._dealsLoaded = false; window._lastPointsFetch = 0;
   localStorage.removeItem('cm237_token');
   localStorage.removeItem('cm237_user');
   localStorage.removeItem('cm237_store');
   localStorage.removeItem('cm237_guest_time');
+  localStorage.removeItem('cm237_guest_intent');
   localStorage.removeItem('cm237_session');
   sessionStorage.clear();
-  // Force reload to role screen
-  window.location.href = window.location.pathname + '?nocache=' + Date.now();
+  go('role');
 };
 
 // \u2500\u2500 WELCOME MESSAGE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -4749,7 +5200,11 @@ window.showWelcome = function() {
   // Load points if logged in
   var token = localStorage.getItem('cm237_token') || (user && user.session_token) || '';
   if (user && user.role !== 'guest' && token) {
-    window.loadUserPoints(token);
+    var now = Date.now();
+    if (!window._lastPointsFetch || (now - window._lastPointsFetch) > 30000) {
+      window._lastPointsFetch = now;
+      window.loadUserPoints(token);
+    }
   }
 };
 
@@ -4815,6 +5270,7 @@ window.buyerTab = function(t) {
     if (a) a.classList.toggle('active', x===t);
     if (b) b.style.display = x===t ? 'block' : 'none';
   });
+  var bMsg = document.getElementById('buyer-reg-success'); if (bMsg) bMsg.style.display = 'none';
   if (t === 'register') window._applyStoredPromoCode && window._applyStoredPromoCode();
 };
 
@@ -4824,6 +5280,7 @@ window.sellerTab = function(t) {
     if (a) a.classList.toggle('active', x===t);
     if (b) b.style.display = x===t ? 'block' : 'none';
   });
+  var sMsg = document.getElementById('seller-reg-success'); if (sMsg) sMsg.style.display = 'none';
   if (t === 'register') window._applyStoredPromoCode && window._applyStoredPromoCode();
 };
 
@@ -5018,10 +5475,11 @@ window.registerBuyer = async function() {
     var d = await (await fetch('/api.php', {method:'POST', body:fd})).json();
     if (btn) { btn.textContent = 'Create Buyer Account'; btn.disabled = false; }
     if (d.success) {
-      localStorage.setItem('cm237_token', d.user.session_token);
-      localStorage.setItem('cm237_user', JSON.stringify(d.user));
-      alert('Account created successfully!\n\nYour referral code: ' + (d.user.referral_code || '') + '\n\nWelcome to CamMarket237!');
-      window.afterBuyerAuth();
+      var regPhone = (document.getElementById('b-phone')||{}).value||'';
+      window.buyerTab('login');
+      var ph = document.getElementById('buyer-phone'); if (ph && regPhone) ph.value = regPhone;
+      var msg = document.getElementById('buyer-reg-success');
+      if (msg) { msg.innerHTML = '✅ Account created! Please sign in.'; msg.style.display = 'block'; }
     } else {
       alert(d.error || 'Registration failed');
     }
@@ -5110,7 +5568,6 @@ window.loginSeller = async function() {
       if (d.store && d.store.latitude) _sellerGPS = {lat: parseFloat(d.store.latitude), lng: parseFloat(d.store.longitude)};
       if (!d.has_pin) { window.go('set-pin'); return; }
       window.launchSellerDash(d.store ? d.store.store_name : d.user.full_name, d.store);
-      window.loadUserPoints(d.user.session_token);
       window.renderWalletFromStorage();
     } else {
       var err = document.getElementById('sl-err');
@@ -5184,11 +5641,11 @@ window.registerSeller = function() {
     .then(function(r){ return r.json(); })
     .then(function(d) {
       if (d.success) {
-        localStorage.setItem('cm237_token', d.user.session_token);
-        localStorage.setItem('cm237_user', JSON.stringify(d.user));
-        if (d.store) localStorage.setItem('cm237_store', JSON.stringify(d.store));
-        alert('✅ Seller account created! Welcome ' + (d.user.full_name || '') + '.\n\nYou got 30 FREE streaming minutes!\nYour referral code: ' + (d.user.referral_code || ''));
-        window.go('seller-dash');
+        var regPhone = (document.getElementById('s-phone')||{}).value||'';
+        window.sellerTab('login');
+        var sph = document.getElementById('sl-phone'); if (sph && regPhone) sph.value = regPhone;
+        var msg = document.getElementById('seller-reg-success');
+        if (msg) { msg.innerHTML = '✅ Seller account created! Please sign in.'; msg.style.display = 'block'; }
       } else {
         alert('❌ ' + (d.error || 'Registration failed. Please try again.'));
       }
@@ -5415,8 +5872,8 @@ window.setCat = function(cat) {
 };
 
 window.doSearch = async function() {
-  // Load deals on homepage
-  window.loadDeals && window.loadDeals();
+  // Load deals only once per session (not on every search)
+  if (!window._dealsLoaded) { window._dealsLoaded = true; window.loadDeals && window.loadDeals(); }
   window.showWelcome();
   var q = document.getElementById('search-query');
   var qval = q ? q.value : '';
@@ -5461,6 +5918,7 @@ window.doSearch = async function() {
 };
 
 window.renderItem = function(item) {
+  window._itemCache[item.id] = item;
   var name  = esc(item.title || '');
   var price = item.price ? Number(item.price).toLocaleString() + ' FCFA' : '';
   var town  = esc(item.town  || '');
@@ -5470,7 +5928,7 @@ window.renderItem = function(item) {
     ? '<img src="' + item.main_photo + '" style="width:100%;height:100px;object-fit:cover;border-radius:10px 10px 0 0" onerror="this.src=&apos;&apos;"/>'
     : '<div style="width:100%;height:100px;border-radius:10px 10px 0 0;background:#e8e0d0;display:flex;align-items:center;justify-content:center;font-size:28px">\uD83D\uDCE6</div>';
   var saved = window._savedItems && window._savedItems[item.id] ? '\u2764\uFE0F' : '\uD83E\uDD0D';
-  return '<div onclick="window.showItem(this.dataset.item)" data-item="' + encodeURIComponent(JSON.stringify(item)) + '" style="border:1.5px solid #eee;border-radius:12px;background:#fafaf7;cursor:pointer;overflow:hidden">'
+  return '<div class="itm" data-item-id="' + item.id + '" style="cursor:pointer" onclick="var _ci=window._itemCache[this.dataset.itemId];if(_ci)window.showItem(_ci);">'
     + img
     + '<div style="padding:10px">'
     + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">'
@@ -5480,13 +5938,27 @@ window.renderItem = function(item) {
     + '<div style="color:' + (item.is_sold?'#aaa':'#1a7a3c') + ';font-weight:800;font-size:13px;margin-bottom:2px">' + (item.is_sold?'<s>'+price+'</s>':price) + '</div>'
     + '<div style="display:flex;justify-content:space-between;align-items:center">'
     + '<div style="font-size:10px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + town + '</div>'
+    + '<div style="display:flex;align-items:center;gap:5px">'
+    + '<button class="shr" data-sid="'+item.id+'" onclick="event.stopPropagation();window.shareFromCard(this)" title="Share" style="width:26px;height:26px;border-radius:50%;background:#f0f4ff;border:1.5px solid #d0d8f0;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2980b9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>'
     + (item.is_sold ? '' : '<button class="cm-cart-btn" data-id="'+item.id+'" data-ss="'+(item.stock_status||'in_stock')+'" style="background:#1a7a3c;color:white;border:none;border-radius:6px;padding:4px 8px;font-size:10px;cursor:pointer;font-family:inherit">'+window.t('btn.addCart')+'</button>')
+    + '</div>'
     + '</div>'
     + '</div>'
     + '</div>';
 };
 
 // \u2500\u2500 IMPROVED showItem \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Delegated click handler for item cards — reliable on mobile PWA
+document.addEventListener('click', function(e) {
+  var card = e.target.closest ? e.target.closest('.itm') : null;
+  if (!card) return;
+  var id = card.dataset.itemId;
+  if (!id) return;
+  var item = window._itemCache[id];
+  if (!item) return;
+  window.showItem(item);
+}, false);
+
 window._currentItem = null;
 window._currentStoreId = null;
 
@@ -5717,7 +6189,7 @@ window.contactAnnouncedStore = function(wa) {
   if (!window.canContactSeller('Create an account to contact this seller', 'Register free on CamMarket237 to send WhatsApp messages to sellers.')) return;
   var n = wa.replace(/[^0-9]/g, '');
   if (!n.startsWith('237')) n = '237' + n;
-  window.open('https://wa.me/' + n, '_blank');
+  waOpen('https://wa.me/' + n, '_blank');
 };
 
 window.contactCartSeller = function(wa) {
@@ -5725,7 +6197,7 @@ window.contactCartSeller = function(wa) {
   if (!window.canContactSeller('Create an account to contact this seller', 'Register free on CamMarket237 to send WhatsApp messages to sellers and buy safely.')) return;
   var n = wa.replace(/[^0-9]/g, '');
   if (!n.startsWith('237')) n = '237' + n;
-  window.open('https://wa.me/' + n + '?text=' + encodeURIComponent('Hi, I have an item from your store in my CamMarket237 cart. Is it still available?'), '_blank');
+  waOpen('https://wa.me/' + n + '?text=' + encodeURIComponent('Hi, I have an item from your store in my CamMarket237 cart. Is it still available?'), '_blank');
 };
 
 window.getDirections = function() {
@@ -5738,13 +6210,188 @@ window.getDirections = function() {
 window.shareItem = function() {
   var item = window._currentItem;
   if (!item) return;
-  var text = '\uD83D\uDED2 ' + item.title + '\n\uD83D\uDCB0 ' + (item.price?Number(item.price).toLocaleString()+' FCFA':'') + '\n\uD83D\uDCCD ' + (item.town||'') + '\n\nFound on CamMarket237 - cammarket237.com';
+  var url = window.location.origin + '/?item=' + item.id;
+  var text = '\uD83D\uDED2 ' + (item.title||'') + '\n\uD83D\uDCB0 ' + (item.price ? Number(item.price).toLocaleString() + ' FCFA' : '') + '\n\uD83D\uDCCD ' + (item.town||'') + '\n\nCamMarket237 \u2013 ' + url;
   if (navigator.share) {
-    navigator.share({title: item.title, text: text, url: 'https://cammarket237.com'});
+    navigator.share({title: item.title, text: text, url: url}).catch(function(){});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(function(){
+      window._shareToast('\u2705 Link copied!');
+    }).catch(function(){
+      waOpen('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+    });
   } else {
-    var n = item.whatsapp ? item.whatsapp.replace(/[^0-9]/g,'') : '';
-    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+    waOpen('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
   }
+};
+
+window.shareFromCard = function(btn) {
+  var id = btn.getAttribute('data-sid');
+  var url = window.location.origin + '/?item=' + id;
+  if (navigator.share) {
+    navigator.share({title: 'Check this on CamMarket237', url: url}).catch(function(){});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(function(){ window._shareToast('✅ Link copied!'); }).catch(function(){
+      waOpen('https://wa.me/?text=' + encodeURIComponent(url), '_blank');
+    });
+  } else {
+    waOpen('https://wa.me/?text=' + encodeURIComponent(url), '_blank');
+  }
+};
+
+window._shareToast = function(msg) {
+  var t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#0f1923;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:700;z-index:9999;pointer-events:none;opacity:1;transition:opacity .4s';
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); }, 400); }, 2000);
+};
+
+// ── VOICE SEARCH ─────────────────────────────────────────────
+window.startVoiceSearch = function() {
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { window._shareToast('Voice search not supported on this browser'); return; }
+  var btn = document.getElementById('voice-btn');
+  var langMap = {'en':'en-GB','fr':'fr-FR','pid':'en-GB'};
+  var rec = new SR();
+  rec.lang = langMap[window._currentLang || 'pid'] || 'en-GB';
+  rec.interimResults = false;
+  rec.maxAlternatives = 1;
+  btn.classList.add('listening');
+  btn.textContent = '🔴';
+  window._shareToast('Listening… speak now');
+  rec.start();
+  rec.onresult = function(e) {
+    var txt = e.results[0][0].transcript;
+    var inp = document.getElementById('search-query');
+    if (inp) { inp.value = txt; if (window.doSearch) window.doSearch(); }
+    btn.classList.remove('listening'); btn.textContent = '🎤';
+  };
+  rec.onerror = function() {
+    btn.classList.remove('listening'); btn.textContent = '🎤';
+    window._shareToast('Could not hear. Try again.');
+  };
+  rec.onend = function() { btn.classList.remove('listening'); btn.textContent = '🎤'; };
+};
+
+// ── CAMERA SEARCH ─────────────────────────────────────────────
+window.handleCamSearch = function(inp) {
+  if (!inp.files || !inp.files[0]) return;
+  var file = inp.files[0];
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var c = document.createElement('canvas'); c.width = 32; c.height = 32;
+      var ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, 32, 32);
+      var d = ctx.getImageData(0, 0, 32, 32).data;
+      var r=0,g=0,b=0,n=0;
+      for (var i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2];n++;}
+      r=r/n; g=g/n; b=b/n;
+      var cats = window._colorToCategories(r,g,b);
+      window._showCamModal(e.target.result, cats);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  inp.value = '';
+};
+
+window._colorToCategories = function(r,g,b) {
+  var bright = (r+g+b)/3;
+  var max = Math.max(r,g,b), min = Math.min(r,g,b);
+  var hue = 0;
+  if (max !== min) {
+    var d = max - min;
+    if (max===r) hue = ((g-b)/d + (g<b?6:0))*60;
+    else if (max===g) hue = ((b-r)/d + 2)*60;
+    else hue = ((r-g)/d + 4)*60;
+  }
+  var sat = max === 0 ? 0 : (max-min)/max;
+  // Map dominant color to likely categories
+  if (bright < 55) return ['Electronics','Phones & Accessories','Vehicles & Parts','Furniture & Home'];
+  if (sat < 0.15)  return ['Clothing & Fashion','Books & Stationery','Beauty & Health','Furniture & Home'];
+  if (hue < 30  || hue >= 330) return ['Clothing & Fashion','Beauty & Health','Food & Groceries','Catering & Food'];
+  if (hue < 60)  return ['Food & Groceries','Farm/Agric Produce','Catering & Food','Furniture & Home'];
+  if (hue < 150) return ['Farm/Agric Produce','Food & Groceries','Guesthouses & Hotels','Vehicles & Parts'];
+  if (hue < 210) return ['Electronics','Phones & Accessories','Vehicles & Parts','Guesthouses & Hotels'];
+  if (hue < 270) return ['Electronics','Clothing & Fashion','Books & Stationery','Beauty & Health'];
+  return ['Clothing & Fashion','Beauty & Health','Furniture & Home','Books & Stationery'];
+};
+
+window._showCamModal = function(imgSrc, cats) {
+  var old = document.getElementById('cam-search-modal');
+  if (old) old.remove();
+  var allCats = [
+    '📱 Phones & Accessories','💻 Electronics','👗 Clothing & Fashion',
+    '🍎 Food & Groceries','🛋 Furniture & Home','🚗 Vehicles & Parts',
+    '💄 Beauty & Health','🌿 Farm/Agric Produce','🏠 Guesthouses & Hotels',
+    '📚 Books & Stationery','🍽 Catering & Food','🚚 Delivery Service'
+  ];
+  var topChips = cats.map(function(c){
+    var em = allCats.find(function(a){return a.includes(c.split(' ')[0])||a.toLowerCase().includes(c.split(' & ')[0].toLowerCase());}) || c;
+    return '<div class="cam-chip" onclick="window._camSearchCat(\''+c.replace(/'/g,"\\'")+'\')">' + em + '</div>';
+  }).join('');
+  var moreChips = allCats.filter(function(a){
+    return !cats.some(function(c){return a.toLowerCase().includes(c.split(' ')[0].toLowerCase());});
+  }).map(function(a){
+    var cat = a.replace(/^[^\s]+\s/,'');
+    return '<div class="cam-chip" onclick="window._camSearchCat(\''+cat.replace(/'/g,"\\'")+'\')" style="opacity:.7">' + a + '</div>';
+  }).join('');
+  var el = document.createElement('div');
+  el.id = 'cam-search-modal';
+  el.className = 'cam-overlay';
+  el.innerHTML = '<div class="cam-sheet">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'
+    + '<div style="font-weight:800;font-size:16px;color:#0f1923">📷 What are you looking for?</div>'
+    + '<button onclick="document.getElementById(\'cam-search-modal\').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa">✕</button>'
+    + '</div>'
+    + '<img src="'+imgSrc+'" style="width:100%;height:160px;object-fit:cover;border-radius:12px;margin-bottom:14px">'
+    + '<div style="font-size:12px;font-weight:700;color:#1a7a3c;margin-bottom:6px">BEST MATCHES</div>'
+    + '<div style="margin-bottom:10px">' + topChips + '</div>'
+    + '<div style="font-size:12px;font-weight:700;color:#aaa;margin-bottom:6px">OTHER CATEGORIES</div>'
+    + '<div style="margin-bottom:16px">' + moreChips + '</div>'
+    + '<div style="font-size:12px;color:#888;margin-bottom:6px;font-weight:600">OR TYPE YOUR SEARCH</div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<input id="cam-search-txt" type="text" placeholder="e.g. Samsung phone, rice, sofa…" style="flex:1;padding:10px 13px;border:1.5px solid #e0d8c8;border-radius:10px;font-size:14px;outline:none;font-family:inherit" onkeydown="if(event.key===\'Enter\')window._camSearchText()">'
+    + '<button onclick="window._camSearchText()" style="padding:10px 16px;background:#1a7a3c;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-family:inherit">Go</button>'
+    + '</div>'
+    + '</div>';
+  document.body.appendChild(el);
+  el.addEventListener('click', function(ev){ if(ev.target===el) el.remove(); });
+  setTimeout(function(){ var t = document.getElementById('cam-search-txt'); if(t) t.focus(); }, 200);
+};
+
+window._camSearchCat = function(cat) {
+  var modal = document.getElementById('cam-search-modal');
+  if (modal) modal.remove();
+  var inp = document.getElementById('search-query');
+  if (inp) inp.value = '';
+  var catSel = document.getElementById('category-filter') || document.getElementById('cat-filter');
+  if (catSel) { catSel.value = cat; if(window.doSearch) window.doSearch(); return; }
+  if (inp) { inp.value = cat; }
+  if (window.doSearch) window.doSearch();
+};
+
+window._camSearchText = function() {
+  var txt = (document.getElementById('cam-search-txt') || {}).value || '';
+  var modal = document.getElementById('cam-search-modal');
+  if (modal) modal.remove();
+  var inp = document.getElementById('search-query');
+  if (inp && txt) { inp.value = txt; if(window.doSearch) window.doSearch(); }
+};
+
+window._handleDeepLink = function() {
+  var itemId = parseInt(new URLSearchParams(window.location.search).get('item') || '0');
+  if (!itemId) return;
+  // Clean the URL so the param doesn't persist on back-navigation
+  history.replaceState(null, '', window.location.pathname);
+  setTimeout(async function() {
+    try {
+      var d = await (await fetch('/api.php?action=get_listing&id=' + itemId)).json();
+      if (d.success && d.listing) window.showItem(d.listing);
+    } catch(e) {}
+  }, 500);
 };
 
 // \u2500\u2500 SAVE / FAVOURITE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -5869,7 +6516,7 @@ window.contactStore = function() {
   if (!item || !item.whatsapp) return;
   var n = item.whatsapp.replace(/[^0-9]/g,'');
   if (!n.startsWith('237')) n = '237' + n;
-  window.open('https://wa.me/' + n, '_blank');
+  waOpen('https://wa.me/' + n, '_blank');
 };
 
 // \u2500\u2500 SUBMIT REVIEW \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -5990,6 +6637,56 @@ window.prevImg = function(input, previewId, boxId) {
     }
   };
   reader.readAsDataURL(file);
+};
+
+// ── BULK IMPORT ────────────────────────────────────────────────────────────
+window.switchPostTab = function(tab) {
+  var isSingle = tab === 'single';
+  document.getElementById('post-tab-single-content').style.display = isSingle ? '' : 'none';
+  document.getElementById('post-tab-bulk-content').style.display   = isSingle ? 'none' : '';
+  document.getElementById('post-tab-single').style.background = isSingle ? '#1a7a3c' : 'white';
+  document.getElementById('post-tab-single').style.color      = isSingle ? 'white' : '#1a7a3c';
+  document.getElementById('post-tab-bulk').style.background   = isSingle ? 'white' : '#1a7a3c';
+  document.getElementById('post-tab-bulk').style.color        = isSingle ? '#1a7a3c' : 'white';
+};
+
+window._bulkFile = null;
+window.onBulkFileSelected = function(input) {
+  var file = input.files && input.files[0];
+  if (!file) return;
+  window._bulkFile = file;
+  document.getElementById('bulk-file-name').textContent = '✅ ' + file.name;
+  document.getElementById('bulk-file-box').style.borderColor = '#27ae60';
+  document.getElementById('bulk-result').style.display = 'none';
+};
+
+window.submitBulkImport = async function() {
+  if (!window._bulkFile) { alert('Please select a CSV file first.'); return; }
+  var tok = localStorage.getItem('cm237_token') || _sessionToken || '';
+  var btn = document.getElementById('bulk-submit-btn');
+  btn.disabled = true; btn.textContent = 'Uploading…';
+  var res = document.getElementById('bulk-result');
+  try {
+    var fd = new FormData();
+    fd.append('action', 'bulk_import_listings');
+    fd.append('csv', window._bulkFile);
+    var d = await (await fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token':tok}})).json();
+    if (!d.success) { res.style.display='block'; res.style.background='#fde8e8'; res.style.border='1.5px solid #e74c3c'; res.innerHTML='<b>Error:</b> '+(d.error||'Unknown error'); return; }
+    var html = '<div style="font-weight:800;font-size:14px;margin-bottom:8px">'
+      + (d.created > 0 ? '✅ ' + d.created + ' listing(s) imported as drafts' : '⚠️ No listings imported') + '</div>';
+    if (d.failed > 0) html += '<div style="color:#c0392b;margin-bottom:6px">❌ ' + d.failed + ' row(s) failed</div>';
+    if (d.errors && d.errors.length) html += '<ul style="margin:0;padding-left:16px;font-size:11px;color:#555">' + d.errors.map(function(e){return '<li>'+e+'</li>';}).join('') + '</ul>';
+    if (d.created > 0) html += '<div style="margin-top:10px;font-size:12px;color:#555">Go to <b>My Listings</b> → tap each draft → add photos to activate.</div>';
+    res.style.display='block';
+    res.style.background = d.created > 0 ? '#f0faf4' : '#fff8e1';
+    res.style.border = '1.5px solid ' + (d.created > 0 ? '#27ae60' : '#f59e0b');
+    res.innerHTML = html;
+    window._bulkFile = null;
+    document.getElementById('bulk-csv-input').value = '';
+    document.getElementById('bulk-file-name').textContent = 'Tap to select CSV file';
+    document.getElementById('bulk-file-box').style.borderColor = '#1a7a3c';
+  } catch(e) { res.style.display='block'; res.style.background='#fde8e8'; res.innerHTML='Network error. Please try again.'; }
+  finally { btn.disabled=false; btn.textContent='🚀 Import Listings'; }
 };
 
 window.submitPost = async function() {
@@ -6975,7 +7672,7 @@ window.requestTopUp = function() {
   var user = null;
   try { user = JSON.parse(localStorage.getItem('cm237_user')); } catch(e) {}
   var msg = 'Hello, I need to top up my CamMarket237 live streaming balance. Phone: ' + (user ? user.phone : '');
-  window.open('https://wa.me/237XXXXXXXXX?text=' + encodeURIComponent(msg), '_blank');
+  waOpen('https://wa.me/237XXXXXXXXX?text=' + encodeURIComponent(msg), '_blank');
 };
 
 // ── SELLER COMMENTS POLL ─────────────────────────────────
@@ -7119,7 +7816,7 @@ window.contactLiveStore = function() {
   if (!window._watchStoreWa) return;
   var n = window._watchStoreWa.replace(/[^0-9]/g,'');
   if (!n.startsWith('237')) n = '237' + n;
-  window.open('https://wa.me/' + n + '?text=' + encodeURIComponent('Hi, I saw your live stream on CamMarket237!'), '_blank');
+  waOpen('https://wa.me/' + n + '?text=' + encodeURIComponent('Hi, I saw your live stream on CamMarket237!'), '_blank');
 };
 
 // ── EMOJI REACTIONS ───────────────────────────────────────
@@ -7181,7 +7878,7 @@ window._streamShareText = function() {
 };
 
 window.shareToWhatsApp = function() {
-  window.open('https://wa.me/?text=' + encodeURIComponent(window._streamShareText()), '_blank');
+  waOpen('https://wa.me/?text=' + encodeURIComponent(window._streamShareText()), '_blank');
 };
 window.shareToFacebook = function() {
   window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent('https://cammarket237.com') + '&quote=' + encodeURIComponent(window._streamShareText()), '_blank');
@@ -7956,7 +8653,7 @@ window.sellerRespond = async function(isAvailable) {
 
   // Open WhatsApp to buyer
   if (n) {
-    window.open('https://wa.me/' + n + '?text=' + encodeURIComponent(msg), '_blank');
+    waOpen('https://wa.me/' + n + '?text=' + encodeURIComponent(msg), '_blank');
   } else {
     // Copy to clipboard
     if (navigator.clipboard) {
@@ -8051,52 +8748,395 @@ window.openSellerEnquiries = function() {
 };
 
 // ═══════════════════════════════════════════════════════════
+// BUSINESS ANALYST
+// ═══════════════════════════════════════════════════════════
+window.loadBusinessAnalyst = function() {
+  var el = document.getElementById('ba-content');
+  if (!el) return;
+  // Show store name in screen header
+  var store = null;
+  try { store = JSON.parse(localStorage.getItem('cm237_store') || 'null'); } catch(e){}
+  var storeName = (store && store.store_name) || '';
+  var titleEl = document.getElementById('ba-screen-title');
+  var subtitleEl = document.getElementById('ba-screen-sub');
+  if (titleEl) titleEl.textContent = storeName ? '📊 ' + storeName : '📊 Business Analyst';
+  if (subtitleEl) subtitleEl.textContent = storeName ? 'Performance report for ' + storeName : 'Personalized insights for your store';
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:#aaa"><div style="font-size:30px">&#x23F3;</div><div style="margin-top:8px;font-size:13px">Loading...</div></div>';
+  var tok = localStorage.getItem('cm237_token') || '';
+  fetch('api.php?action=get_seller_report', {headers:{'X-Session-Token': tok}})
+    .then(function(r){ return r.json(); })
+    .then(function(d) {
+      if (!d.report) {
+        el.innerHTML = '<div style="text-align:center;padding:40px 20px"><div style="font-size:48px;margin-bottom:12px">&#x1F4CA;</div><div style="font-size:15px;font-weight:700;color:#555;margin-bottom:8px">No report yet</div><div style="font-size:12px;color:#aaa">Tap "New Report" to generate your first analysis</div></div>';
+        return;
+      }
+      window._renderAnalystReport(d.report, d.recommendations || [], storeName);
+    })
+    .catch(function() {
+      el.innerHTML = '<div style="color:#e74c3c;text-align:center;padding:30px;font-size:13px">Failed to load. Try again.</div>';
+    });
+};
+
+window.generateAnalystReport = function() {
+  var btn = document.getElementById('ba-gen-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
+  var tok = localStorage.getItem('cm237_token') || '';
+  var fd = new FormData(); fd.append('action','generate_seller_report');
+  fetch('api.php', {method:'POST', body:fd, headers:{'X-Session-Token': tok}})
+    .then(function(r){ return r.json(); })
+    .then(function(d) {
+      if (btn) { btn.disabled = false; btn.innerHTML = '&#x1F504; New Report'; }
+      if (d.error) { alert(d.error); return; }
+      window.loadBusinessAnalyst();
+    })
+    .catch(function() {
+      if (btn) { btn.disabled = false; btn.innerHTML = '&#x1F504; New Report'; }
+      alert('Failed to generate. Try again.');
+    });
+};
+
+window._renderAnalystReport = function(r, recs, storeName) {
+  var el = document.getElementById('ba-content');
+  if (!el) return;
+  var date = r.generated_at ? new Date(r.generated_at).toLocaleDateString() : '';
+  var html = '';
+
+  // Headline card
+  html += '<div style="background:linear-gradient(135deg,#1a7a3c,#27ae60);color:white;border-radius:16px;padding:18px;margin-bottom:16px">'
+    + '<div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;opacity:0.8;margin-bottom:8px">&#x1F4A1; TOP INSIGHT'+(storeName?' &nbsp;&#x2014;&nbsp; &#x1F3EA; '+_esc(storeName):'')+'</div>'
+    + '<div style="font-size:16px;font-weight:900;line-height:1.3;margin-bottom:6px">'+_esc(r.headline_title||'')+'</div>'
+    + (r.headline_body ? '<div style="font-size:12px;opacity:0.9;line-height:1.5">'+_esc(r.headline_body)+'</div>' : '')
+    + '<div style="font-size:11px;opacity:0.65;margin-top:8px">Generated '+date+'</div>'
+    + '</div>';
+
+  // Overall score + 4 sub-scores
+  var ov = r.performance_score || 0;
+  var ovc = ov >= 70 ? '#27ae60' : ov >= 40 ? '#e67e22' : '#e74c3c';
+  html += '<div style="background:white;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.07)">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'
+    + '<div style="font-size:14px;font-weight:800;color:#0f1923">Overall Score</div>'
+    + '<div style="font-size:28px;font-weight:900;color:'+ovc+'">'+ov+'<span style="font-size:14px;opacity:0.5">/100</span></div>'
+    + '</div>';
+  [
+    {label:'Visibility',  val:r.visibility_score||0,      icon:'&#x1F441;'},
+    {label:'Conversion',  val:r.conversion_score||0,      icon:'&#x1F6D2;'},
+    {label:'Response',    val:r.responsiveness_score||0,  icon:'&#x26A1;'},
+    {label:'Catalog',     val:r.catalog_quality_score||0, icon:'&#x1F4CB;'},
+  ].forEach(function(sc) {
+    var c = sc.val >= 70 ? '#27ae60' : sc.val >= 40 ? '#e67e22' : '#e74c3c';
+    html += '<div style="margin-bottom:8px">'
+      + '<div style="display:flex;justify-content:space-between;font-size:12px;color:#555;margin-bottom:3px"><span>'+sc.icon+' '+sc.label+'</span><span style="font-weight:700;color:'+c+'">'+sc.val+'</span></div>'
+      + '<div style="background:#f0f0f0;border-radius:4px;height:6px"><div style="background:'+c+';border-radius:4px;height:6px;width:'+sc.val+'%"></div></div>'
+      + '</div>';
+  });
+  html += '</div>';
+
+  // Performance snapshot
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">';
+  [{label:'Listings',icon:'&#x1F4CB;',val:r.active_listings||0},
+   {label:'Views',   icon:'&#x1F441;',val:r.total_views||0},
+   {label:'Enquiries',icon:'&#x1F4AC;',val:r.total_inquiries||0}
+  ].forEach(function(sn) {
+    html += '<div style="background:white;border-radius:12px;padding:12px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.06)">'
+      + '<div style="font-size:18px;margin-bottom:4px">'+sn.icon+'</div>'
+      + '<div style="font-size:18px;font-weight:900;color:#0f1923">'+sn.val+'</div>'
+      + '<div style="font-size:10px;color:#888">'+sn.label+'</div></div>';
+  });
+  html += '</div>';
+
+  // Peer rank
+  if (r.rank_in_peer_group && r.peer_group_size) {
+    html += '<div style="background:#f0faf4;border:1.5px solid #1a7a3c;border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">'
+      + '<div style="font-size:24px">&#x1F3C6;</div>'
+      + '<div><div style="font-size:14px;font-weight:800;color:#1a7a3c">Ranked #'+r.rank_in_peer_group+' of '+r.peer_group_size+'</div>'
+      + '<div style="font-size:11px;color:#888">Similar sellers in your area</div></div></div>';
+  }
+
+  // Strengths & Weaknesses
+  var sw = Array.isArray(r.strengths_json) ? r.strengths_json : [];
+  var ww = Array.isArray(r.weaknesses_json) ? r.weaknesses_json : [];
+  if (sw.length || ww.length) {
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">';
+    if (sw.length) {
+      html += '<div style="background:#f0faf4;border-radius:12px;padding:12px">'
+        + '<div style="font-size:12px;font-weight:800;color:#1a7a3c;margin-bottom:8px">&#x2705; Strengths</div>';
+      sw.forEach(function(s){ html += '<div style="font-size:11px;color:#333;margin-bottom:4px">&#x2022; '+_esc(s)+'</div>'; });
+      html += '</div>';
+    }
+    if (ww.length) {
+      html += '<div style="background:#fff5f5;border-radius:12px;padding:12px">'
+        + '<div style="font-size:12px;font-weight:800;color:#e74c3c;margin-bottom:8px">&#x26A0; Improve</div>';
+      ww.forEach(function(w){ html += '<div style="font-size:11px;color:#333;margin-bottom:4px">&#x2022; '+_esc(w)+'</div>'; });
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  // Recommendations
+  var openRecs = recs.filter(function(rec){ return rec.status !== 'dismissed'; });
+  if (openRecs.length) {
+    html += '<div style="font-size:14px;font-weight:800;color:#0f1923;margin-bottom:10px">&#x1F3AF; Recommendations</div>';
+    openRecs.forEach(function(rec) {
+      var sc = rec.severity === 'high' ? '#e74c3c' : rec.severity === 'medium' ? '#e67e22' : '#27ae60';
+      var sl = rec.severity === 'high' ? 'HIGH' : rec.severity === 'medium' ? 'MED' : 'LOW';
+      html += '<div id="ba-rec-'+rec.id+'" style="background:white;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.07);border-left:4px solid '+sc+'">'
+        + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">'
+        + '<span style="background:'+sc+'22;color:'+sc+';font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px">'+sl+'</span>'
+        + '<span style="background:#f0f0f0;color:#555;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">'+_esc(rec.rec_category||'')+'</span>'
+        + (rec.effort_label ? '<span style="background:#e8f0fe;color:#1a73e8;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">'+_esc(rec.effort_label)+'</span>' : '')
+        + '</div>'
+        + '<div style="font-size:14px;font-weight:800;color:#0f1923;margin-bottom:5px">'+_esc(rec.title)+'</div>'
+        + '<div style="font-size:12px;color:#555;line-height:1.5;margin-bottom:10px">'+_esc(rec.body)+'</div>'
+        + '<div style="display:flex;gap:8px">'
+        + (rec.cta_label && rec.cta_path ? '<button onclick="window._baActRec('+rec.id+',\''+_esc(rec.cta_path)+'\')" style="flex:1;background:linear-gradient(135deg,#1a7a3c,#27ae60);color:white;border:none;border-radius:10px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">'+_esc(rec.cta_label)+' &#x2192;</button>' : '')
+        + '<button onclick="window._baDismissRec('+rec.id+')" style="background:#f5f5f5;color:#888;border:none;border-radius:10px;padding:9px 12px;font-size:11px;cursor:pointer;font-family:inherit">Dismiss</button>'
+        + '</div></div>';
+    });
+  }
+
+  el.innerHTML = html;
+};
+
+window._baActRec = function(recId, path) {
+  var tok = localStorage.getItem('cm237_token') || '';
+  var fd = new FormData(); fd.append('action','record_recommendation_action'); fd.append('rec_id',recId); fd.append('status','acted');
+  fetch('api.php', {method:'POST', body:fd, headers:{'X-Session-Token': tok}});
+  if (path) window.go(path);
+};
+
+window._baDismissRec = function(recId) {
+  var el = document.getElementById('ba-rec-'+recId);
+  if (el) el.style.opacity = '0.3';
+  var tok = localStorage.getItem('cm237_token') || '';
+  var fd = new FormData(); fd.append('action','record_recommendation_action'); fd.append('rec_id',recId); fd.append('status','dismissed');
+  fetch('api.php', {method:'POST', body:fd, headers:{'X-Session-Token': tok}})
+    .then(function(){ if (el) el.remove(); });
+};
+
+// ═══════════════════════════════════════════════════════════
 // ADVERTISING PLATFORM
 // ═══════════════════════════════════════════════════════════
 
-var _activeSponsoredAd = null;
+// ── Permanent Ad Zone (runs all active campaigns, auto-advances) ──
 
-// Load and show sponsored ad card in buyer-search
-window.loadActiveSponsoredAd = async function() {
-  var card = document.getElementById('sponsored-ad-card');
-  if (!card) return;
-  if (card.dataset.loaded === '1') return; // already loaded this session
-  card.dataset.loaded = '1';
-  var tok = localStorage.getItem('cm237_token') || _sessionToken || '';
-  try {
-    var d = await (await fetch('/api.php?action=get_active_sponsored_ad', {headers:{'X-Session-Token':tok}})).json();
-    if (!d.ad) return;
-    _activeSponsoredAd = d.ad;
-    var ad = d.ad;
-    document.getElementById('sponsored-ad-biz').textContent = ad.business_name || '';
-    document.getElementById('sponsored-ad-title').textContent = ad.push_title || '';
-    document.getElementById('sponsored-ad-body').textContent = ad.push_body || '';
-    var ctaBtn = document.getElementById('sponsored-ad-cta-btn');
-    if (ctaBtn) ctaBtn.textContent = (ad.push_cta_label || 'Learn more') + ' →';
-    if (ad.push_image_url) {
-      var imgWrap = document.getElementById('sponsored-ad-img-wrap');
-      var img = document.getElementById('sponsored-ad-img');
-      if (imgWrap && img) { img.src = ad.push_image_url; imgWrap.style.display = 'block'; }
-    }
-    card.style.display = 'block';
-  } catch(e) {}
+window._adFeed   = null;   // shared feed cached after first fetch
+window._adTimer  = {};     // per-zone advance timers   { '': id, '-s': id }
+window._adIdx    = {};     // per-zone current index    { '': 0,  '-s': 0  }
+
+function _esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+var _adTypeMap = {
+  sponsored_notification:{icon:'&#x1F514;',label:'SPONSORED', color:'#e67e22'},
+  boost_listing:         {icon:'&#x2B50;', label:'FEATURED',  color:'#f39c12'},
+  featured_listing:      {icon:'&#x2B50;', label:'FEATURED',  color:'#f39c12'},
+  video_ad:              {icon:'&#x1F3AC;',label:'VIDEO AD',  color:'#8e44ad'},
+  banner_display:        {icon:'&#x1F3AC;',label:'VIDEO AD',  color:'#8e44ad'},
+  event_ad:              {icon:'&#x1F389;',label:'EVENT',     color:'#1a7a3c'}
 };
 
-window.sponsoredAdClick = function() {
-  if (!_activeSponsoredAd) return;
-  var tok = localStorage.getItem('cm237_token') || _sessionToken || '';
-  var fd = new FormData();
-  fd.append('action', 'record_ad_click');
-  fd.append('campaign_id', _activeSponsoredAd.id);
-  fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token':tok}}).catch(function(){});
-  if (_activeSponsoredAd.push_link_path) {
-    window.open(_activeSponsoredAd.push_link_path, '_blank');
+function _adShowSlide(sfx, idx) {
+  var ads = window._adFeed;
+  if (!ads || !ads.length) return;
+  idx = ((idx % ads.length) + ads.length) % ads.length;
+  window._adIdx[sfx] = idx;
+
+  clearTimeout(window._adTimer[sfx]);
+
+  // dots
+  ads.forEach(function(_, i) {
+    var dot = document.getElementById('adz-dot-'+i);
+    if (dot) dot.style.background = i===idx ? '#e67e22' : '#ddd';
+  });
+
+  var ad        = ads[idx];
+  var mediaDiv  = document.getElementById('adz-media'+sfx);
+  var infoDiv   = document.getElementById('adz-info'+sfx);
+  var progBar   = document.getElementById('adz-prog'+sfx);
+  var badge     = document.getElementById('adz-badge'+sfx);
+  if (!mediaDiv || !infoDiv) return;
+
+  var t = _adTypeMap[ad.ad_type] || _adTypeMap.sponsored_notification;
+
+  if (badge) badge.innerHTML = t.icon + ' ' + t.label;
+
+  // reset progress
+  if (progBar) { progBar.style.transition='none'; progBar.style.width='0%'; }
+
+  var isVideo  = ad.ad_type === 'video_ad';
+  var mediaUrl = ad.push_image_url || (ad.ad_type==='boost_listing' ? ad.listing_photo : null);
+
+  mediaDiv.innerHTML = '';
+
+  if (isVideo && mediaUrl) {
+    var vid = document.createElement('video');
+    vid.src = mediaUrl;
+    vid.autoplay = true; vid.muted = true; vid.playsInline = true; vid.loop = false;
+    vid.className = 'adz-video';
+    mediaDiv.appendChild(vid);
+    vid.addEventListener('loadedmetadata', function(){
+      if (progBar) {
+        setTimeout(function(){
+          progBar.style.transition = 'width ' + vid.duration + 's linear';
+          progBar.style.width = '100%';
+        }, 40);
+      }
+    });
+    (function(capturedSfx, capturedIdx){ vid.addEventListener('ended', function(){ _adShowSlide(capturedSfx, capturedIdx+1); }); })(sfx, idx);
+    vid.play().catch(function(){});
+
+  } else if (mediaUrl) {
+    // 3-layer 360-sweep effect with glare
+    var shotsWrap = document.createElement('div');
+    shotsWrap.className = 'adz-shots';
+    ['shot-a','shot-b','shot-c'].forEach(function(cls) {
+      var im = document.createElement('img');
+      im.src = mediaUrl;
+      im.alt = '';
+      im.className = 'adz-shot ' + cls;
+      im.loading = 'eager';
+      shotsWrap.appendChild(im);
+    });
+    var shine = document.createElement('div');
+    shine.className = 'adz-shine';
+    shotsWrap.appendChild(shine);
+    mediaDiv.appendChild(shotsWrap);
+    if (progBar) { setTimeout(function(){ progBar.style.transition='width 5.4s linear'; progBar.style.width='100%'; }, 40); }
+    (function(capturedSfx, capturedIdx){ window._adTimer[sfx] = setTimeout(function(){ _adShowSlide(capturedSfx, capturedIdx+1); }, 5400); })(sfx, idx);
+
+  } else {
+    var noMedia = document.createElement('div');
+    noMedia.className = 'adz-no-img';
+    noMedia.style.background = 'linear-gradient(135deg,'+t.color+'22,'+t.color+'55)';
+    noMedia.innerHTML = t.icon;
+    mediaDiv.appendChild(noMedia);
+    if (progBar) { setTimeout(function(){ progBar.style.transition='width 5.4s linear'; progBar.style.width='100%'; }, 40); }
+    (function(capturedSfx, capturedIdx){ window._adTimer[sfx] = setTimeout(function(){ _adShowSlide(capturedSfx, capturedIdx+1); }, 5400); })(sfx, idx);
+  }
+
+  // info row
+  var ctaLabel = _esc(ad.push_cta_label || (ad.ad_type==='boost_listing' ? 'View Listing' : 'Learn more'));
+  var html = '<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">'
+    + '<span style="font-size:9px;font-weight:800;color:'+t.color+';background:'+t.color+'1a;padding:2px 9px;border-radius:20px">'+t.icon+' '+t.label+'</span>'
+    + '<span style="font-size:12px;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px">'+_esc(ad.business_name||'')+'</span>'
+    + '</div>'
+    + '<div style="font-size:15px;font-weight:800;color:#0f1923;margin-bottom:3px;line-height:1.3">'+_esc(ad.push_title||'')+'</div>';
+  if (ad.push_body) html += '<div style="font-size:12px;color:#555;line-height:1.5;margin-bottom:10px">'+_esc(ad.push_body)+'</div>';
+  else html += '<div style="margin-bottom:8px"></div>';
+  html += '<div style="display:flex;gap:8px;margin-bottom:4px">'
+    + '<button data-ai="'+idx+'" data-sfx="'+sfx+'" onclick="window._adClick(this)" style="flex:1;background:linear-gradient(135deg,'+t.color+',#f39c12);color:white;border:none;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">'+ctaLabel+' &#x2192;</button>';
+  if (ad.advertiser_phone) {
+    var waNum = ad.advertiser_phone.replace(/[^0-9]/g,'');
+    if (waNum.length === 9) waNum = '237' + waNum;
+    html += '<a href="https://wa.me/'+waNum+'" target="_blank" style="display:flex;align-items:center;gap:4px;background:#25D366;color:white;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap">&#x1F4DE; Chat</a>';
+  }
+  html += '<button onclick="window.go(\'advertise-hub\')" style="background:#f5f5f5;color:#888;border:none;border-radius:10px;padding:9px 10px;font-size:10px;cursor:pointer;font-family:inherit;white-space:nowrap">Ads</button>'
+    + '</div>';
+  infoDiv.innerHTML = html;
+}
+
+// Auth/onboarding screens where banner should hide
+var _AD_HIDE_SCREENS = {
+  'role':1,'buyer-auth':1,'buyer-otp':1,'seller-auth':1,
+  'set-pin':1,'forgot-password':1,'privacy':1,'terms':1,'safety-guide':1,'we-are-together':1
+};
+
+function _adUpdateBannerPosition() {
+  var banner = document.getElementById('ad-banner');
+  if (!banner || banner.style.display === 'none') return;
+  var headerH = (document.querySelector('.header') || {offsetHeight:0}).offsetHeight;
+  banner.style.top = headerH + 'px';
+  var bh = banner.offsetHeight;
+  document.documentElement.style.setProperty('--ad-banner-h', bh + 'px');
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.add('ad-offset'); });
+}
+
+function _adShowBanner() {
+  var banner = document.getElementById('ad-banner');
+  if (!banner || !window._adFeed || !window._adFeed.length) return;
+  banner.style.display = 'block';
+  setTimeout(_adUpdateBannerPosition, 50);
+}
+
+function _adHideBanner() {
+  var banner = document.getElementById('ad-banner');
+  if (banner) banner.style.display = 'none';
+  document.documentElement.style.setProperty('--ad-banner-h', '0px');
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('ad-offset'); });
+}
+
+window._adHandleScreenChange = function(screenId) {
+  if (window._ADS_DISABLED) return;
+  if (_AD_HIDE_SCREENS[screenId]) {
+    _adHideBanner();
+  } else if (window._adFeed && window._adFeed.length) {
+    _adShowBanner();
   }
 };
 
-window.dismissSponsoredAd = function() {
-  var card = document.getElementById('sponsored-ad-card');
-  if (card) card.style.display = 'none';
+function _adInitZone() {
+  var ads = window._adFeed;
+  if (!ads || !ads.length) { _adHideBanner(); return; }
+
+  // build dots
+  var dotsEl = document.getElementById('adz-dots');
+  if (dotsEl) {
+    dotsEl.innerHTML = '';
+    if (ads.length > 1) {
+      ads.forEach(function(_, i) {
+        var d = document.createElement('div');
+        d.id = 'adz-dot-' + i;
+        d.style.cssText = 'width:7px;height:7px;border-radius:50%;background:#ddd;cursor:pointer;transition:background .2s;flex-shrink:0';
+        (function(n){ d.onclick = function(){ _adShowSlide('', n); }; })(i);
+        dotsEl.appendChild(d);
+      });
+    }
+  }
+
+  // touch swipe
+  var mediaDiv = document.getElementById('adz-media');
+  if (mediaDiv && !mediaDiv._swipeSet) {
+    mediaDiv._swipeSet = true;
+    var _tx = 0;
+    mediaDiv.addEventListener('touchstart', function(e){ _tx = e.touches[0].clientX; }, {passive:true});
+    mediaDiv.addEventListener('touchend', function(e){
+      var dx = e.changedTouches[0].clientX - _tx;
+      if (Math.abs(dx) > 40) _adShowSlide('', (window._adIdx['']||0) + (dx < 0 ? 1 : -1));
+    }, {passive:true});
+  }
+
+  _adShowSlide('', 0);
+  _adShowBanner();
+
+  // Keep banner height updated when window resizes
+  if (!window._adResizeSet) {
+    window._adResizeSet = true;
+    window.addEventListener('resize', _adUpdateBannerPosition, {passive:true});
+  }
+}
+
+window.loadAdCarousel = async function() {
+  if (window._ADS_DISABLED) return;
+  if (window._adFeed && window._adFeed.length) { _adShowBanner(); return; }
+  var tok = localStorage.getItem('cm237_token') || _sessionToken || '';
+  try {
+    var d = await (await fetch('/api.php?action=get_ad_feed', {headers:{'X-Session-Token':tok}})).json();
+    window._adFeed = (d && d.ads) ? d.ads : [];
+    _adInitZone();
+  } catch(e) {}
+};
+
+
+window._adClick = function(btn) {
+  var idx = parseInt(btn.dataset.ai);
+  var ads = window._adFeed;
+  if (!ads || !ads[idx]) return;
+  var ad = ads[idx];
+  var tok = localStorage.getItem('cm237_token') || _sessionToken || '';
+  var fd = new FormData();
+  fd.append('action','record_ad_click');
+  fd.append('campaign_id', ad.id);
+  fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token':tok}}).catch(function(){});
+  if (ad.push_link_path) window.open(ad.push_link_path, '_blank');
 };
 
 // Load ad packages into package-selection grid
@@ -8312,6 +9352,382 @@ window.loadAdvertiseStats = async function() {
   if (tr) tr.textContent = '—';
 };
 
+// ── VIDEO AD ───────────────────────────────────────────────────
+window.selectVideoPkg = function(id, name, price) {
+  [1,2].forEach(function(i){ var el=document.getElementById('vpkg-'+i); if(el){el.style.borderColor='#eee';el.style.background='white';} });
+  var el = document.getElementById('vpkg-'+id);
+  if(el){el.style.borderColor='#8e44ad';el.style.background='#f9f0ff';}
+  document.getElementById('vpkg-id').value=id;
+  document.getElementById('vpkg-name').value=name;
+  document.getElementById('vpkg-price').value=price;
+};
+
+window._vadFile = null;
+
+window.handleVideoSelected = function(input) {
+  var file = input.files && input.files[0];
+  if (!file) return;
+  window._vadFile = file;
+  var preview = document.getElementById('vad-preview');
+  var previewWrap = document.getElementById('vad-preview-wrap');
+  var noHint = document.getElementById('vad-no-video-hint');
+  var url = URL.createObjectURL(file);
+  preview.src = url;
+  previewWrap.style.display = 'block';
+  if (noHint) noHint.style.display = 'none';
+  preview.onloadedmetadata = function() {
+    var dur = preview.duration;
+    var durInfo = document.getElementById('vad-duration-info');
+    var trimWrap = document.getElementById('vad-trim-wrap');
+    var startEl = document.getElementById('vad-start');
+    var endEl   = document.getElementById('vad-end');
+    if (dur <= 30) {
+      if (durInfo) durInfo.textContent = '✅ Duration: ' + dur.toFixed(1) + 's — good to go!';
+      if (trimWrap) trimWrap.style.display = 'none';
+      document.getElementById('vad-clip-start').value = 0;
+      document.getElementById('vad-clip-end').value = Math.min(dur, 30).toFixed(1);
+    } else {
+      if (durInfo) durInfo.innerHTML = '⚠️ Video is <b>' + dur.toFixed(1) + 's</b> — select a 30-second clip below.';
+      if (trimWrap) trimWrap.style.display = 'block';
+      if (startEl) { startEl.max = (dur - 1).toFixed(1); startEl.value = 0; }
+      if (endEl)   { endEl.max = dur.toFixed(1); endEl.value = Math.min(30, dur).toFixed(1); }
+      document.getElementById('vad-clip-start').value = 0;
+      document.getElementById('vad-clip-end').value = Math.min(30, dur).toFixed(1);
+      window.updateVideoTrim();
+    }
+  };
+};
+
+window.updateVideoTrim = function() {
+  var startEl = document.getElementById('vad-start');
+  var endEl   = document.getElementById('vad-end');
+  var preview = document.getElementById('vad-preview');
+  if (!startEl || !endEl) return;
+  var start = parseFloat(startEl.value);
+  var end   = parseFloat(endEl.value);
+  if (end - start > 30) { end = start + 30; endEl.value = end.toFixed(1); }
+  if (end <= start)     { end = start + 1;  endEl.value = end.toFixed(1); }
+  document.getElementById('vad-start-label').textContent = start.toFixed(1) + 's';
+  document.getElementById('vad-end-label').textContent   = end.toFixed(1) + 's';
+  document.getElementById('vad-clip-duration').textContent = 'Clip: ' + (end - start).toFixed(1) + 's';
+  document.getElementById('vad-clip-start').value = start.toFixed(1);
+  document.getElementById('vad-clip-end').value   = end.toFixed(1);
+  if (preview) preview.currentTime = start;
+};
+
+window.clearVideoSelection = function() {
+  window._vadFile = null;
+  var preview = document.getElementById('vad-preview');
+  if (preview) preview.src = '';
+  document.getElementById('vad-preview-wrap').style.display = 'none';
+  document.getElementById('vad-no-video-hint').style.display = 'block';
+  document.getElementById('vad-trim-wrap').style.display = 'none';
+  document.getElementById('vad-file-upload').value = '';
+  document.getElementById('vad-clip-start').value = 0;
+  document.getElementById('vad-clip-end').value = 30;
+};
+
+window.submitVideoAd = async function() {
+  var bizName  = (document.getElementById('vad-biz-name')||{}).value;
+  var bizPhone = (document.getElementById('vad-biz-phone')||{}).value;
+  var title    = (document.getElementById('vad-title')||{}).value;
+  var desc     = (document.getElementById('vad-desc')||{}).value;
+  var pkgId    = (document.getElementById('vpkg-id')||{}).value;
+  var pkgName  = (document.getElementById('vpkg-name')||{}).value;
+  var price    = (document.getElementById('vpkg-price')||{}).value;
+  var clipStart= (document.getElementById('vad-clip-start')||{}).value || '0';
+  var clipEnd  = (document.getElementById('vad-clip-end')||{}).value || '30';
+  if (!bizName)          { alert('Please enter your business name.'); return; }
+  if (!bizPhone)         { alert('Please enter a contact phone number.'); return; }
+  if (!window._vadFile)  { alert('Please select or record a video.'); return; }
+  if (!title)            { alert('Please enter an ad title.'); return; }
+  if (!desc)             { alert('Please describe your video.'); return; }
+  var btn = document.getElementById('vad-submit-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Uploading video…'; }
+  var tok = localStorage.getItem('cm237_token') || _sessionToken || '';
+  try {
+    var uploadFd = new FormData();
+    uploadFd.append('action', 'upload_video_ad');
+    uploadFd.append('video', window._vadFile);
+    uploadFd.append('clip_start', clipStart);
+    uploadFd.append('clip_end', clipEnd);
+    var upRes = await (await fetch('/api.php', {method:'POST', body:uploadFd, headers:{'X-Session-Token':tok}})).json();
+    var videoUrl = (upRes && upRes.url) ? upRes.url : '';
+    if (btn) btn.textContent = 'Submitting ad…';
+    var fd = new FormData();
+    fd.append('action','submit_ad');
+    fd.append('package_id', pkgId);
+    fd.append('business_name', bizName);
+    fd.append('contact_phone', bizPhone);
+    fd.append('push_title', title);
+    fd.append('push_body', desc.substring(0, 150));
+    fd.append('push_image_url', videoUrl);
+    fd.append('push_cta_label', 'Watch now');
+    fd.append('push_link_path', videoUrl);
+    fd.append('ad_type_label', 'video_ad');
+    var d = await (await fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token':tok}})).json();
+    if (!d.success) { alert(d.error || 'Submission failed. Please try again.'); return; }
+    var cid = d.campaign_id;
+    document.getElementById('ad-ref-code').textContent = 'AD-' + cid;
+    document.getElementById('ad-amount-due').textContent = 'Amount: ' + Number(price).toLocaleString() + ' FCFA (' + pkgName + ')';
+    var waEl = document.getElementById('ad-whatsapp-confirm');
+    if (waEl) waEl.href = 'https://wa.me/237' + '?text=' + encodeURIComponent(
+      'Bonjour CamMarket237,\nJ\'ai payé pour la campagne Video Ad AD-' + cid +
+      '\nMontant: ' + Number(price).toLocaleString() + ' FCFA\nBusiness: ' + bizName +
+      '\nClip: ' + clipStart + 's – ' + clipEnd + 's\nMerci de confirmer et activer.');
+    window.go('ad-submitted');
+  } catch(e) { alert('Network error. Please try again.'); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = 'Submit Video Ad →'; } }
+};
+
+// ── EVENT AD ───────────────────────────────────────────────────
+window.selectEventPkg = function(id, name, price) {
+  [1,2].forEach(function(i){ var el=document.getElementById('epkg-'+i); if(el){el.style.borderColor='#eee';el.style.background='white';} });
+  var el=document.getElementById('epkg-'+id);
+  if(el){el.style.borderColor='#2980b9';el.style.background='#eaf4fd';}
+  document.getElementById('epkg-id').value=id;
+  document.getElementById('epkg-name').value=name;
+  document.getElementById('epkg-price').value=price;
+};
+window.selectEventPkg(1,'Event Starter','35000');
+
+window._eadFile = null;
+
+window.handlePosterSelected = function(input) {
+  var file = input.files && input.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { alert('Image too large. Maximum is 10 MB.'); return; }
+  window._eadFile = file;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.getElementById('ead-poster-preview');
+    var wrap = document.getElementById('ead-poster-preview-wrap');
+    var hint = document.getElementById('ead-poster-hint');
+    if (img) img.src = e.target.result;
+    if (wrap) wrap.style.display = 'block';
+    if (hint) hint.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+};
+
+window.clearPosterSelection = function() {
+  window._eadFile = null;
+  var img = document.getElementById('ead-poster-preview');
+  var wrap = document.getElementById('ead-poster-preview-wrap');
+  var hint = document.getElementById('ead-poster-hint');
+  if (img) img.src = '';
+  if (wrap) wrap.style.display = 'none';
+  if (hint) hint.style.display = 'block';
+  document.getElementById('ead-file-upload').value = '';
+  document.getElementById('ead-img').value = '';
+};
+
+window.submitEventAd = async function() {
+  var organiser = (document.getElementById('ead-organiser')||{}).value;
+  var phone   = (document.getElementById('ead-phone')||{}).value;
+  var evtName = (document.getElementById('ead-name')||{}).value;
+  var evtDate = (document.getElementById('ead-date')||{}).value;
+  var evtTime = (document.getElementById('ead-time')||{}).value;
+  var venue   = (document.getElementById('ead-venue')||{}).value;
+  var desc    = (document.getElementById('ead-desc')||{}).value;
+  var pkgId   = (document.getElementById('epkg-id')||{}).value;
+  var pkgName = (document.getElementById('epkg-name')||{}).value;
+  var price   = (document.getElementById('epkg-price')||{}).value;
+  if(!organiser){alert('Please enter the organiser name.');return;}
+  if(!phone){alert('Please enter a contact phone number.');return;}
+  if(!evtName){alert('Please enter the event name.');return;}
+  if(!evtDate){alert('Please select the event date.');return;}
+  if(!venue){alert('Please enter the venue.');return;}
+  if(!desc){alert('Please enter an event description.');return;}
+  var btn=document.getElementById('ead-submit-btn');
+  if(btn){btn.disabled=true;btn.textContent='Submitting…';}
+  var tok=localStorage.getItem('cm237_token')||_sessionToken||'';
+  var imgUrl = '';
+  try {
+    if (window._eadFile) {
+      if (btn) btn.textContent = 'Uploading poster…';
+      var upFd = new FormData();
+      upFd.append('action', 'upload_event_poster');
+      upFd.append('image', window._eadFile);
+      var upRes = await (await fetch('/api.php', {method:'POST', body:upFd, headers:{'X-Session-Token':tok}})).json();
+      imgUrl = (upRes && upRes.url) ? upRes.url : '';
+      if (btn) btn.textContent = 'Submitting…';
+    }
+    var dateStr=evtDate+(evtTime?' at '+evtTime:'');
+    var fd=new FormData();
+    fd.append('action','submit_ad');
+    fd.append('package_id', pkgId);
+    fd.append('business_name', organiser);
+    fd.append('contact_phone', phone);
+    fd.append('push_title', evtName.substring(0,60));
+    fd.append('push_body', (dateStr+' · '+venue+' · '+desc).substring(0,150));
+    fd.append('push_image_url', imgUrl);
+    fd.append('push_cta_label','View Event');
+    fd.append('push_link_path','');
+    fd.append('ad_type_label','event_ad');
+    var d=await (await fetch('/api.php',{method:'POST',body:fd,headers:{'X-Session-Token':tok}})).json();
+    if(!d.success){alert(d.error||'Submission failed. Please try again.');return;}
+    var cid=d.campaign_id;
+    document.getElementById('ad-ref-code').textContent='AD-'+cid;
+    document.getElementById('ad-amount-due').textContent='Amount: '+Number(price).toLocaleString()+' FCFA ('+pkgName+')';
+    var waEl=document.getElementById('ad-whatsapp-confirm');
+    if(waEl) waEl.href='https://wa.me/237?text='+encodeURIComponent('Bonjour CamMarket237,\nJ\'ai payé pour Event Ad campaign AD-'+cid+'\nMontant: '+Number(price).toLocaleString()+' FCFA\nEvent: '+evtName+'\nOrganisateur: '+organiser+'\nMerci de confirmer et activer.');
+    window.go('ad-submitted');
+  } catch(e){alert('Network error. Please try again.');}
+  finally{if(btn){btn.disabled=false;btn.textContent='Submit Event for Review →';}}
+};
+
+// ── BOOST LISTING ──────────────────────────────────────────────
+window.loadBoostListingScreen = async function() {
+  var store = JSON.parse(localStorage.getItem('cm237_store') || 'null');
+  if (!store || !store.id) {
+    document.getElementById('boost-listings-container').innerHTML =
+      '<div style="text-align:center;padding:24px;color:#e74c3c;font-size:13px">No store found. Please set up your store first.</div>';
+    return;
+  }
+  document.getElementById('boost-step2').style.display = 'none';
+  document.getElementById('boost-listing-id').value = '';
+  var container = document.getElementById('boost-listings-container');
+  container.innerHTML = '<div style="text-align:center;padding:24px;color:#aaa;font-size:13px">Loading your listings…</div>';
+  try {
+    var tok = localStorage.getItem('cm237_token') || _sessionToken || '';
+    var fd = new FormData();
+    fd.append('action', 'seller_listings');
+    fd.append('store_id', store.id);
+    var d = await (await fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token':tok}})).json();
+    var listings = d.listings || [];
+    var active = listings.filter(function(l){ return l.moderation_status !== 'rejected' && l.status !== 'sold'; });
+    if (!active.length) {
+      container.innerHTML = '<div style="text-align:center;padding:24px;color:#aaa;font-size:13px">No active listings found.<br><br><button onclick="window.go(\'post-listing\')" style="background:#e67e22;color:white;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Post a listing first</button></div>';
+      return;
+    }
+    container.innerHTML = active.map(function(l) {
+      var price = l.price_type === 'negotiable' ? 'Négociable' : Number(l.price).toLocaleString() + ' FCFA';
+      var img = l.main_photo ? '<img src="' + l.main_photo + '" style="width:56px;height:56px;object-fit:cover;border-radius:8px;flex-shrink:0">' :
+        '<div style="width:56px;height:56px;background:#f0f0f0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">&#x1F4E6;</div>';
+      var desc = (l.description || '').substring(0, 80) + ((l.description || '').length > 80 ? '…' : '');
+      return '<div id="boost-card-' + l.id + '" onclick="window.selectBoostListing(' + l.id + ',' +
+        JSON.stringify(l.title) + ',' + JSON.stringify(desc) + ',' + JSON.stringify(l.main_photo||'') + ',' + JSON.stringify(price) + ')"' +
+        ' style="display:flex;align-items:center;gap:12px;background:white;border:2px solid #eee;border-radius:12px;padding:12px;margin-bottom:8px;cursor:pointer">' +
+        img +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:13px;font-weight:800;color:#0f1923;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + l.title + '</div>' +
+          '<div style="font-size:12px;color:#e67e22;font-weight:700">' + price + '</div>' +
+          '<div style="font-size:11px;color:#aaa">' + (l.category||'') + (l.town ? ' · ' + l.town : '') + '</div>' +
+        '</div>' +
+        '<div style="font-size:18px;color:#ddd" id="boost-check-' + l.id + '">&#x25CB;</div>' +
+      '</div>';
+    }).join('');
+    window.loadBoostPackages && window.loadBoostPackages();
+  } catch(e) {
+    container.innerHTML = '<div style="text-align:center;padding:24px;color:#e74c3c;font-size:13px">Failed to load listings. Please try again.</div>';
+  }
+};
+
+window.selectBoostListing = function(id, title, desc, photo, priceStr) {
+  document.querySelectorAll('[id^="boost-card-"]').forEach(function(el) {
+    el.style.borderColor = '#eee';
+    var cid = el.id.replace('boost-card-', '');
+    var ch = document.getElementById('boost-check-' + cid);
+    if (ch) { ch.textContent = '○'; ch.style.color = '#ddd'; }
+  });
+  var card = document.getElementById('boost-card-' + id);
+  if (card) card.style.borderColor = '#27ae60';
+  var check = document.getElementById('boost-check-' + id);
+  if (check) { check.innerHTML = '&#x2705;'; check.style.color = '#27ae60'; }
+  document.getElementById('boost-listing-id').value = id;
+  var tEl = document.getElementById('boost-push-title');
+  var bEl = document.getElementById('boost-push-body');
+  var iEl = document.getElementById('boost-push-img');
+  if (tEl) { tEl.value = title.substring(0, 60); document.getElementById('boost-title-count').textContent = tEl.value.length + '/60'; }
+  if (bEl) {
+    var bodyText = desc || title;
+    if (priceStr && priceStr !== 'Négociable') bodyText = bodyText + ' — ' + priceStr;
+    bEl.value = bodyText.substring(0, 150);
+    document.getElementById('boost-body-count').textContent = bEl.value.length + '/150';
+  }
+  if (iEl) iEl.value = photo || '';
+  var store = JSON.parse(localStorage.getItem('cm237_store') || 'null');
+  if (store) {
+    var bn = document.getElementById('boost-biz-name');
+    var bp = document.getElementById('boost-biz-phone');
+    if (bn && !bn.value) bn.value = store.store_name || '';
+    if (bp && !bp.value) bp.value = store.whatsapp || '';
+  }
+  var step2 = document.getElementById('boost-step2');
+  if (step2) { step2.style.display = 'block'; step2.scrollIntoView({behavior:'smooth', block:'start'}); }
+};
+
+window.loadBoostPackages = async function() {
+  var grid = document.getElementById('boost-package-grid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:14px;color:#aaa">Loading packages…</div>';
+  try {
+    var fd = new FormData(); fd.append('action','get_ad_packages'); fd.append('ad_type','sponsored_notification');
+    var d = await (await fetch('/api.php', {method:'POST', body:fd})).json();
+    var pkgs = d.packages || [];
+    if (!pkgs.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:14px;color:#aaa">No packages available.</div>'; return; }
+    grid.innerHTML = pkgs.map(function(p) {
+      return '<div id="bpkg-' + p.id + '" onclick="window.selectBoostPackage(' + p.id + ',' + JSON.stringify(p.name) + ',' + p.price + ')"' +
+        ' style="border:2px solid #eee;border-radius:12px;padding:14px;text-align:center;cursor:pointer">' +
+        '<div style="font-size:13px;font-weight:800;color:#0f1923;margin-bottom:4px">' + p.name + '</div>' +
+        '<div style="font-size:11px;color:#666;margin-bottom:8px">' + (p.description||'') + '</div>' +
+        '<div style="font-size:14px;font-weight:900;color:#27ae60">' + Number(p.price).toLocaleString() + ' FCFA</div>' +
+        '<div style="font-size:10px;color:#aaa;margin-top:3px">' + Number(p.audience_cap||0).toLocaleString() + ' users</div>' +
+      '</div>';
+    }).join('');
+  } catch(e) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:14px;color:#e74c3c">Failed to load packages.</div>'; }
+};
+
+window.selectBoostPackage = function(id, name, price) {
+  document.querySelectorAll('[id^="bpkg-"]').forEach(function(el) { el.style.borderColor = '#eee'; el.style.background = 'white'; });
+  var el = document.getElementById('bpkg-' + id);
+  if (el) { el.style.borderColor = '#27ae60'; el.style.background = '#f0faf4'; }
+  document.getElementById('boost-selected-package-id').value = id;
+  document.getElementById('boost-selected-package-name').value = name;
+  document.getElementById('boost-selected-package-price').value = price;
+};
+
+window.submitBoostAd = async function() {
+  var listingId = (document.getElementById('boost-listing-id')          || {}).value;
+  var pkgId     = (document.getElementById('boost-selected-package-id') || {}).value;
+  var bizName   = (document.getElementById('boost-biz-name')            || {}).value;
+  var bizPhone  = (document.getElementById('boost-biz-phone')           || {}).value;
+  var title     = (document.getElementById('boost-push-title')          || {}).value;
+  var body      = (document.getElementById('boost-push-body')           || {}).value;
+  var img       = (document.getElementById('boost-push-img')            || {}).value;
+  var price     = (document.getElementById('boost-selected-package-price') || {}).value;
+  var pName     = (document.getElementById('boost-selected-package-name')  || {}).value;
+  if (!listingId) { alert('Please select a listing to boost.'); return; }
+  if (!pkgId)     { alert('Please select a package.'); return; }
+  if (!bizName)   { alert('Please enter your business name.'); return; }
+  if (!bizPhone)  { alert('Please enter a contact phone number.'); return; }
+  if (!title)     { alert('Please enter a notification title.'); return; }
+  if (!body)      { alert('Please enter a notification message.'); return; }
+  var btn = document.getElementById('boost-submit-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
+  var tok = localStorage.getItem('cm237_token') || _sessionToken || '';
+  var fd = new FormData();
+  fd.append('action','submit_ad'); fd.append('listing_id', listingId); fd.append('package_id', pkgId);
+  fd.append('business_name', bizName); fd.append('contact_phone', bizPhone);
+  fd.append('push_title', title); fd.append('push_body', body);
+  fd.append('push_image_url', img || ''); fd.append('push_cta_label', 'View Listing'); fd.append('push_link_path', '');
+  try {
+    var d = await (await fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token':tok}})).json();
+    if (!d.success) { alert(d.error || 'Submission failed. Please try again.'); return; }
+    var cid = d.campaign_id;
+    document.getElementById('ad-ref-code').textContent = 'AD-' + cid;
+    document.getElementById('ad-amount-due').textContent = 'Amount: ' + Number(d.price || price).toLocaleString() + ' FCFA (' + (d.package_name || pName) + ')';
+    var waEl = document.getElementById('ad-whatsapp-confirm');
+    if (waEl) waEl.href = 'https://wa.me/237?text=' + encodeURIComponent(
+      'Bonjour CamMarket237,\nJ\'ai payé pour boost campaign AD-' + cid +
+      '\nMontant: ' + Number(d.price || price).toLocaleString() + ' FCFA\nBusiness: ' + bizName +
+      '\nMerci de confirmer et activer mon boost ad.');
+    window.go('ad-submitted');
+  } catch(e) { alert('Network error. Please try again.');
+  } finally { if (btn) { btn.disabled = false; btn.textContent = 'Submit Boost for Review →'; } }
+};
+
 // ═══════════════════════════════════════════════════════════
 // GUESTHOUSE MODULE
 // ═══════════════════════════════════════════════════════════
@@ -8468,7 +9884,7 @@ window.contactGuesthouse = function(method) {
   if (!clean) { alert('No contact number available for this host.'); return; }
   var msg = encodeURIComponent('Hello 👋 I saw "' + (gh.store_name || gh.title) + '" on CamMarket237. I\'d like to know more about availability and pricing. Thank you!');
   if (method === 'whatsapp') {
-    window.open('https://wa.me/' + clean + '?text=' + msg, '_blank');
+    waOpen('https://wa.me/' + clean + '?text=' + msg, '_blank');
   } else if (method === 'call') {
     window.location.href = 'tel:+' + clean;
   }
@@ -9070,7 +10486,7 @@ window.proceedToWhatsApp = function() {
     + 'Hi! I saw your *' + p.itemTitle + '* on CamMarket237 for *'
     + Number(p.price).toLocaleString() + ' FCFA*. Is it still available?\n'
     + '\uD83D\uDC49 cammarket237.com';
-  window.open('https://wa.me/' + n + '?text=' + encodeURIComponent(safetyMsg), '_blank');
+  waOpen('https://wa.me/' + n + '?text=' + encodeURIComponent(safetyMsg), '_blank');
   window._pendingWA = null;
 };
 
@@ -9314,7 +10730,7 @@ window.forgotRequestOTP = async function() {
       if (!cleanPhone.startsWith('237') && cleanPhone.length <= 9) cleanPhone = '237' + cleanPhone;
       if (!cleanPhone.startsWith('237') && cleanPhone.length === 10) cleanPhone = '1' + cleanPhone;
       var waMsg = 'Your CamMarket237 password reset OTP is:\n\n*' + otp + '*\n\nThis code expires in 10 minutes.\nDo NOT share this code with anyone.\n\n- CamMarket237 Team';
-      window.open('https://wa.me/' + cleanPhone + '?text=' + encodeURIComponent(waMsg), '_blank');
+      waOpen('https://wa.me/' + cleanPhone + '?text=' + encodeURIComponent(waMsg), '_blank');
       // Show step 2
       document.getElementById('forgot-step1').style.display = 'none';
       document.getElementById('forgot-step2').style.display = 'block';
@@ -9500,7 +10916,7 @@ window.shareInvite = function(role) {
       + '\uD83C\uDDE8\uD83C\uDDF2 CamMarket237 - Cameroon\'s #1 Marketplace';
   }
 
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  waOpen('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 };
 
 // Handle ?store= URL to open specific store
@@ -9582,14 +10998,14 @@ window.shareMyStore = function() {
     + (code ? 'Use code ' + code + ' for bonus points!\n' : '')
     + '\nVisit: ' + storeLink + '\n\n'
     + 'CamMarket237 - Cameroon No.1 Marketplace';
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  waOpen('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 };
 
 window.shareToStatus = function(link, storeName) {
   // WhatsApp Status sharing - copy link then open WhatsApp Status
   navigator.clipboard.writeText(link).then(function() {
     alert('\uD83D\uDCCB Link copied!\n\nNow opening WhatsApp...\n\n1. Go to Status tab\n2. Add a Status\n3. Paste your store link\n4. Add a nice photo of your products!');
-    window.open('whatsapp://app', '_blank');
+    waOpen('https://wa.me/');
   }).catch(function() {
     alert('Your store link:\n' + link + '\n\nCopy it and post on your WhatsApp Status!');
   });
@@ -9784,30 +11200,46 @@ window.loadDeals = async function() {
     if (!d.deals || !d.deals.length) { section.style.display='none'; return; }
     section.style.display = 'block';
     list.innerHTML = d.deals.map(function(deal) {
+      // Cache deal as item so click works without a second fetch
+      window._itemCache[deal.listing_id] = {
+        id: deal.listing_id, title: deal.title, category: deal.category,
+        town: deal.town, main_photo: deal.main_photo, price: deal.deal_price,
+        original_price: deal.original_price, description: deal.description,
+        store_name: deal.store_name, whatsapp: deal.whatsapp,
+        listing_type: deal.listing_type, store_id: deal.store_id,
+        condition: deal.condition
+      };
       var secs = Math.max(0, parseInt(deal.seconds_left));
       var h = Math.floor(secs/3600), m = Math.floor((secs%3600)/60), s = secs%60;
       var timeStr = h > 0 ? h+'h '+m+'m' : m+'m '+s+'s';
       var urgent = secs < 3600;
-      return '<div onclick="window.openDealItem('+deal.listing_id+')" style="min-width:160px;background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.1);cursor:pointer;flex-shrink:0">'
+      return '<div class="itm" data-item-id="'+deal.listing_id+'" onclick="var _c=window._itemCache[this.dataset.itemId];if(_c)window.showItem(_c);" style="min-width:160px;background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.1);cursor:pointer;flex-shrink:0">'
         + '<div style="position:relative">'
-        + '<img src="'+(deal.main_photo||'')+'" style="width:100%;height:110px;object-fit:cover"/>'
-        + '<div style="position:absolute;top:6px;right:6px;background:#e74c3c;color:white;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:900">-'+Math.round(deal.discount_percent)+'%</div>'
+        + '<img src="'+(deal.main_photo||'')+'" style="width:100%;height:110px;object-fit:cover;pointer-events:none"/>'
+        + '<div style="position:absolute;top:6px;right:6px;background:#e74c3c;color:white;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:900;pointer-events:none">-'+Math.round(deal.discount_percent)+'%</div>'
         + '</div>'
-        + '<div style="padding:8px">'
+        + '<div style="padding:8px;pointer-events:none">'
         + '<div style="font-size:12px;font-weight:700;color:#0f1923;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+deal.title+'</div>'
         + '<div style="font-size:10px;color:#aaa;text-decoration:line-through">'+parseInt(deal.original_price).toLocaleString()+' FCFA</div>'
         + '<div style="font-size:14px;font-weight:900;color:#e74c3c">'+parseInt(deal.deal_price).toLocaleString()+' FCFA</div>'
         + '<div style="font-size:10px;color:'+(urgent?'#e74c3c':'#888')+';margin-top:3px">&#x23F1; '+timeStr+'</div>'
         + '</div></div>';
     }).join('');
-    // Start countdown
+    // Start countdown (clear any existing timer first to prevent stacking)
+    if (window._dealTimer) clearInterval(window._dealTimer);
     window._dealTimer = setInterval(window.tickDealCountdowns, 1000);
   } catch(e) {}
 };
 
+window.loadItemDetail = async function(id) {
+  try {
+    var d = await (await fetch('/api.php?action=get_listing&id='+id)).json();
+    if (d.success && d.listing) await window.showItem(d.listing);
+  } catch(e) { console.error('loadItemDetail', e); }
+};
+
 window.openDealItem = function(listingId) {
-  // Open item detail
-  window.loadItemDetail && window.loadItemDetail(listingId);
+  window.loadItemDetail(listingId);
 };
 
 window.tickDealCountdowns = function() {
@@ -9970,7 +11402,7 @@ window.shareHotDeal = function(title, price, disc, listingId) {
     + 'Get it before the deal expires!\n'
     + link + '\n\n'
     + 'CamMarket237 - Cameroon No.1 Marketplace';
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  waOpen('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 };
 
 
@@ -10418,23 +11850,52 @@ window.restoreSession = async function() {
   } catch(e) { _currentUser = null; _currentStore = null; _sessionToken = ''; }
 
   if (!_currentUser || !_sessionToken) {
-    go('role'); return;
+    if (localStorage.getItem('cm237_guest_intent') === '1') {
+      localStorage.removeItem('cm237_guest_intent');
+      _isGuest = true;
+      go('buyer-search');
+      window.showWelcome();
+      setTimeout(function(){ if(window.doSearch) window.doSearch(); }, 300);
+      window._handleDeepLink();
+    } else {
+      // Preserve deep-link through login redirect
+      var _dlp = new URLSearchParams(window.location.search).get('item');
+      window.location.href = '/cammarket_login_classic.html' + (_dlp ? '?item=' + _dlp : '');
+    }
+    return;
   }
 
-  // Verify session is still valid with server
+  // Guest role uses a fake local token — skip server check, just validate 24hr window
+  if (_currentUser.role === 'guest') {
+    var guestTime = parseInt(localStorage.getItem('cm237_guest_time') || '0');
+    var hoursElapsed = (Date.now() - guestTime) / (1000 * 60 * 60);
+    if (!guestTime || hoursElapsed >= 24) {
+      localStorage.removeItem('cm237_user');
+      localStorage.removeItem('cm237_token');
+      localStorage.removeItem('cm237_guest_time');
+      alert('Your 24-hour guest access has expired. Please sign in or create an account.');
+      window.location.href = '/cammarket_login_classic.html'; return;
+    }
+    _isGuest = true;
+    go('buyer-search');
+    window.showWelcome();
+    setTimeout(function(){ if(window.doSearch) window.doSearch(); }, 300);
+    window._handleDeepLink();
+    return;
+  }
+
+  // Verify real session with server
   try {
     var d = await (await fetch('/api.php?action=check_session', {
       headers: { 'X-Session-Token': _sessionToken }
     })).json();
 
     if (!d.success) {
-      // Session expired - clear and go home
       localStorage.removeItem('cm237_token');
       localStorage.removeItem('cm237_user');
       localStorage.removeItem('cm237_store');
-      go('role'); return;
+      window.location.href = '/cammarket_login_classic.html'; return;
     }
-    // Update user data from server response
     if (d.user) {
       _currentUser = d.user;
       localStorage.setItem('cm237_user', JSON.stringify(d.user));
@@ -10456,6 +11917,7 @@ window.restoreSession = async function() {
     }
     window.launchSellerDash(_currentStore ? _currentStore.store_name : _currentUser.full_name, _currentStore);
     setTimeout(function(){ if(window.checkAllNotifCounts) window.checkAllNotifCounts(); }, 1000);
+    window._handleDeepLink();
 
   } else if (_currentUser.role === 'buyer') {
     _buyerTown   = _currentUser.town   || '';
@@ -10466,26 +11928,10 @@ window.restoreSession = async function() {
     setTimeout(window.refreshWalletBalance, 600);
     setTimeout(function(){ if(window.doSearch) window.doSearch(); }, 300);
     setTimeout(function(){ if(window.checkAllNotifCounts) window.checkAllNotifCounts(); }, 1000);
+    window._handleDeepLink();
 
-  } else if (_currentUser.role === 'guest') {
-    // Check if 24hr guest access expired
-    var guestTime = parseInt(localStorage.getItem('cm237_guest_time') || '0');
-    var hoursElapsed = (Date.now() - guestTime) / (1000 * 60 * 60);
-    if (hoursElapsed >= 24) {
-      // Expired - clear and show role screen
-      localStorage.removeItem('cm237_user');
-      localStorage.removeItem('cm237_guest_time');
-      alert('Your 24-hour guest access has expired. Please register to continue.');
-      go('role');
-    } else {
-      // Still valid - restore guest session
-      _isGuest = true;
-      go('buyer-search');
-      window.showWelcome();
-      setTimeout(function(){ if(window.doSearch) window.doSearch(); }, 300);
-    }
   } else {
-    go('role');
+    window.location.href = '/cammarket_login_classic.html';
   }
 };
 
@@ -10712,7 +12158,7 @@ window.contactServiceProvider = function() {
   var svc=_currentSvc; if(!svc||!svc.whatsapp) return;
   var n=svc.whatsapp.replace(/[^0-9]/g,''); if(!n.startsWith('237')) n='237'+n;
   var msg='Hello, I found your service on CamMarket237: '+(svc.title||'')+'. I would like more information.';
-  window.open('https://wa.me/'+n+'?text='+encodeURIComponent(msg),'_blank');
+  waOpen('https://wa.me/'+n+'?text='+encodeURIComponent(msg),'_blank');
 };
 
 window.getSvcDirections = function() {
@@ -10725,7 +12171,7 @@ window.shareService = function() {
   var cfg=SERVICE_CONFIG[svc.service_type]||{icon:'\uD83D\uDCBC'};
   var text=cfg.icon+' '+svc.title+'\n\uD83D\uDCB0 '+(svc.price?Number(svc.price).toLocaleString()+' FCFA':'Contact for price')+'\n\uD83D\uDCCD '+(svc.town||'')+'\n\nFound on CamMarket237 - cammarket237.com';
   if(navigator.share){navigator.share({title:svc.title,text:text,url:'https://cammarket237.com'});}
-  else window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
+  else waOpen('https://wa.me/?text='+encodeURIComponent(text),'_blank');
 };
 
 window.goBackFromService = function() { go('services'); };
