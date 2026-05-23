@@ -6,7 +6,7 @@
 error_reporting(0); ini_set('display_errors', 0);
 session_start();
 
-define('ADMIN_PASS', 'CamAdmin2024!');
+define('ADMIN_PASS', 'CamAdmin2024');
 define('DB_DSN',  'pgsql:host=' . (file_exists('/.dockerenv') ? 'db' : 'localhost') . ';dbname=cammarket237_db');
 define('DB_USER', 'cammarket_user');
 define('DB_PASS', 'CamMarket2024');
@@ -107,6 +107,22 @@ if ($act === 'delete_user' && $id) {
         run("DELETE FROM cammarket237.users WHERE id=? AND role != 'admin'", [$id]);
         $msg = "User #$id deleted";
     }
+if ($act === 'approve_ad' && $id) {
+    run("UPDATE cammarket237.ad_campaigns SET status='approved', reviewed_at=NOW() WHERE id=?", [$id]);
+    $msg = "Ad #$id approved — notify advertiser to pay.";
+}
+if ($act === 'activate_ad' && $id) {
+    run("UPDATE cammarket237.ad_campaigns SET status='active' WHERE id=?", [$id]);
+    $msg = "Ad #$id is now LIVE.";
+}
+if ($act === 'reject_ad' && $id) {
+    run("UPDATE cammarket237.ad_campaigns SET status='rejected', reviewed_at=NOW() WHERE id=?", [$id]);
+    $msg = "Ad #$id rejected.";
+}
+if ($act === 'complete_ad' && $id) {
+    run("UPDATE cammarket237.ad_campaigns SET status='completed' WHERE id=?", [$id]);
+    $msg = "Ad #$id marked complete.";
+}
 }
 
 // ── Stats ─────────────────────────────────────────────────
@@ -188,6 +204,7 @@ tr:hover td{background:#fafafa}
   <a href="?tab=flags"      class="<?= $tab==='flags'     ?'active':'' ?>">&#x26A0;&#xFE0F; Flags <?= $stats['flags']>0 ? "<span style='background:#e74c3c;color:white;border-radius:10px;padding:1px 7px;font-size:11px'>{$stats['flags']}</span>" : '' ?></a>
   <a href="?tab=uploads"    class="<?= $tab==='uploads'   ?'active':'' ?>">&#x1F4F7; Uploads</a>
   <a href="?tab=streaming"  class="<?= $tab==='streaming' ?'active':'' ?>">&#x1F4F9; Live Streams</a>
+  <a href="?tab=ads"        class="<?= $tab==='ads'       ?'active':'' ?>">&#x1F4E3; Ads <?= ($adPending=q1("SELECT COUNT(*) AS n FROM cammarket237.ad_campaigns WHERE status='submitted'")['n'])>0 ? "<span style='background:#e67e22;color:white;border-radius:10px;padding:1px 7px;font-size:11px'>$adPending</span>" : '' ?></a>
 </nav>
 
 <div class="content">
@@ -445,6 +462,86 @@ tr:hover td{background:#fafafa}
     </div>
     <?php endforeach ?>
   </div>
+
+<?php elseif ($tab === 'ads'): ?>
+
+  <div class="section-title">&#x1F4E6; Ad Packages</div>
+  <table style="margin-bottom:24px">
+    <tr><th>Package</th><th>Reach</th><th>Duration</th><th>Price (FCFA)</th><th>Status</th></tr>
+    <?php foreach(q("SELECT * FROM cammarket237.ad_packages ORDER BY display_order") as $p): ?>
+    <tr>
+      <td><strong><?= htmlspecialchars($p['name']) ?></strong><br><span style="font-size:11px;color:#888"><?= htmlspecialchars($p['description']??'') ?></span></td>
+      <td><?= number_format($p['audience_cap']??$p['notification_count']??0) ?> buyers</td>
+      <td><?= $p['duration_days'] ?> days</td>
+      <td><?= number_format($p['price']??0) ?> FCFA</td>
+      <td><span style="background:<?= $p['active'] ? '#d4edda' : '#f8d7da' ?>;color:<?= $p['active'] ? '#155724' : '#721c24' ?>;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700"><?= $p['active'] ? 'Active' : 'Inactive' ?></span></td>
+    </tr>
+    <?php endforeach ?>
+  </table>
+
+  <div class="section-title">&#x1F4E3; Ad Campaigns</div>
+  <?php
+    $campaigns = q("SELECT c.*, p.name AS package_name, p.price AS pkg_price, p.audience_cap AS max_reach,
+        a.business_name, a.contact_phone, u.full_name, u.phone AS user_phone
+        FROM cammarket237.ad_campaigns c
+        LEFT JOIN cammarket237.ad_packages p ON p.id=c.package_id
+        LEFT JOIN cammarket237.advertiser_accounts a ON a.id=c.advertiser_id
+        LEFT JOIN cammarket237.users u ON u.id=a.user_id
+        ORDER BY c.created_at DESC");
+  ?>
+  <?php if(!$campaigns): ?>
+    <div style="background:white;border-radius:12px;padding:30px;text-align:center;color:#aaa">
+      <div style="font-size:32px;margin-bottom:8px">&#x1F4E3;</div>
+      <div style="font-size:14px;font-weight:600">No ad campaigns yet</div>
+      <div style="font-size:12px;margin-top:4px">Campaigns will appear here when sellers submit ads</div>
+    </div>
+  <?php else: ?>
+  <table>
+    <tr><th>ID</th><th>Advertiser</th><th>Package</th><th>Ad Content</th><th>Status</th><th>Submitted</th><th>Actions</th></tr>
+    <?php foreach($campaigns as $c):
+      $statusColor = [
+        'submitted'=>'#fff3cd','approved'=>'#cce5ff','active'=>'#d4edda',
+        'rejected'=>'#f8d7da','completed'=>'#e2e3e5'
+      ][$c['status']] ?? '#eee';
+      $statusText = [
+        'submitted'=>'Pending Review','approved'=>'Approved — Awaiting Payment',
+        'active'=>'🟢 LIVE','rejected'=>'Rejected','completed'=>'Completed'
+      ][$c['status']] ?? $c['status'];
+    ?>
+    <tr>
+      <td>#<?= $c['id'] ?></td>
+      <td>
+        <strong><?= htmlspecialchars($c['business_name'] ?: $c['full_name'] ?: '—') ?></strong><br>
+        <span style="font-size:11px;color:#888"><?= htmlspecialchars($c['contact_phone'] ?: $c['user_phone'] ?: '') ?></span>
+      </td>
+      <td><?= htmlspecialchars($c['package_name'] ?? '—') ?><br>
+        <span style="font-size:11px;color:#888"><?= number_format($c['price']??$c['pkg_price']??0) ?> FCFA &bull; <?= number_format($c['max_reach']??0) ?> reach</span>
+      </td>
+      <td style="max-width:200px">
+        <?php if($c['push_title']): ?>
+          <strong style="font-size:12px"><?= htmlspecialchars($c['push_title']) ?></strong><br>
+          <span style="font-size:11px;color:#555"><?= htmlspecialchars(substr($c['push_body']??'',0,60)) ?><?= strlen($c['push_body']??'')>60?'…':'' ?></span>
+        <?php else: ?><span style="color:#aaa;font-size:11px">No content submitted</span>
+        <?php endif ?>
+      </td>
+      <td><span style="background:<?= $statusColor ?>;padding:3px 9px;border-radius:10px;font-size:11px;font-weight:700"><?= $statusText ?></span></td>
+      <td style="font-size:11px;color:#888"><?= date('d M Y', strtotime($c['created_at'])) ?></td>
+      <td>
+        <?php if($c['status']==='submitted'): ?>
+          <?php act('approve_ad', $c['id'], '✅ Approve', '#1a7a3c') ?>
+          <?php act('reject_ad',  $c['id'], '❌ Reject',  '#e74c3c') ?>
+        <?php elseif($c['status']==='approved'): ?>
+          <?php act('activate_ad', $c['id'], '🟢 Go Live', '#e67e22') ?>
+          <?php act('reject_ad',   $c['id'], '❌ Reject',  '#e74c3c') ?>
+        <?php elseif($c['status']==='active'): ?>
+          <?php act('complete_ad', $c['id'], '✔ Complete', '#7f8c8d') ?>
+        <?php else: ?>—
+        <?php endif ?>
+      </td>
+    </tr>
+    <?php endforeach ?>
+  </table>
+  <?php endif ?>
 
 <?php endif ?>
 </div>
