@@ -655,8 +655,10 @@
           <div style="font-size:26px;font-weight:900;letter-spacing:-0.5px" id="buyer-wallet-fcfa">0 FCFA</div>
         </div>
         <div style="text-align:right">
-          <div style="font-size:11px;opacity:0.75" data-i18n="wallet.referralEarnings">Referral earnings</div>
-          <div style="font-size:12px;font-weight:700;margin-top:3px" data-i18n="wallet.tapDetails">Tap for details ???</div>
+          <div style="font-size:10px;opacity:0.75">FCFA Earned &nbsp;|&nbsp; Pending</div>
+          <div style="font-size:13px;font-weight:900;margin-top:3px">
+            <span id="dash-earned-fcfa">0</span> &nbsp;|&nbsp; <span id="dash-pending-fcfa" style="color:#fcd116">0</span>
+          </div>
         </div>
       </div>
     </div>
@@ -6127,6 +6129,10 @@ window.refreshWalletBalance = async function() {
       if (sellerEl) sellerEl.textContent = formatted;
       if (buyerEl)  buyerEl.textContent  = formatted;
       if (buyerBanner) buyerBanner.style.display = 'block';
+      var earnedEl  = document.getElementById('dash-earned-fcfa');
+      var pendingEl = document.getElementById('dash-pending-fcfa');
+      if (earnedEl)  earnedEl.textContent  = (d.earned_fcfa  || 0).toLocaleString();
+      if (pendingEl) pendingEl.textContent = (d.pending_fcfa || 0).toLocaleString();
       var u = null;
       try { u = JSON.parse(localStorage.getItem('cm237_user')); } catch(e) {}
       if (u) { u.wallet_balance = bal; localStorage.setItem('cm237_user', JSON.stringify(u)); }
