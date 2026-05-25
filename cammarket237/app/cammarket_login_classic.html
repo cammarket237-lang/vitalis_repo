@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CamMarket237 &mdash; Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,400;9..144,1,700&family=Manrope:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060A0E;--card:#0B1913;--card-b:#1A2E22;
+  --green:#007A5E;--gbright:#00B783;--red:#CE1126;
+  --yel:#FCD116;--yelw:#E8B400;--muted:#7A9A80;--white:#FFFFFF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;overflow-x:hidden}
+
+/* SCENE */
+.scene{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.sky{position:absolute;inset:0;background:linear-gradient(180deg,#020508 0%,#040810 20%,#060B14 45%,#091510 65%,#0A1A0B 80%,#080C07 100%)}
+.vignette{position:absolute;inset:0;background:radial-gradient(ellipse 80% 70% at 50% 30%,transparent 40%,rgba(0,0,0,.55) 100%)}
+.grain{position:absolute;inset:0;opacity:.028;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:180px}
+.mountains{position:absolute;bottom:0;left:0;width:72%;height:72%}
+.forest{position:absolute;bottom:0;left:0;width:100%;height:28%}
+.star{position:absolute;background:#fff;border-radius:50%;animation:twinkle linear infinite alternate}
+.moon{position:absolute;top:9%;right:22%;width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 35% 38%,#FFF8E0,#F0D97A);box-shadow:0 0 18px 6px rgba(240,217,120,.22),0 0 48px 14px rgba(240,217,120,.09);opacity:.88}
+.firefly{position:absolute;width:2px;height:2px;border-radius:50%;background:#BFE85A;animation:fly linear infinite;opacity:0}
+@keyframes twinkle{from{opacity:.12}to{opacity:.72}}
+@keyframes fly{0%{opacity:0;transform:translate(0,0)}20%{opacity:.7}50%{opacity:.4;transform:translate(var(--fx),var(--fy))}80%{opacity:.6}100%{opacity:0;transform:translate(var(--fx2),var(--fy2))}}
+
+/* TOPBAR */
+.topbar{position:relative;z-index:20;display:flex;align-items:center;padding:18px 36px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff}
+.logo-flag{width:34px;height:24px;border-radius:5px;overflow:hidden;flex-shrink:0}
+.logo-name{font-size:15px;font-weight:900;letter-spacing:-.3px;line-height:1.1}
+.logo-sub{font-size:9px;font-weight:500;letter-spacing:1.8px;color:var(--muted);text-transform:uppercase}
+.lang-sw{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:3px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:30px;padding:4px}
+.lb{background:none;border:none;color:rgba(255,255,255,.42);font-size:10.5px;font-weight:800;letter-spacing:.6px;padding:5px 13px;border-radius:20px;cursor:pointer;font-family:inherit;transition:all .2s}
+.lb.on{background:var(--green);color:#fff}
+
+/* GRID */
+.grid{position:relative;z-index:10;display:grid;grid-template-columns:1fr 430px;min-height:calc(100vh - 66px);padding:0 36px 36px;gap:32px;align-items:center}
+
+/* HERO */
+.hero{max-width:520px;padding:20px 0 80px}
+.badge{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(252,209,22,.3);border-radius:20px;padding:5px 14px;font-size:9.5px;font-weight:800;letter-spacing:2px;color:rgba(252,209,22,.75);text-transform:uppercase;margin-bottom:26px}
+.badge::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--yel);flex-shrink:0}
+.h1{font-size:clamp(34px,4.2vw,62px);font-weight:900;line-height:1.08;margin-bottom:18px}
+.h1 em{font-style:italic;font-family:'Fraunces',serif;color:var(--yel);font-weight:700}
+.sub{font-size:15px;line-height:1.7;color:rgba(255,255,255,.48);max-width:400px}
+.chevrons{display:flex;gap:10px;margin-top:36px}
+.chev{width:0;height:0;border-left:13px solid transparent;border-right:13px solid transparent}
+.chev:nth-child(1){border-top:17px solid rgba(0,122,94,.55)}
+.chev:nth-child(2){border-top:17px solid rgba(0,122,94,.35)}
+.chev:nth-child(3){border-top:17px solid rgba(0,122,94,.18)}
+.guest-link{display:inline-block;margin-top:24px;font-size:15px;font-weight:700;color:#ffffff;cursor:pointer;transition:color .2s}
+.guest-link:hover{color:rgba(255,255,255,.75)}
+
+/* STATS */
+.stats{position:fixed;bottom:26px;left:36px;z-index:20;display:flex;flex-direction:column;gap:3px}
+.stats-main{display:flex;align-items:center;gap:7px;font-size:11.5px;color:rgba(255,255,255,.62);font-weight:500}
+.stats-coord{font-size:10.5px;color:rgba(255,255,255,.28);font-family:'JetBrains Mono',monospace;letter-spacing:.4px}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--card-b);border-radius:16px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.55)}
+.stripe{height:3px;background:linear-gradient(90deg,#007A5E 33.3%,#CE1126 33.3% 66.6%,#FCD116 66.6%)}
+.ctop{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:12px 16px 0}
+.cflag{width:26px;height:18px;border-radius:3px;overflow:hidden;flex-shrink:0}
+.cav{width:34px;height:34px;border-radius:50%;background:#3a4a3a;display:flex;align-items:center;justify-content:center;font-size:15px;border:2px solid rgba(255,255,255,.1)}
+.cbody{padding:12px 22px 22px}
+.eyebrow{font-size:10px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.eyebrow::before,.eyebrow::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08)}
+.ctitle{font-size:27px;font-weight:900;line-height:1.1;margin-bottom:6px}
+.ctitle em{font-style:italic;font-family:'Fraunces',serif;color:var(--yel);font-weight:700}
+.csub{font-size:12.5px;color:rgba(255,255,255,.45);line-height:1.55;margin-bottom:16px}
+
+/* role chip */
+.chip{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:9px 13px;margin-bottom:14px}
+.chip-l{display:flex;flex-direction:column;gap:1px}
+.chip-tag{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-weight:700}
+.chip-val{font-size:14px;font-weight:800;display:flex;align-items:center;gap:5px}
+.ch-btn{background:none;border:none;color:var(--gbright);font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:underline;text-underline-offset:2px;padding:0}
+
+/* tabs */
+.tabs{display:flex;gap:3px;background:rgba(255,255,255,.04);border-radius:9px;padding:3px;margin-bottom:18px}
+.tb{flex:1;background:none;border:none;color:rgba(255,255,255,.4);font-size:12.5px;font-weight:700;padding:8px 10px;border-radius:7px;cursor:pointer;font-family:inherit;transition:all .2s;white-space:nowrap}
+.tb.on{background:#1A2E22;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+
+/* select */
+.sel{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;font-size:14px;font-family:inherit;font-weight:600;padding:13px 14px;outline:none;margin-bottom:12px;transition:border-color .2s;appearance:none;cursor:pointer}
+.sel:focus{border-color:var(--gbright)}
+.sel option{background:#0B1913;color:#fff}
+
+/* form */
+.flabel{font-size:9.5px;letter-spacing:1.5px;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:7px;display:block}
+.ph-wrap{display:flex;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;overflow:hidden;margin-bottom:14px;transition:border-color .2s}
+.ph-wrap:focus-within{border-color:var(--gbright)}
+.prefix{display:flex;align-items:center;gap:5px;padding:0 11px;border-right:1px solid rgba(255,255,255,.09);font-size:13px;font-weight:700;color:rgba(255,255,255,.75);background:rgba(255,255,255,.04);flex-shrink:0;white-space:nowrap}
+.ph-in{background:none;border:none;outline:none;color:#fff;font-size:14.5px;font-family:inherit;font-weight:600;padding:13px 12px;width:100%;letter-spacing:.5px}
+.ph-in::placeholder{color:rgba(255,255,255,.2);font-weight:400;letter-spacing:3px}
+.inp{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;font-size:15px;font-family:inherit;font-weight:600;padding:13px 14px;outline:none;margin-bottom:12px;transition:border-color .2s;letter-spacing:.5px}
+.inp:focus{border-color:var(--gbright)}
+.inp.otp-in{text-align:center;font-size:26px;font-weight:900;letter-spacing:10px;font-family:'JetBrains Mono',monospace}
+.pw-wrap{position:relative;margin-bottom:12px}
+.pw-wrap .inp{margin-bottom:0;padding-right:42px}
+.pw-eye{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:15px;color:var(--muted);padding:4px}
+
+/* buttons */
+.btn-otp{width:100%;background:var(--yel);color:#080B09;border:none;border-radius:10px;padding:14px;font-size:14.5px;font-weight:900;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px;transition:opacity .2s,transform .1s;margin-bottom:8px}
+.btn-otp:hover{opacity:.9}.btn-otp:active{transform:scale(.98)}.btn-otp:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-wa{width:100%;background:#25D366;color:#fff;border:none;border-radius:10px;padding:12px;font-size:13.5px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px;transition:opacity .2s;margin-bottom:12px}
+.btn-wa:hover{opacity:.9}
+.hint{font-size:11.5px;color:rgba(255,255,255,.3);text-align:center;margin:4px 0 14px;line-height:1.4}
+.or{display:flex;align-items:center;gap:10px;margin:12px 0;color:rgba(255,255,255,.22);font-size:11.5px;font-weight:700}
+.or::before,.or::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.09)}
+.lnk-row{display:flex;justify-content:space-between;margin-top:10px}
+.lnk{background:none;border:none;color:rgba(255,255,255,.42);font-size:12px;font-family:inherit;cursor:pointer;padding:0;line-height:1.5;transition:color .2s}
+.lnk:hover{color:rgba(255,255,255,.75)}
+.lnk strong,.lnk-action{color:var(--yelw);font-weight:700;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.center-lnk{width:100%;text-align:center}
+
+/* messages */
+.err{background:rgba(206,17,38,.1);border:1px solid rgba(206,17,38,.3);border-radius:8px;padding:9px 12px;font-size:12.5px;color:#FF6B7A;margin-bottom:12px;display:none}
+.ok-msg{background:rgba(0,183,131,.1);border:1px solid rgba(0,183,131,.22);border-radius:8px;padding:9px 13px;font-size:12.5px;color:var(--gbright);margin-bottom:12px;text-align:center;line-height:1.5;display:none}
+.devbox{background:rgba(252,209,22,.07);border:1px solid rgba(252,209,22,.2);border-radius:10px;padding:10px;text-align:center;margin-bottom:12px;display:none}
+.devlbl{font-size:9px;color:rgba(252,209,22,.55);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:2px}
+.devval{font-size:34px;font-weight:900;color:var(--yel);letter-spacing:10px;font-family:'JetBrains Mono',monospace}
+.cfoot{font-size:10.5px;color:rgba(255,255,255,.22);text-align:center;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07);line-height:1.5}
+.cfoot a{color:rgba(255,255,255,.42);text-decoration:underline}
+
+/* category checkboxes */
+.cat-cb{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:rgba(255,255,255,.72);cursor:pointer;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:8px 10px;transition:border-color .15s,background .15s}
+.cat-cb:hover{background:rgba(0,183,131,.08);border-color:rgba(0,183,131,.3)}
+.cat-cb input[type=checkbox]{accent-color:var(--gbright);width:14px;height:14px;flex-shrink:0;cursor:pointer}
+.cat-cb input[type=checkbox]:checked+*,.cat-cb:has(input:checked){color:#fff}
+.cat-cb:has(input:checked){background:rgba(0,183,131,.12);border-color:rgba(0,183,131,.4)}
+
+@media(max-width:880px){
+  .grid{grid-template-columns:1fr;padding:12px 16px 24px}
+  .hero,.stats{display:none}
+  .card{max-width:400px;margin:0 auto;width:100%}
+  .lang-sw{position:static;transform:none;margin-left:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- Scene -->
+<div class="scene">
+  <div class="sky"></div>
+  <div class="vignette"></div>
+  <div class="grain"></div>
+  <div class="moon"></div>
+  <!-- Mount Cameroon silhouette -->
+  <svg class="mountains" viewBox="0 0 900 600" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+    <!-- Main peak — Mount Cameroon -->
+    <polygon points="420,22 745,592 95,592" fill="#050D08"/>
+    <!-- Left shoulder ridge -->
+    <polygon points="130,205 375,592 -65,592" fill="#040C06"/>
+    <!-- Right ridge -->
+    <polygon points="605,105 865,592 345,592" fill="#050D09"/>
+    <!-- Mid hill -->
+    <polygon points="242,285 405,592 78,592" fill="#040A06" opacity=".8"/>
+    <!-- Forest ground line -->
+    <path d="M0,505 Q85,478 185,493 Q305,512 425,482 Q545,453 645,476 Q765,498 900,484 L900,592 L0,592Z" fill="#030806"/>
+    <!-- Tree silhouettes -->
+    <path d="M0,505 Q20,490 28,505 Q38,485 48,505 Q58,487 68,505 Q78,488 90,505
+             Q105,488 118,505 Q132,486 146,505 Q162,489 178,505 Q195,487 212,505
+             Q228,490 244,505 Q260,488 276,505 Q292,490 308,505 Q324,488 340,505
+             Q356,490 372,505 Q388,488 404,505 Q420,490 436,505 Q452,489 468,505
+             Q484,490 500,505 Q516,488 532,505 Q548,490 564,505 Q580,488 596,505
+             Q612,490 628,505 Q644,488 660,505 Q676,490 692,505 Q708,489 724,505
+             Q740,490 756,505 Q772,488 788,505 Q804,490 820,505 Q836,488 852,505
+             Q868,490 884,505 L900,505 L900,592 L0,592Z" fill="#02060400"/>
+  </svg>
+  <!-- Forest layer with tree silhouettes -->
+  <svg class="forest" viewBox="0 0 1440 260" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,180 Q15,155 28,180 Q42,148 56,180 Q70,150 84,180 Q98,152 112,180
+             Q130,150 148,180 Q166,148 184,180 Q202,152 220,180 Q238,150 256,180
+             Q274,152 292,180 Q310,150 328,180 Q346,152 364,180 Q382,150 400,180
+             Q418,152 436,180 Q454,150 472,180 Q490,152 508,180 Q526,150 544,180
+             Q562,152 580,180 Q598,150 616,180 Q634,152 652,180 Q670,150 688,180
+             Q706,152 724,180 Q742,150 760,180 Q778,152 796,180 Q814,150 832,180
+             Q850,152 868,180 Q886,150 904,180 Q922,152 940,180 Q958,150 976,180
+             Q994,152 1012,180 Q1030,150 1048,180 Q1066,152 1084,180 Q1102,150 1120,180
+             Q1138,152 1156,180 Q1174,150 1192,180 Q1210,152 1228,180 Q1246,150 1264,180
+             Q1282,152 1300,180 Q1318,150 1336,180 Q1354,152 1372,180 Q1390,150 1408,180
+             Q1424,152 1440,180 L1440,260 L0,260Z" fill="#020504" opacity=".9"/>
+    <path d="M0,200 Q12,185 22,200 Q34,178 46,200 Q58,180 70,200 Q84,182 98,200
+             Q114,180 130,200 Q146,182 162,200 Q178,180 194,200 Q210,182 226,200
+             Q242,180 258,200 Q274,182 290,200 Q306,180 322,200 Q338,182 354,200
+             Q370,180 386,200 Q402,182 418,200 Q434,180 450,200 Q466,182 482,200
+             Q498,180 514,200 Q530,182 546,200 Q562,180 578,200 Q594,182 610,200
+             Q626,180 642,200 Q658,182 674,200 Q690,180 706,200 Q722,182 738,200
+             Q754,180 770,200 Q786,182 802,200 Q818,180 834,200 Q850,182 866,200
+             Q882,180 898,200 Q914,182 930,200 Q946,180 962,200 Q978,182 994,200
+             Q1010,180 1026,200 Q1042,182 1058,200 Q1074,180 1090,200 Q1106,182 1122,200
+             Q1138,180 1154,200 Q1170,182 1186,200 Q1202,180 1218,200 Q1234,182 1250,200
+             Q1266,180 1282,200 Q1298,182 1314,200 Q1330,180 1346,200 Q1362,182 1378,200
+             Q1394,180 1410,200 Q1426,182 1440,200 L1440,260 L0,260Z" fill="#030706" opacity=".7"/>
+  </svg>
+</div>
+
+<!-- Top bar -->
+<div class="topbar">
+  <a class="logo" href="/">
+    <div class="logo-flag">
+      <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+        <rect width="20" height="40" fill="#007A5E"/>
+        <rect x="20" width="20" height="40" fill="#CE1126"/>
+        <rect x="40" width="20" height="40" fill="#FCD116"/>
+        <polygon points="30,12 31.7,17.5 37.5,17.5 33,21 34.7,26.5 30,23 25.3,26.5 27,21 22.5,17.5 28.3,17.5" fill="#FCD116"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-name">CamMarket</div>
+      <div class="logo-sub">237 &mdash; Cameroon Market</div>
+    </div>
+  </a>
+  <div class="lang-sw">
+    <button class="lb" id="lb-en" onclick="setLang('en')">EN</button>
+    <button class="lb" id="lb-fr" onclick="setLang('fr')">FR</button>
+    <button class="lb on" id="lb-pid" onclick="setLang('pid')">PIDGIN</button>
+  </div>
+</div>
+
+<!-- Page grid -->
+<div class="grid">
+
+  <!-- HERO / LEFT -->
+  <div class="hero">
+    <div class="badge" id="h-badge">&#xB7; CAMEROON MARKET FOR ALL &#xB7;</div>
+    <h1 class="h1" id="h-h1">From <em>Mount<br>Cameroon</em> side<br>straight reach<br>your door.</h1>
+    <p class="sub" id="h-sub">Place wey buyer fit check thing before e pay. Where seller di build trust, no be only sell. We build am for here for Cameroon &mdash; for the market wey we sabi.</p>
+    <div class="chevrons"><div class="chev"></div><div class="chev"></div><div class="chev"></div></div>
+    <div class="guest-link" id="guest-link" onclick="goMainApp()">&#x1F440; Browse without signing in &rarr;</div>
+  </div>
+
+  <!-- CARD / RIGHT -->
+  <div class="card">
+    <div class="stripe"></div>
+    <div class="ctop">
+      <div class="cflag">
+        <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+          <rect width="20" height="40" fill="#007A5E"/>
+          <rect x="20" width="20" height="40" fill="#CE1126"/>
+          <rect x="40" width="20" height="40" fill="#FCD116"/>
+          <polygon points="30,12 31.7,17.5 37.5,17.5 33,21 34.7,26.5 30,23 25.3,26.5 27,21 22.5,17.5 28.3,17.5" fill="#FCD116"/>
+        </svg>
+      </div>
+      <div class="cav" id="c-av">&#x1F6D2;</div>
+    </div>
+
+    <div class="cbody">
+      <div class="eyebrow" id="c-eye">ENTER YOUR ACCOUNT</div>
+      <div class="ctitle">Welcome <em id="c-back">back</em></div>
+      <div class="csub" id="c-sub">Use your phone number to sign in. We go SMS you one code &mdash; no need remember password.</div>
+
+      <!-- Country preference -->
+      <div style="margin-bottom:14px">
+        <div class="flabel">WHERE DO YOU WANT TO SHOP?</div>
+        <div style="display:flex;gap:6px">
+          <button id="cs-cm"   onclick="setLoginCountry('cm')"   style="flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid rgba(0,183,131,.4);background:rgba(0,122,94,.35);color:#fff;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">&#x1F1E8;&#x1F1F2; Cameroon</button>
+          <button id="cs-both" onclick="setLoginCountry('both')" style="flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(255,255,255,.45);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">&#x1F30D; Both</button>
+          <button id="cs-ng"   onclick="setLoginCountry('ng')"   style="flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(255,255,255,.45);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">&#x1F1F3;&#x1F1EC; Nigeria</button>
+        </div>
+      </div>
+
+      <!-- Role chip -->
+      <div class="chip">
+        <div class="chip-l">
+          <div class="chip-tag" id="chip-tag">YOU DI SIGN IN AS</div>
+          <div class="chip-val"><span id="role-icon">&#x1F6D2;</span>&nbsp;<span id="role-name">Buyer</span></div>
+        </div>
+        <button class="ch-btn" id="ch-btn" onclick="toggleRole()">Change to seller</button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tb on" id="tb-in" onclick="setTab('in')"><span id="t-signin">Sign in</span></button>
+        <span style="color:rgba(255,255,255,.25);font-size:10px;font-weight:700;flex-shrink:0;align-self:center">OR</span>
+        <button class="tb" id="tb-reg" onclick="setTab('reg')"><span id="t-reg">Create New Account</span></button>
+      </div>
+
+      <!-- Error -->
+      <div class="err" id="err"></div>
+
+      <!-- Password login -->
+      <div id="spwd">
+        <label class="flabel" id="lbl-phone2">PHONE NUMBER</label>
+        <div class="ph-wrap">
+          <input class="ph-in" type="tel" id="ph2" placeholder="+237 6 78 92 34 56" inputmode="numeric" oninput="clearErr()" style="padding-left:16px">
+        </div>
+        <label class="flabel" id="lbl-pass">PASSWORD</label>
+        <div class="pw-wrap">
+          <input class="inp" type="password" id="pwd" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;" oninput="clearErr()" onkeydown="if(event.key==='Enter')doPwd()">
+          <button class="pw-eye" onclick="toggleEye()" id="eye">&#x1F441;&#xFE0F;</button>
+        </div>
+        <button class="btn-otp" id="pwd-btn" onclick="doPwd()"><span id="t-doin">Sign in</span></button>
+        <div style="text-align:right;margin-top:6px">
+          <button class="lnk" onclick="goForgot()"><span id="t-forgot">Forgot password?</span></button>
+        </div>
+        <div style="text-align:center;margin-top:12px">
+          <span class="lnk" style="font-size:13.5px;font-weight:700;color:rgba(255,255,255,.55);cursor:pointer" onclick="goMainApp()" id="card-guest-link">&#x1F440; Browse without signing in &rarr;</span>
+        </div>
+      </div>
+
+      <!-- Forgot Password -->
+      <div id="sfgt" style="display:none">
+        <button class="lnk" onclick="setTab('in')" style="margin-bottom:14px;font-size:12.5px;display:inline-flex;align-items:center;gap:4px">&#8592; Back to sign in</button>
+        <div id="sfgt-s1">
+          <div style="font-size:12.5px;color:rgba(255,255,255,.45);margin-bottom:14px;line-height:1.55">Enter your phone and 6-digit Recovery PIN to verify your identity.</div>
+          <label class="flabel">PHONE NUMBER</label>
+          <div class="ph-wrap">
+            <input class="ph-in" type="tel" id="fgt-phone" placeholder="+237 6 78 92 34 56" inputmode="numeric" oninput="clearErr()" style="padding-left:16px">
+          </div>
+          <label class="flabel">ACCOUNT TYPE</label>
+          <select class="sel" id="fgt-role">
+            <option value="buyer">Buyer Account</option>
+            <option value="seller">Seller Account</option>
+          </select>
+          <label class="flabel">RECOVERY PIN (6 digits)</label>
+          <input class="inp otp-in" type="text" id="fgt-pin" placeholder="&middot; &middot; &middot; &middot; &middot; &middot;" maxlength="6" inputmode="numeric" oninput="clearErr()" onkeydown="if(event.key==='Enter')doVerifyPin()" style="font-size:22px;letter-spacing:8px;margin-bottom:14px;text-align:center">
+          <button class="btn-otp" id="fgt-s1-btn" onclick="doVerifyPin()">Verify PIN</button>
+        </div>
+        <div id="sfgt-s2" style="display:none">
+          <div style="background:rgba(0,183,131,.1);border:1px solid rgba(0,183,131,.22);border-radius:8px;padding:9px 13px;font-size:12.5px;color:var(--gbright);margin-bottom:14px">&#x2705; PIN verified! Now set a new password.</div>
+          <label class="flabel">NEW PASSWORD</label>
+          <div class="pw-wrap" style="margin-bottom:12px">
+            <input class="inp" type="password" id="fgt-newpass" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;" oninput="clearErr()" onkeydown="if(event.key==='Enter')doResetPassword()" style="margin-bottom:0;padding-right:42px">
+            <button class="pw-eye" onclick="toggleFgtEye()" id="fgt-eye">&#x1F441;&#xFE0F;</button>
+          </div>
+          <label class="flabel">CONFIRM NEW PASSWORD</label>
+          <input class="inp" type="password" id="fgt-cpass" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;" oninput="clearErr()" onkeydown="if(event.key==='Enter')doResetPassword()" style="margin-bottom:14px">
+          <button class="btn-otp" id="fgt-s2-btn" onclick="doResetPassword()">Reset Password</button>
+        </div>
+        <div style="text-align:center;margin-top:14px;font-size:11px;color:rgba(255,255,255,.28);line-height:1.6">Forgot your PIN? Contact:<br><a href="mailto:support@cammarket237.com" style="color:var(--muted)">support@cammarket237.com</a></div>
+      </div>
+
+      <!-- Registration form -->
+      <div id="s-reg" style="display:none;max-height:68vh;overflow-y:auto;padding-right:2px">
+
+        <label class="flabel">FULL NAME</label>
+        <input class="inp" type="text" id="reg-name" placeholder="e.g. Marie Foning" oninput="clearErr()" style="margin-bottom:12px">
+
+        <label class="flabel">PHONE NUMBER</label>
+        <div class="ph-wrap">
+          <input class="ph-in" type="tel" id="reg-phone" placeholder="+237 6 78 92 34 56" inputmode="numeric" oninput="clearErr()" style="padding-left:16px">
+        </div>
+
+        <label class="flabel">REGION</label>
+        <select class="sel" id="reg-region" onchange="onRegionChange();clearErr()">
+          <option value="">— Select region —</option>
+          <option value="Littoral">Littoral (Douala)</option>
+          <option value="Centre">Centre (Yaound&eacute;)</option>
+          <option value="West">West (Bafoussam)</option>
+          <option value="South West">South West (Buea)</option>
+          <option value="North West">North West (Bamenda)</option>
+          <option value="South">South (Ebolowa)</option>
+          <option value="East">East (Bertoua)</option>
+          <option value="Adamawa">Adamawa (Ngaound&eacute;r&eacute;)</option>
+          <option value="North">North (Garoua)</option>
+          <option value="Far North">Far North (Maroua)</option>
+        </select>
+
+        <label class="flabel">TOWN / CITY</label>
+        <select class="sel" id="reg-town" onchange="clearErr()">
+          <option value="">— Select region first —</option>
+        </select>
+
+        <label class="flabel">PASSWORD</label>
+        <div class="pw-wrap" style="margin-bottom:12px">
+          <input class="inp" type="password" id="reg-pass" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;" oninput="clearErr()" style="margin-bottom:0;padding-right:42px">
+          <button class="pw-eye" onclick="toggleRegEye()" id="reg-eye">&#x1F441;&#xFE0F;</button>
+        </div>
+
+        <label class="flabel">CONFIRM PASSWORD</label>
+        <div class="pw-wrap" style="margin-bottom:12px">
+          <input class="inp" type="password" id="reg-cpass" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;" oninput="clearErr()" style="margin-bottom:0;padding-right:42px">
+          <button class="pw-eye" onclick="toggleRegEye2()" id="reg-eye2">&#x1F441;&#xFE0F;</button>
+        </div>
+
+        <!-- SELLER-ONLY FIELDS -->
+        <div id="reg-seller-fields" style="display:none">
+
+          <label class="flabel">STORE NAME</label>
+          <input class="inp" type="text" id="reg-store" placeholder="e.g. Foning Electronics" oninput="clearErr()" style="margin-bottom:12px">
+
+          <label class="flabel">STORE CATEGORIES <span style="color:var(--muted);font-size:9px">(tap all that apply)</span></label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px" id="reg-cats">
+            <label class="cat-cb"><input type="checkbox" value="Electronics"> Electronics</label>
+            <label class="cat-cb"><input type="checkbox" value="Phones"> Phones &amp; Accessories</label>
+            <label class="cat-cb"><input type="checkbox" value="Clothing"> Clothing &amp; Fashion</label>
+            <label class="cat-cb"><input type="checkbox" value="Food"> Food &amp; Groceries</label>
+            <label class="cat-cb"><input type="checkbox" value="Furniture"> Furniture &amp; Home</label>
+            <label class="cat-cb"><input type="checkbox" value="Beauty"> Beauty &amp; Health</label>
+            <label class="cat-cb"><input type="checkbox" value="Vehicles"> Vehicles &amp; Parts</label>
+            <label class="cat-cb"><input type="checkbox" value="Agriculture"> Farm/Agric Produce</label>
+            <label class="cat-cb"><input type="checkbox" value="Books"> Books &amp; Stationery</label>
+            <label class="cat-cb"><input type="checkbox" value="Guesthouses"> Guesthouses &amp; Hotels</label>
+            <label class="cat-cb"><input type="checkbox" value="CarRental"> Car Rental</label>
+            <label class="cat-cb"><input type="checkbox" value="Apartments"> Apartments &amp; Rentals</label>
+            <label class="cat-cb"><input type="checkbox" value="Transport"> Transport &amp; Drivers</label>
+            <label class="cat-cb"><input type="checkbox" value="Catering"> Catering &amp; Food</label>
+            <label class="cat-cb"><input type="checkbox" value="Photography"> Photography &amp; Video</label>
+            <label class="cat-cb"><input type="checkbox" value="Cleaning"> Cleaning Services</label>
+            <label class="cat-cb"><input type="checkbox" value="Repairs"> Repairs &amp; Plumbing</label>
+            <label class="cat-cb"><input type="checkbox" value="Delivery"> Delivery Service</label>
+            <label class="cat-cb"><input type="checkbox" value="Interior"> Interior Design</label>
+            <label class="cat-cb"><input type="checkbox" value="Other"> Other / Services</label>
+          </div>
+
+          <label class="flabel">NEAREST MARKET / LANDMARK</label>
+          <input class="inp" type="text" id="reg-landmark" placeholder="e.g. Marche Central, Bali Market" oninput="clearErr()" style="margin-bottom:12px">
+
+          <label class="flabel">STORE ADDRESS</label>
+          <input class="inp" type="text" id="reg-address" placeholder="Your store address" oninput="clearErr()" style="margin-bottom:12px">
+
+          <label class="flabel">DO YOU HAVE A PHYSICAL STORE?</label>
+          <div style="display:flex;gap:10px;margin-bottom:14px">
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;font-weight:700;color:rgba(255,255,255,.75)">
+              <input type="radio" name="reg-physical" id="reg-phys-yes" value="Yes" style="accent-color:var(--gbright)"> Yes
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;font-weight:700;color:rgba(255,255,255,.75)">
+              <input type="radio" name="reg-physical" id="reg-phys-no" value="No" checked style="accent-color:var(--gbright)"> No
+            </label>
+          </div>
+
+          <label class="flabel">&#x1F4CD; STORE LOCATION <span style="color:var(--muted);font-size:9px">OPTIONAL</span></label>
+          <div class="hint" style="margin-bottom:8px;text-align:left">Helps buyers find your store on the map. You can skip this now.</div>
+          <div id="reg-gps-result" style="display:none;background:rgba(0,183,131,.1);border:1px solid rgba(0,183,131,.22);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--gbright);margin-bottom:8px"></div>
+          <div style="display:flex;gap:8px;margin-bottom:14px">
+            <button type="button" onclick="captureGPS()" style="flex:1;background:rgba(0,183,131,.15);border:1px solid rgba(0,183,131,.3);color:var(--gbright);border-radius:8px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">&#x1F4CD; Capture My Location</button>
+            <button type="button" onclick="skipGPS()" style="flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.45);border-radius:8px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">Skip</button>
+          </div>
+          <input type="hidden" id="reg-lat">
+          <input type="hidden" id="reg-lng">
+
+          <label class="flabel">BUSINESS DESCRIPTION</label>
+          <textarea class="inp" id="reg-desc" rows="3" placeholder="Tell buyers about your business…" oninput="clearErr()" style="resize:vertical;margin-bottom:12px;font-family:inherit"></textarea>
+
+        </div>
+        <!-- END SELLER-ONLY -->
+
+        <label class="flabel">REFERRAL CODE <span style="color:var(--muted);font-size:9px">OPTIONAL</span></label>
+        <input class="inp" type="text" id="reg-ref" placeholder="Enter referral code if you have one" oninput="clearErr()" onblur="checkRefCode(this)" style="margin-bottom:4px;text-transform:uppercase">
+        <div id="ref-code-status" style="font-size:11px;margin-bottom:8px;min-height:16px"></div>
+
+        <div style="background:rgba(252,209,22,.07);border:1px solid rgba(252,209,22,.2);border-radius:10px;padding:10px 12px;margin-bottom:12px">
+          <div style="font-size:10px;color:rgba(252,209,22,.7);font-weight:800;margin-bottom:6px">&#x1F510; RECOVERY PIN — Keep this safe. You need it to reset your password.</div>
+          <label class="flabel" style="margin-top:4px">RECOVERY PIN (6 digits)</label>
+          <input class="inp otp-in" type="text" id="reg-pin" placeholder="&middot; &middot; &middot; &middot; &middot; &middot;" maxlength="6" inputmode="numeric" oninput="clearErr()" style="font-size:22px;letter-spacing:8px;margin-bottom:10px">
+          <label class="flabel">CONFIRM PIN</label>
+          <input class="inp otp-in" type="text" id="reg-pin2" placeholder="&middot; &middot; &middot; &middot; &middot; &middot;" maxlength="6" inputmode="numeric" oninput="clearErr()" style="font-size:22px;letter-spacing:8px;margin-bottom:0">
+        </div>
+
+        <button class="btn-otp" id="reg-btn" onclick="doRegister()">
+          <span>&#x2728;</span><span id="reg-btn-txt">Create Account</span>
+        </button>
+        <div style="text-align:center;margin-top:12px;font-size:12.5px;color:rgba(255,255,255,.38)">
+          Already have an account? <span class="lnk-action" onclick="setTab('in')">Sign in</span>
+        </div>
+      </div>
+
+      <div class="cfoot" id="c-foot">If you continue, you don gree our <a href="/privacy.php" target="_blank">Terms</a> and <a href="/privacy.php" target="_blank">Privacy</a>. Buyer-first verification di protect you.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom stats -->
+<div class="stats">
+  <div class="stats-main">&#x1F1E8;&#x1F1F2; <span id="st-txt">8,200+ people di buy and sell for Douala, Yaound&eacute; and Bafoussam</span></div>
+  <div class="stats-coord">4.0512&deg;N &middot; 9.7679&deg;E</div>
+</div>
+
+<script>
+var T={
+  en:{
+    badge:'&#xB7; CAMEROON MARKET FOR ALL &#xB7;',
+    h1:'From <em>Mount<br>Cameroon</em>,<br>straight to<br>your door.',
+    sub:'The marketplace where buyers verify before they pay. Where sellers build trust, not just listings. Built for Cameroon.',
+    eye:'ENTER YOUR ACCOUNT',back:'back',
+    csub:'Enter your phone number and password to sign in.',
+    ctag:'YOU ARE SIGNING IN AS',chSeller:'Change to seller',chBuyer:'Change to buyer',
+    rBuyer:'&#x1F6D2; Buyer',rSeller:'&#x1F3EA; Seller',
+    tIn:'Sign in',tReg:'Create New Account',
+    lPhone:'PHONE NUMBER',lPass:'PASSWORD',tIn2:'Sign in',tFgt:'Forgot password?',
+    foot:'By continuing you agree to our <a href="/privacy.php" target="_blank">Terms</a> and <a href="/privacy.php" target="_blank">Privacy Policy</a>.',
+    stats:'8,200+ buyers &amp; sellers in Douala, Yaound&eacute; &amp; Bafoussam',
+    guest:'&#x1F440; Browse without signing in &rarr;',
+  },
+  fr:{
+    badge:'&#xB7; MARCH&Eacute; CAMEROUNAIS POUR TOUS &#xB7;',
+    h1:'Depuis le <em>Mont<br>Cameroun</em>,<br>directement<br>chez vous.',
+    sub:'La marketplace o&ugrave; les acheteurs v&eacute;rifient avant de payer. O&ugrave; les vendeurs b&acirc;tissent la confiance. Con&ccedil;u pour le Cameroun.',
+    eye:'ACC&Eacute;DER &Agrave; VOTRE COMPTE',back:'retour',
+    csub:'Entrez votre num&eacute;ro et mot de passe pour vous connecter.',
+    ctag:'VOUS VOUS CONNECTEZ EN TANT QUE',chSeller:'Passer vendeur',chBuyer:'Passer acheteur',
+    rBuyer:'&#x1F6D2; Acheteur',rSeller:'&#x1F3EA; Vendeur',
+    tIn:'Se connecter',tReg:'Cr&eacute;er un compte',
+    lPhone:'NUM&Eacute;RO DE T&Eacute;L&Eacute;PHONE',lPass:'MOT DE PASSE',tIn2:'Se connecter',tFgt:'Mot de passe oubli&eacute;&nbsp;?',
+    foot:'En continuant, vous acceptez nos <a href="/privacy.php" target="_blank">Conditions</a> et notre <a href="/privacy.php" target="_blank">Politique de confidentialit&eacute;</a>.',
+    stats:'8&nbsp;200+ acheteurs &amp; vendeurs &agrave; Douala, Yaound&eacute; &amp; Bafoussam',
+    guest:'&#x1F440; Parcourir sans se connecter &rarr;',
+  },
+  pid:{
+    badge:'&#xB7; CAMEROON MARKET FOR ALL &#xB7;',
+    h1:'From <em>Mount<br>Cameroon</em> side<br>straight reach<br>your door.',
+    sub:'Place wey buyer fit check thing before e pay. Where seller di build trust, no be only sell. We build am for here for Cameroon &mdash; for the market wey we sabi.',
+    eye:'ENTER YOUR ACCOUNT',back:'back',
+    csub:'Enter your phone number and password to sign in.',
+    ctag:'YOU DI SIGN IN AS',chSeller:'Change to seller',chBuyer:'Change to buyer',
+    rBuyer:'&#x1F6D2; Buyer',rSeller:'&#x1F3EA; Seller',
+    tIn:'Sign in',tReg:'Create New Account',
+    lPhone:'PHONE NUMBER',lPass:'PASSWORD',tIn2:'Sign in',tFgt:'Forget password?',
+    foot:'If you continue, you don gree our <a href="/privacy.php" target="_blank">Terms</a> and <a href="/privacy.php" target="_blank">Privacy</a>. Buyer-first verification di protect you.',
+    stats:'8,200+ people di buy and sell for Douala, Yaound&eacute; and Bafoussam',
+    guest:'&#x1F440; Browse without signing in &rarr;',
+  }
+};
+
+var _lang=localStorage.getItem('cm237_lang')||'pid';
+var _role='buyer';
+
+(function init(){
+  try{
+    var tok=localStorage.getItem('cm237_token');
+    var u=JSON.parse(localStorage.getItem('cm237_user')||'null');
+    if(tok&&u&&u.id>0&&u.role!=='guest'){window.location.href='/';return;}
+  }catch(e){}
+  var qp=new URLSearchParams(window.location.search);
+  if(qp.get('role')==='seller')_role='seller';
+  setLang(_lang);
+  spawnStars();
+  spawnFireflies();
+})();
+
+function spawnStars(){
+  var sc=document.querySelector('.scene');
+  for(var i=0;i<60;i++){
+    var d=document.createElement('div');d.className='star';
+    var sz=Math.random()*2.4+.3;
+    d.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+Math.random()*100+'%;top:'+Math.random()*55+'%;animation-delay:'+Math.random()*6+'s;animation-duration:'+(2+Math.random()*4)+'s';
+    sc.appendChild(d);
+  }
+}
+
+function spawnFireflies(){
+  var sc=document.querySelector('.scene');
+  for(var i=0;i<18;i++){
+    var d=document.createElement('div');d.className='firefly';
+    var x=Math.random()*100,y=68+Math.random()*24;
+    var fx=(Math.random()-0.5)*60,fy=(Math.random()-0.5)*30;
+    var fx2=(Math.random()-0.5)*80,fy2=(Math.random()-0.5)*40;
+    d.style.cssText='left:'+x+'%;top:'+y+'%;--fx:'+fx+'px;--fy:'+fy+'px;--fx2:'+fx2+'px;--fy2:'+fy2+'px;animation-delay:'+Math.random()*8+'s;animation-duration:'+(4+Math.random()*6)+'s';
+    sc.appendChild(d);
+  }
+}
+
+function setLang(l){
+  _lang=l;localStorage.setItem('cm237_lang',l);
+  document.querySelectorAll('.lb').forEach(function(b){b.classList.remove('on');});
+  var ab=document.getElementById('lb-'+l);if(ab)ab.classList.add('on');
+  var t=T[l]||T.pid;
+  $('h-badge').innerHTML=t.badge;
+  $('h-h1').innerHTML=t.h1;
+  $('h-sub').innerHTML=t.sub;
+  $('c-eye').textContent=t.eye;
+  $('c-back').textContent=t.back;
+  $('c-sub').innerHTML=t.csub;
+  $('chip-tag').textContent=t.ctag;
+  $('lbl-phone2').textContent=t.lPhone;
+  $('lbl-pass').textContent=t.lPass;
+  $('t-doin').textContent=t.tIn2;
+  $('t-forgot').textContent=t.tFgt;
+  $('t-signin').textContent=t.tIn;
+  $('t-reg').textContent=t.tReg;
+  $('c-foot').innerHTML=t.foot;
+  $('st-txt').innerHTML=t.stats;
+  $('guest-link').innerHTML=t.guest;
+  updateRole();
+}
+
+function $(id){return document.getElementById(id);}
+
+function updateRole(){
+  var s=_role==='seller';
+  var t=T[_lang]||T.pid;
+  $('role-icon').innerHTML=s?'&#x1F3EA;':'&#x1F6D2;';
+  $('role-name').textContent=s?(t.rSeller.replace(/&#x1F3EA;\s*/,'')):( t.rBuyer.replace(/&#x1F6D2;\s*/,''));
+  $('ch-btn').textContent=s?t.chBuyer:t.chSeller;
+  $('c-av').innerHTML=s?'&#x1F3EA;':'&#x1F6D2;';
+  var sf=$('reg-seller-fields');
+  if(sf)sf.style.display=s?'block':'none';
+}
+
+function toggleRole(){_role=_role==='buyer'?'seller':'buyer';updateRole();}
+
+function setLoginCountry(c){
+  localStorage.setItem('_shopCountry',c);
+  ['cm','both','ng'].forEach(function(x){
+    var b=document.getElementById('cs-'+x);if(!b)return;
+    var on=(x===c);
+    b.style.background  =on?'rgba(0,122,94,.45)':'rgba(255,255,255,.05)';
+    b.style.color       =on?'#fff':'rgba(255,255,255,.45)';
+    b.style.fontWeight  =on?'800':'700';
+    b.style.borderColor =on?'rgba(0,183,131,.4)':'rgba(255,255,255,.12)';
+  });
+}
+(function(){setLoginCountry(localStorage.getItem('_shopCountry')||'cm');})();
+
+function setTab(tab){
+  $('tb-in').classList.toggle('on',tab==='in');
+  $('tb-reg').classList.toggle('on',tab==='reg');
+  clearErr();
+  $('spwd').style.display='none';
+  $('s-reg').style.display='none';
+  $('sfgt').style.display='none';
+  if(tab==='reg'){
+    $('s-reg').style.display='block';
+    var sf=$('reg-seller-fields');if(sf)sf.style.display=_role==='seller'?'block':'none';
+    setTimeout(function(){$('reg-name').focus();},80);
+  } else if(tab==='fgt'){
+    $('sfgt').style.display='block';
+  } else {
+    $('spwd').style.display='block';
+  }
+}
+
+function cleanPhone(id){
+  var v=($(id)||{}).value||'';
+  v=v.replace(/[\s\-\(\)\.]/g,'');
+  if(v.startsWith('00237'))v=v.slice(5);
+  else if(v.startsWith('+237'))v=v.slice(4);
+  else if(v.startsWith('237')&&v.length>9)v=v.slice(3);
+  if(v.startsWith('0'))v=v.slice(1);
+  return v?'237'+v:null;
+}
+
+
+async function doPwd(){
+  var phone=cleanPhone('ph2');
+  var pass=$('pwd').value;
+  if(!phone||phone.length<11){showErr('Please enter a valid phone number.');return;}
+  if(!pass){showErr('Please enter your password.');return;}
+  clearErr();
+  var btn=$('pwd-btn'),t=T[_lang]||T.pid;
+  btn.disabled=true;$('t-doin').textContent='Signing in...';
+  try{
+    // Try role chip first, then the opposite — no need to think about which account type
+    var first=_role==='seller'?'seller_login':'buyer_login';
+    var second=_role==='seller'?'buyer_login':'seller_login';
+    var fd=new FormData();fd.append('phone',phone);fd.append('password',pass);
+    fd.append('action',first);
+    var d=await(await fetch('/api.php',{method:'POST',body:fd})).json();
+    if(!d.success&&(d.error||'').toLowerCase().match(/no (buyer|seller) account|not a (buyer|seller)/)){
+      fd=new FormData();fd.append('phone',phone);fd.append('password',pass);fd.append('action',second);
+      d=await(await fetch('/api.php',{method:'POST',body:fd})).json();
+    }
+    btn.disabled=false;$('t-doin').textContent=t.tIn2;
+    if(!d.success){showErr(d.error||'Incorrect phone or password.');return;}
+    localStorage.setItem('cm237_token',d.user.session_token);
+    localStorage.setItem('cm237_user',JSON.stringify(d.user));
+    localStorage.setItem('cm237_login_intent',_role);
+    if(d.store)localStorage.setItem('cm237_store',JSON.stringify(d.store));
+    else localStorage.removeItem('cm237_store');
+    window.location.href='/';
+  }catch(e){
+    btn.disabled=false;$('t-doin').textContent=(T[_lang]||T.pid).tIn2;
+    showErr('Network error. Please try again.');
+  }
+}
+
+function goMainApp(){
+  localStorage.setItem('cm237_guest_intent','1');
+  window.location.href='/';
+}
+
+function toggleEye(){var i=$('pwd'),e=$('eye');if(i.type==='password'){i.type='text';e.textContent='🙈';}else{i.type='password';e.textContent='👁️';}}
+function toggleFgtEye(){var i=$('fgt-newpass'),e=$('fgt-eye');if(i.type==='password'){i.type='text';e.textContent='🙈';}else{i.type='password';e.textContent='👁️';}}
+function goForgot(){
+  var fr=$('fgt-role');if(fr)fr.value=_role;
+  var raw=($('ph2')||{}).value||'';if(raw){var f=$('fgt-phone');if(f)f.value=raw;}
+  setTab('fgt');
+}
+
+var _fgtResetToken='';
+
+async function doVerifyPin(){
+  var phone=cleanPhone('fgt-phone');
+  var pin=($('fgt-pin').value||'').replace(/\D/g,'');
+  var role=($('fgt-role').value||'buyer');
+  if(!phone||phone.length<11){showErr('Please enter a valid phone number.');return;}
+  if(pin.length!==6){showErr('PIN must be exactly 6 digits.');return;}
+  clearErr();
+  var btn=$('fgt-s1-btn');btn.disabled=true;btn.textContent='Verifying...';
+  try{
+    var fd=new FormData();
+    fd.append('action','verify_recovery_pin');
+    fd.append('phone',phone);fd.append('role',role);fd.append('pin',pin);
+    var d=await(await fetch('/api.php',{method:'POST',body:fd})).json();
+    btn.disabled=false;btn.textContent='Verify PIN';
+    if(!d.success){showErr(d.error||'Incorrect PIN. Please try again.');return;}
+    _fgtResetToken=d.reset_token;
+    $('sfgt-s1').style.display='none';$('sfgt-s2').style.display='block';
+    clearErr();setTimeout(function(){$('fgt-newpass').focus();},80);
+  }catch(e){btn.disabled=false;btn.textContent='Verify PIN';showErr('Network error. Please try again.');}
+}
+
+async function doResetPassword(){
+  var np=($('fgt-newpass').value||'');
+  var cp=($('fgt-cpass').value||'');
+  if(!np||np.length<6){showErr('Password must be at least 6 characters.');return;}
+  if(np!==cp){showErr('Passwords do not match.');return;}
+  clearErr();
+  var btn=$('fgt-s2-btn');btn.disabled=true;btn.textContent='Resetting...';
+  try{
+    var fd=new FormData();
+    fd.append('action','reset_password_with_pin');
+    fd.append('reset_token',_fgtResetToken);
+    fd.append('new_password',np);
+    var d=await(await fetch('/api.php',{method:'POST',body:fd})).json();
+    btn.disabled=false;btn.textContent='Reset Password';
+    if(!d.success){showErr(d.error||'Reset failed. Please verify PIN again.');return;}
+    _fgtResetToken='';
+    $('fgt-pin').value='';$('fgt-newpass').value='';$('fgt-cpass').value='';
+    $('sfgt-s2').style.display='none';$('sfgt-s1').style.display='block';
+    setTab('in');
+    showOkMsg('&#x2705; Password reset! Please sign in with your new password.');
+  }catch(e){btn.disabled=false;btn.textContent='Reset Password';showErr('Network error. Please try again.');}
+}
+function showErr(m){var e=$('err');e.innerHTML=m;e.style.display='block';e.style.background='rgba(200,50,50,.1)';e.style.borderColor='rgba(200,50,50,.3)';e.style.color='#FF6B7A';}
+function showOkMsg(m){var e=$('err');e.innerHTML=m;e.style.display='block';e.style.background='rgba(0,184,90,.1)';e.style.borderColor='rgba(0,184,90,.22)';e.style.color='#00B783';}
+function clearErr(){var e=$('err');e.style.display='none';e.style.background='';e.style.borderColor='';e.style.color='';}
+
+var _towns={
+  'Littoral':['Douala','Akwa','Bonanjo','Bonamoussadi','Bonaberi','Deido','New Bell','Bassa','Logbessou','Makepe','Kotto','Ndogbong','Mbanga','Nkongsamba','Edea','Yabassi','Loum','Manjo'],
+  'Centre':['Yaounde','Bastos','Mvan','Mendong','Nkolbisson','Essos','Mvog-Ada','Omnisports','Tsinga','Obala','Mbalmayo','Bafia','Nanga-Eboko','Mfou','Monatele','Eseka','Akonolinga','Mbankomo'],
+  'West':['Bafoussam','Dschang','Bafang','Mbouda','Foumban','Bangangte','Foumbot','Tonga','Baham','Bafou','Penka-Michel','Kekem'],
+  'South West':['Buea','Limbe','Kumba','Tiko','Muyuka','Mundemba','Ekondo-Titi','Mamfe','Bangem','Tombel','Idenao','Mile 16'],
+  'North West':['Bamenda','Kumbo','Wum','Nkambe','Ndop','Fundong','Bali','Batibo','Santa','Bafut','Oku','Misaje'],
+  'South':['Ebolowa','Kribi','Sangmelima','Ambam','Lolodorf','Mvangane','Akom II','Meyomessala','Djoum','Mintom'],
+  'East':['Bertoua','Batouri','Yokadouma','Abong-Mbang','Belabo','Doume','Ndelele','Mbang','Kette','Garoua-Boulai'],
+  'Adamawa':['Ngaoundere','Meiganga','Tibati','Banyo','Tignere','Belel','Nganha','Kontcha','Dir','Mbere'],
+  'North':['Garoua','Guider','Figuil','Pitoa','Lagdo','Poli','Tcholire','Bibemi','Rey Bouba','Touboro'],
+  'Far North':['Maroua','Kousseri','Mora','Yagoua','Kaele','Mokolo','Mindif','Maga','Bogo','Waza','Fotokol','Kolofata']
+};
+
+function onRegionChange(){
+  var r=$('reg-region').value;
+  var sel=$('reg-town');
+  sel.innerHTML='<option value="">— Select town —</option>';
+  if(r&&_towns[r]){
+    _towns[r].forEach(function(t){
+      var o=document.createElement('option');o.value=t;o.textContent=t;sel.appendChild(o);
+    });
+  }
+}
+
+function cleanPhoneReg(){
+  var v=($('reg-phone')||{}).value||'';
+  v=v.replace(/[\s\-\(\)\.]/g,'');
+  if(v.startsWith('00237'))v=v.slice(5);
+  else if(v.startsWith('+237'))v=v.slice(4);
+  else if(v.startsWith('237')&&v.length>9)v=v.slice(3);
+  if(v.startsWith('0'))v=v.slice(1);
+  return v?'237'+v:null;
+}
+
+async function doRegister(){
+  var name=($('reg-name').value||'').trim();
+  var phone=cleanPhoneReg();
+  var region=$('reg-region').value;
+  var town=$('reg-town').value||'';
+  var pass=$('reg-pass').value;
+  var cpass=$('reg-cpass').value;
+  var pin=$('reg-pin').value.replace(/\D/g,'');
+  var pin2=$('reg-pin2').value.replace(/\D/g,'');
+  var ref=($('reg-ref').value||'').trim();
+
+  if(!name){showErr('Please enter your full name.');return;}
+  if(!phone||phone.length<11){showErr('Please enter a valid phone number.');return;}
+  if(!region){showErr('Please select your region.');return;}
+  if(!town){showErr('Please select your town or area.');return;}
+  if(!pass||pass.length<6){showErr('Password must be at least 6 characters.');return;}
+  if(pass!==cpass){showErr('Passwords do not match.');return;}
+  if(pin.length!==6){showErr('Recovery PIN must be exactly 6 digits.');return;}
+  if(pin!==pin2){showErr('PINs do not match. Please re-enter.');return;}
+
+  var store='',cats='',landmark='',address='',physicalStore='No',lat='',lng='',desc='';
+  if(_role==='seller'){
+    store=($('reg-store').value||'').trim();
+    if(!store){showErr('Please enter your store name.');return;}
+    // collect checked categories
+    var checked=document.querySelectorAll('#reg-cats input[type=checkbox]:checked');
+    cats=Array.from(checked).map(function(c){return c.value;}).join(',');
+    if(!cats){showErr('Please select at least one store category.');return;}
+    landmark=($('reg-landmark').value||'').trim();
+    address=($('reg-address').value||'').trim();
+    var physYes=$('reg-phys-yes');
+    physicalStore=(physYes&&physYes.checked)?'Yes':'No';
+    lat=($('reg-lat').value||'').trim();
+    lng=($('reg-lng').value||'').trim();
+    desc=($('reg-desc').value||'').trim();
+  }
+
+  clearErr();
+  var btn=$('reg-btn');
+  btn.disabled=true;$('reg-btn-txt').textContent='Creating account...';
+  try{
+    var fd=new FormData();
+    fd.append('action',_role==='seller'?'register_seller':'register_buyer');
+    fd.append('full_name',name);
+    fd.append('phone',phone);
+    fd.append('region',region);
+    fd.append('town',town);
+    fd.append('password',pass);
+    fd.append('confirm_password',cpass);
+    fd.append('recovery_pin',pin);
+    if(ref)fd.append('referral_code',ref);
+    if(_role==='seller'){
+      fd.append('store_name',store);
+      fd.append('categories',cats);
+      if(landmark)fd.append('landmark',landmark);
+      if(address)fd.append('store_address',address);
+      fd.append('physical_store',physicalStore);
+      if(lat)fd.append('latitude',lat);
+      if(lng)fd.append('longitude',lng);
+      if(desc)fd.append('description',desc);
+    }
+    var d=await(await fetch('/api.php',{method:'POST',body:fd})).json();
+    btn.disabled=false;$('reg-btn-txt').textContent='Create Account';
+    if(!d.success){showErr(d.error||'Registration failed. Please try again.');return;}
+    var regPhone=($('reg-phone')||{}).value||'';
+    setTab('in');
+    if(regPhone&&$('ph2'))$('ph2').value=regPhone;
+    var bonusMsg = (ref && d.user && d.user.promo_points > 10) ? ' 🎁 Referral code accepted — bonus points added!' : '';
+    showOkMsg('✅ Account created! Please sign in below.' + bonusMsg);
+  }catch(e){
+    btn.disabled=false;$('reg-btn-txt').textContent='Create Account';
+    showErr('Network error. Please try again.');
+  }
+}
+
+async function checkRefCode(inp){
+  var code=(inp.value||'').trim().toUpperCase();
+  var el=$('ref-code-status');
+  if(!el||!code){if(el)el.textContent='';return;}
+  try{
+    var fd=new FormData();fd.append('action','check_referral_code');fd.append('code',code);
+    var d=await(await fetch('/api.php',{method:'POST',body:fd})).json();
+    el.style.color=d.valid?'#1a7a3c':'#ce1126';
+    el.textContent=d.valid?'✅ Valid code — bonus points will be added!':'❌ Code not found. Check the code and try again.';
+  }catch(e){el.textContent='';}
+}
+
+function toggleRegEye(){
+  var i=$('reg-pass'),e=$('reg-eye');
+  if(i.type==='password'){i.type='text';e.textContent='🙈';}
+  else{i.type='password';e.textContent='👁️';}
+}
+function toggleRegEye2(){
+  var i=$('reg-cpass'),e=$('reg-eye2');
+  if(i.type==='password'){i.type='text';e.textContent='🙈';}
+  else{i.type='password';e.textContent='👁️';}
+}
+function captureGPS(){
+  if(!navigator.geolocation){
+    var res=$('reg-gps-result');res.style.display='block';
+    res.style.color='#FF6B7A';res.style.borderColor='rgba(206,17,38,.22)';res.style.background='rgba(206,17,38,.08)';
+    res.textContent='GPS not supported on this device.';return;
+  }
+  var btn=document.querySelector('[onclick="captureGPS()"]');
+  if(btn){btn.disabled=true;btn.textContent='&#x23F3; Locating...';}
+  navigator.geolocation.getCurrentPosition(
+    function(pos){
+      var lat=pos.coords.latitude.toFixed(6),lng=pos.coords.longitude.toFixed(6);
+      $('reg-lat').value=lat;$('reg-lng').value=lng;
+      var res=$('reg-gps-result');res.style.display='block';
+      res.style.color='';res.style.borderColor='';res.style.background='';
+      res.innerHTML='&#x2705; Location captured: '+lat+', '+lng;
+      if(btn){btn.disabled=false;btn.innerHTML='&#x2705; Location Saved';}
+    },
+    function(err){
+      var res=$('reg-gps-result');res.style.display='block';
+      res.style.color='#FF6B7A';res.style.borderColor='rgba(206,17,38,.22)';res.style.background='rgba(206,17,38,.08)';
+      res.textContent='Could not get location. Try again or skip.';
+      if(btn){btn.disabled=false;btn.innerHTML='&#x1F4CD; Capture My Location';}
+    },
+    {timeout:12000,enableHighAccuracy:true}
+  );
+}
+function skipGPS(){
+  $('reg-lat').value='';$('reg-lng').value='';
+  var res=$('reg-gps-result');res.style.display='none';
+  var btn=document.querySelector('[onclick="captureGPS()"]');
+  if(btn){btn.disabled=false;btn.innerHTML='&#x1F4CD; Capture My Location';}
+}
+</script>
+</body>
+</html>
