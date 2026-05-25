@@ -647,32 +647,25 @@
       </div>
     </div>
 
-    <!-- FCFA Wallet Balance Banner for Buyer -->
-    <div id="buyer-wallet-banner" style="display:none;background:linear-gradient(135deg,#1a7a3c,#27ae60);color:white;border-radius:14px;padding:13px 16px;margin-bottom:10px;cursor:pointer" onclick="window.showPointsModal()">
-      <div style="font-size:11px;opacity:0.8;margin-bottom:2px">&#x1F4B0; <span data-i18n="wallet.balance">Wallet Balance</span></div>
-      <div style="font-size:26px;font-weight:900;letter-spacing:-0.5px;margin-bottom:8px" id="buyer-wallet-fcfa">0 FCFA</div>
-      <div style="display:flex;gap:16px;font-size:11px">
-        <div>
-          <div style="opacity:0.75">FCFA Earned</div>
-          <div style="font-size:14px;font-weight:900;margin-top:2px" id="dash-earned-fcfa">0</div>
-        </div>
-        <div style="width:1px;background:rgba(255,255,255,0.3)"></div>
-        <div>
-          <div style="opacity:0.75">Pending image upload</div>
-          <div style="font-size:14px;font-weight:900;color:#fcd116;margin-top:2px" id="dash-pending-fcfa">0</div>
-        </div>
+    <!-- Combined Wallet + Invite Banner for Buyer -->
+    <div id="buyer-wallet-banner" style="display:none;border-radius:14px;overflow:hidden;margin-bottom:10px;display:flex">
+      <!-- Green: wallet (left) -->
+      <div style="background:linear-gradient(135deg,#1a7a3c,#27ae60);color:white;padding:13px 14px;cursor:pointer;flex:1" onclick="window.showPointsModal()">
+        <div style="font-size:10px;opacity:0.8;margin-bottom:2px">&#x1F4B0; <span data-i18n="wallet.balance">Wallet Balance</span></div>
+        <div style="font-size:22px;font-weight:900;letter-spacing:-0.5px;margin-bottom:8px" id="buyer-wallet-fcfa">0 FCFA</div>
+        <div style="font-size:10px;opacity:0.75">FCFA Earned</div>
+        <div style="font-size:13px;font-weight:900;margin-bottom:6px" id="dash-earned-fcfa">0</div>
+        <div style="font-size:10px;opacity:0.75">Pending image upload</div>
+        <div style="font-size:13px;font-weight:900;color:#fcd116" id="dash-pending-fcfa">0</div>
+      </div>
+      <!-- Orange: invite (right) -->
+      <div onclick="window.openInvite()" style="background:linear-gradient(135deg,#f39c12,#e67e22);color:white;padding:13px 14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:120px">
+        <span style="font-size:24px">&#x1F381;</span>
+        <div style="font-weight:800;font-size:12px;text-align:center" data-i18n="dash.inviteEarn">Invite Friends &amp; Earn</div>
+        <div style="font-size:10px;opacity:0.9;text-align:center" data-i18n="dash.inviteSubtitle">Share your code. Earn rewards!</div>
+        <span style="font-size:16px">&#x276F;</span>
       </div>
     </div>
-
-    <!-- Invite & Earn Button (Buyer) -->
-    <button onclick="window.openInvite()" style="width:100%;padding:13px;background:linear-gradient(135deg,#f39c12,#e67e22);color:white;border:none;border-radius:14px;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:10px">
-      <span style="font-size:22px">&#x1F381;</span>
-      <div style="text-align:left">
-        <div data-i18n="dash.inviteEarn">Invite Friends &amp; Earn</div>
-        <div style="font-size:11px;font-weight:400;opacity:0.9" data-i18n="dash.inviteSubtitle">Share your code. Earn rewards!</div>
-      </div>
-      <span style="margin-left:auto">&#x276F;</span>
-    </button>
 
     <!-- Promo code strip (Buyer) -->
     <div id="buyer-promo-strip" style="display:none;background:#f0faf4;border:1.5px solid #1a7a3c;border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px">
