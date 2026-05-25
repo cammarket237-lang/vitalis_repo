@@ -900,10 +900,6 @@ if ($action === 'get_listings') {
             (SELECT media_url FROM cammarket237.listing_media
              WHERE listing_id=l.id AND media_role='extra_image' ORDER BY sort_order LIMIT 1 OFFSET 1) AS photo3,
             (SELECT media_url FROM cammarket237.listing_media
-             WHERE listing_id=l.id AND media_role='extra_image' ORDER BY sort_order LIMIT 1 OFFSET 2) AS photo4,
-            (SELECT media_url FROM cammarket237.listing_media
-             WHERE listing_id=l.id AND media_role='extra_image' ORDER BY sort_order LIMIT 1 OFFSET 3) AS photo5,
-            (SELECT media_url FROM cammarket237.listing_media
              WHERE listing_id=l.id AND media_role IN ('360view','video_360','video') LIMIT 1) AS video360
             $distCol
             FROM cammarket237.listings l
