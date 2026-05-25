@@ -3502,10 +3502,18 @@ if ($action === 'get_wallet_balance') {
     if (!$user) fail('Login required.');
     $row = q1("SELECT COALESCE(wallet_balance,0) AS bal FROM cammarket237.users WHERE id=?", [$user['id']]);
     $earned  = q1("SELECT COALESCE(SUM(reward_fcfa),0) AS t FROM cammarket237.referral_rewards WHERE referrer_id=? AND status='confirmed'", [$user['id']]);
-    $pending = q1("SELECT COALESCE(SUM(reward_fcfa),0) AS t FROM cammarket237.referral_rewards WHERE referrer_id=? AND status='pending'", [$user['id']]);
-    ok(['wallet_balance' => intval($row['bal'] ?? 0),
-        'earned_fcfa'   => intval($earned['t'] ?? 0),
-        'pending_fcfa'  => intval($pending['t'] ?? 0)]);
+    $pendingRows = q("SELECT reward_fcfa, referee_id FROM cammarket237.referral_rewards WHERE referrer_id=? AND status='pending'", [$user['id']]);
+    $pendingTotal = 0;
+    $pendingDetails = [];
+    foreach ($pendingRows as $pr) {
+        $cnt = q1("SELECT COUNT(*) AS n FROM cammarket237.listings WHERE store_id IN (SELECT id FROM cammarket237.stores WHERE user_id=?) AND status NOT IN ('deleted','inactive')", [$pr['referee_id']]);
+        $pendingTotal += intval($pr['reward_fcfa']);
+        $pendingDetails[] = ['fcfa' => intval($pr['reward_fcfa']), 'listed' => intval($cnt['n'] ?? 0)];
+    }
+    ok(['wallet_balance'   => intval($row['bal'] ?? 0),
+        'earned_fcfa'      => intval($earned['t'] ?? 0),
+        'pending_fcfa'     => $pendingTotal,
+        'pending_details'  => $pendingDetails]);
 }
 
 
@@ -3845,10 +3853,18 @@ if ($action === 'get_wallet_balance') {
     if (!$user) fail('Login required.');
     $row = q1("SELECT COALESCE(wallet_balance,0) AS bal FROM cammarket237.users WHERE id=?", [$user['id']]);
     $earned  = q1("SELECT COALESCE(SUM(reward_fcfa),0) AS t FROM cammarket237.referral_rewards WHERE referrer_id=? AND status='confirmed'", [$user['id']]);
-    $pending = q1("SELECT COALESCE(SUM(reward_fcfa),0) AS t FROM cammarket237.referral_rewards WHERE referrer_id=? AND status='pending'", [$user['id']]);
-    ok(['wallet_balance' => intval($row['bal'] ?? 0),
-        'earned_fcfa'   => intval($earned['t'] ?? 0),
-        'pending_fcfa'  => intval($pending['t'] ?? 0)]);
+    $pendingRows = q("SELECT reward_fcfa, referee_id FROM cammarket237.referral_rewards WHERE referrer_id=? AND status='pending'", [$user['id']]);
+    $pendingTotal = 0;
+    $pendingDetails = [];
+    foreach ($pendingRows as $pr) {
+        $cnt = q1("SELECT COUNT(*) AS n FROM cammarket237.listings WHERE store_id IN (SELECT id FROM cammarket237.stores WHERE user_id=?) AND status NOT IN ('deleted','inactive')", [$pr['referee_id']]);
+        $pendingTotal += intval($pr['reward_fcfa']);
+        $pendingDetails[] = ['fcfa' => intval($pr['reward_fcfa']), 'listed' => intval($cnt['n'] ?? 0)];
+    }
+    ok(['wallet_balance'   => intval($row['bal'] ?? 0),
+        'earned_fcfa'      => intval($earned['t'] ?? 0),
+        'pending_fcfa'     => $pendingTotal,
+        'pending_details'  => $pendingDetails]);
 }
 
 

@@ -649,16 +649,17 @@
 
     <!-- FCFA Wallet Balance Banner for Buyer -->
     <div id="buyer-wallet-banner" style="display:none;background:linear-gradient(135deg,#1a7a3c,#27ae60);color:white;border-radius:14px;padding:13px 16px;margin-bottom:10px;cursor:pointer" onclick="window.showPointsModal()">
-      <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:11px;opacity:0.8;margin-bottom:2px">&#x1F4B0; <span data-i18n="wallet.balance">Wallet Balance</span></div>
+      <div style="font-size:26px;font-weight:900;letter-spacing:-0.5px;margin-bottom:8px" id="buyer-wallet-fcfa">0 FCFA</div>
+      <div style="display:flex;gap:16px;font-size:11px">
         <div>
-          <div style="font-size:11px;opacity:0.8;margin-bottom:2px">&#x1F4B0; <span data-i18n="wallet.balance">Wallet Balance</span></div>
-          <div style="font-size:26px;font-weight:900;letter-spacing:-0.5px" id="buyer-wallet-fcfa">0 FCFA</div>
+          <div style="opacity:0.75">FCFA Earned</div>
+          <div style="font-size:14px;font-weight:900;margin-top:2px" id="dash-earned-fcfa">0</div>
         </div>
-        <div style="text-align:right">
-          <div style="font-size:10px;opacity:0.75">FCFA Earned &nbsp;|&nbsp; Pending</div>
-          <div style="font-size:13px;font-weight:900;margin-top:3px">
-            <span id="dash-earned-fcfa">0</span> &nbsp;|&nbsp; <span id="dash-pending-fcfa" style="color:#fcd116">0</span>
-          </div>
+        <div style="width:1px;background:rgba(255,255,255,0.3)"></div>
+        <div>
+          <div style="opacity:0.75">Pending image upload</div>
+          <div style="font-size:14px;font-weight:900;color:#fcd116;margin-top:2px" id="dash-pending-fcfa">0</div>
         </div>
       </div>
     </div>
@@ -6131,8 +6132,17 @@ window.refreshWalletBalance = async function() {
       if (buyerBanner) buyerBanner.style.display = 'block';
       var earnedEl  = document.getElementById('dash-earned-fcfa');
       var pendingEl = document.getElementById('dash-pending-fcfa');
-      if (earnedEl)  earnedEl.textContent  = (d.earned_fcfa  || 0).toLocaleString();
-      if (pendingEl) pendingEl.textContent = (d.pending_fcfa || 0).toLocaleString();
+      if (earnedEl) earnedEl.textContent = (d.earned_fcfa || 0).toLocaleString();
+      if (pendingEl) {
+        var details = d.pending_details || [];
+        if (details.length === 1) {
+          pendingEl.textContent = details[0].fcfa + ' (' + details[0].listed + '/5)';
+        } else if (details.length > 1) {
+          pendingEl.textContent = (d.pending_fcfa || 0).toLocaleString() + ' (' + details.length + ' pending)';
+        } else {
+          pendingEl.textContent = '0';
+        }
+      }
       var u = null;
       try { u = JSON.parse(localStorage.getItem('cm237_user')); } catch(e) {}
       if (u) { u.wallet_balance = bal; localStorage.setItem('cm237_user', JSON.stringify(u)); }
