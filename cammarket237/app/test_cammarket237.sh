@@ -27,15 +27,13 @@ hdr "1. SERVER & FILES"
 # nginx running
 systemctl is-active nginx &>/dev/null && ok "nginx is running" || fail "nginx NOT running"
 # PHP version check
-php_ver=$(php -v 2>/dev/null | head -1 | grep -oP "PHP K[0-9]+.[0-9]+")
+php_ver=$(php -v 2>/dev/null | head -1 | grep -oP "PHP \K[0-9]+\.[0-9]+")
 if [ -n "$php_ver" ]; then
   ok "PHP $php_ver is installed"
+  systemctl is-active "php${php_ver}-fpm" &>/dev/null && ok "PHP-FPM is running" || fail "PHP-FPM NOT running"
 else
-  warn "PHP version unclear"
+  warn "PHP version unclear — skipping PHP-FPM check"
 fi
-systemctl is-active "php${php_ver}-fpm" &>/dev/null && ok "nginx is running" || fail "nginx is NOT running"
-
-# PHP-FPM running
 
 # index.html exists and correct size
 SIZE=$(wc -c < /var/www/cammarket237/index.html 2>/dev/null)
@@ -185,17 +183,20 @@ hdr "4. FRONTEND JAVASCRIPT"
 HTML=$(curl -s "$BASE_URL")
 
 # Check key functions exist
-for FN in "window.go" "window.sendOtp" "window.verifyOtp" "window.registerBuyer" "window.loginSeller" "window.browseAsGuest" "window.canContactSeller" "window.showWelcome" "window.doSearch"; do
+# Note: OTP flow (sendOtp/verifyOtp) lives in cammarket_login_classic.html, not index.html
+for FN in "window.go" "window.registerBuyer" "window.loginSeller" "window.browseAsGuest" "window.canContactSeller" "window.showWelcome" "window.doSearch"; do
   echo "$HTML" | grep -q "$FN" && ok "Function defined: $FN" || fail "Function MISSING: $FN"
 done
 
 # Check key HTML elements
-for EL in "welcome-msg" "buyer-phone" "otp-input" "search-results" "buyer-map" "send-code-btn" "b-referral" "dev-hint"; do
+# Note: otp-input, send-code-btn, dev-hint are in cammarket_login_classic.html (separate OTP page)
+for EL in "welcome-msg" "buyer-phone" "search-results" "buyer-map" "b-referral"; do
   echo "$HTML" | grep -q "id=\"$EL\"" && ok "HTML element exists: #$EL" || fail "HTML element MISSING: #$EL"
 done
 
 # Check screens exist
-for SCR in "screen-role" "screen-buyer-auth" "screen-buyer-otp" "screen-buyer-search" "screen-seller-auth" "screen-seller-dash" "screen-item-detail"; do
+# Note: screen-buyer-otp moved to cammarket_login_classic.html
+for SCR in "screen-role" "screen-buyer-auth" "screen-buyer-search" "screen-seller-auth" "screen-seller-dash" "screen-item-detail"; do
   echo "$HTML" | grep -q "id=\"$SCR\"" && ok "Screen exists: #$SCR" || fail "Screen MISSING: #$SCR"
 done
 
