@@ -993,17 +993,25 @@
     </div>
     <div style="font-size:12px;color:#aaa;margin-bottom:10px" id="dash-meta"></div>
 
-    <!-- FCFA Wallet Balance Banner -->
-    <div id="seller-wallet-banner" style="background:linear-gradient(135deg,#1a7a3c,#27ae60);color:white;border-radius:14px;padding:13px 16px;margin-bottom:14px;cursor:pointer" onclick="window.openInvite()">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div>
-          <div style="font-size:11px;opacity:0.8;margin-bottom:2px">&#x1F4B0; <span data-i18n="wallet.balance">Wallet Balance</span></div>
-          <div style="font-size:26px;font-weight:900;letter-spacing:-0.5px" id="seller-wallet-fcfa">0 FCFA</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:11px;opacity:0.75" data-i18n="wallet.referralEarnings">Referral earnings</div>
-          <div style="font-size:12px;font-weight:700;margin-top:3px" data-i18n="dash.inviteEarnMore">Invite &amp; Earn More &#8250;</div>
-        </div>
+    <!-- Combined Wallet + Invite Banner for Seller -->
+    <div id="seller-wallet-banner" style="display:none;border-radius:14px;overflow:hidden;margin-bottom:14px">
+      <!-- Green: wallet (left) -->
+      <div style="background:linear-gradient(135deg,#1a7a3c,#27ae60);color:white;padding:20px 18px;cursor:pointer;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center" onclick="window.openInvite()">
+        <div style="font-size:11px;opacity:0.8;margin-bottom:4px">&#x1F4B0; <span data-i18n="wallet.balance">Wallet Balance</span></div>
+        <div style="font-size:28px;font-weight:900;letter-spacing:-0.5px;margin-bottom:12px" id="seller-wallet-fcfa">0 FCFA</div>
+        <div style="font-size:11px;opacity:0.75">FCFA Earned</div>
+        <div style="font-size:16px;font-weight:900;margin-bottom:8px" id="seller-dash-earned-fcfa">0</div>
+        <div style="font-size:11px;opacity:0.75">Pending</div>
+        <div style="font-size:16px;font-weight:900;color:#fcd116" id="seller-dash-pending-fcfa">0</div>
+      </div>
+      <!-- Divider -->
+      <div style="width:1px;background:rgba(255,255,255,0.4)"></div>
+      <!-- Orange: invite (right) -->
+      <div onclick="window.openInvite()" style="background:linear-gradient(135deg,#f39c12,#e67e22);color:white;padding:20px 18px;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:10px;flex:1">
+        <span style="font-size:30px">&#x1F381;</span>
+        <div style="font-weight:800;font-size:14px" data-i18n="dash.inviteEarn">Invite Friends &amp; Earn</div>
+        <div style="font-size:11px;opacity:0.9" data-i18n="dash.inviteSubtitle">Share your code. Earn rewards!</div>
+        <span style="font-size:20px">&#x276F;</span>
       </div>
     </div>
 
@@ -6121,23 +6129,31 @@ window.refreshWalletBalance = async function() {
       var formatted = bal.toLocaleString() + ' FCFA';
       var sellerEl = document.getElementById('seller-wallet-fcfa');
       var buyerEl  = document.getElementById('buyer-wallet-fcfa');
-      var buyerBanner = document.getElementById('buyer-wallet-banner');
+      var sellerBanner = document.getElementById('seller-wallet-banner');
+      var buyerBanner  = document.getElementById('buyer-wallet-banner');
       if (sellerEl) sellerEl.textContent = formatted;
       if (buyerEl)  buyerEl.textContent  = formatted;
-      if (buyerBanner) buyerBanner.style.display = 'flex';
-      var earnedEl  = document.getElementById('dash-earned-fcfa');
-      var pendingEl = document.getElementById('dash-pending-fcfa');
-      if (earnedEl) earnedEl.textContent = (d.earned_fcfa || 0).toLocaleString();
-      if (pendingEl) {
-        var details = d.pending_details || [];
-        if (details.length === 1) {
-          pendingEl.textContent = details[0].fcfa + ' (' + details[0].listed + '/5)';
-        } else if (details.length > 1) {
-          pendingEl.textContent = (d.pending_fcfa || 0).toLocaleString() + ' (' + details.length + ' pending)';
-        } else {
-          pendingEl.textContent = '0';
-        }
+      if (sellerBanner) sellerBanner.style.display = 'flex';
+      if (buyerBanner)  buyerBanner.style.display  = 'flex';
+
+      var details = d.pending_details || [];
+      function pendingText(details, total) {
+        if (details.length === 1) return details[0].fcfa + ' (' + details[0].listed + '/5)';
+        if (details.length > 1)  return total.toLocaleString() + ' (' + details.length + ' pending)';
+        return '0';
       }
+
+      var earnedEl       = document.getElementById('dash-earned-fcfa');
+      var pendingEl      = document.getElementById('dash-pending-fcfa');
+      var sellerEarnedEl = document.getElementById('seller-dash-earned-fcfa');
+      var sellerPendEl   = document.getElementById('seller-dash-pending-fcfa');
+      var earned = d.earned_fcfa || 0;
+      var ptext  = pendingText(details, d.pending_fcfa || 0);
+      if (earnedEl)       earnedEl.textContent       = earned.toLocaleString();
+      if (pendingEl)      pendingEl.textContent       = ptext;
+      if (sellerEarnedEl) sellerEarnedEl.textContent  = earned.toLocaleString();
+      if (sellerPendEl)   sellerPendEl.textContent    = ptext;
+
       var u = null;
       try { u = JSON.parse(localStorage.getItem('cm237_user')); } catch(e) {}
       if (u) { u.wallet_balance = bal; localStorage.setItem('cm237_user', JSON.stringify(u)); }
@@ -6150,12 +6166,14 @@ window.renderWalletFromStorage = function() {
   try { u = JSON.parse(localStorage.getItem('cm237_user')); } catch(e) {}
   var bal = (u && u.wallet_balance) ? u.wallet_balance : 0;
   var formatted = bal.toLocaleString() + ' FCFA';
-  var sellerEl = document.getElementById('seller-wallet-fcfa');
-  var buyerEl  = document.getElementById('buyer-wallet-fcfa');
-  var buyerBanner = document.getElementById('buyer-wallet-banner');
-  if (sellerEl) sellerEl.textContent = formatted;
-  if (buyerEl)  buyerEl.textContent  = formatted;
-  if (buyerBanner) buyerBanner.style.display = 'block';
+  var sellerEl     = document.getElementById('seller-wallet-fcfa');
+  var buyerEl      = document.getElementById('buyer-wallet-fcfa');
+  var sellerBanner = document.getElementById('seller-wallet-banner');
+  var buyerBanner  = document.getElementById('buyer-wallet-banner');
+  if (sellerEl)     sellerEl.textContent    = formatted;
+  if (buyerEl)      buyerEl.textContent     = formatted;
+  if (sellerBanner) sellerBanner.style.display = 'flex';
+  if (buyerBanner)  buyerBanner.style.display  = 'flex';
 };
 
 window.launchSellerDash = function(storeName, store) {
