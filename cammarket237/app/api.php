@@ -3471,7 +3471,7 @@ if ($action === 'get_referral_stats') {
                     [$refUser['id']]
                 );
                 $ref['listings_posted'] = intval($cnt['n'] ?? 0);
-                $ref['listings_needed'] = 10;
+                $ref['listings_needed'] = 5;
             }
         }
     }
@@ -3810,7 +3810,7 @@ if ($action === 'get_referral_stats') {
                     [$refUser['id']]
                 );
                 $ref['listings_posted'] = intval($cnt['n'] ?? 0);
-                $ref['listings_needed'] = 10;
+                $ref['listings_needed'] = 5;
             }
         }
     }
