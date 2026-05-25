@@ -1075,7 +1075,7 @@
       </button>
 
       <!-- Buyer Enquiries Button -->
-      <button onclick="window.checkSellerEnquiries();window.showSellerEnquiries()" style="width:100%;padding:14px;background:linear-gradient(135deg,#2980b9,#1a5276);color:white;border:none;border-radius:14px;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;position:relative">
+      <button onclick="if(window.showSellerEnquiries){window.showSellerEnquiries();}else{alert('Function not loaded');}" style="width:100%;padding:14px;background:linear-gradient(135deg,#2980b9,#1a5276);color:white;border:none;border-radius:14px;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;position:relative">
         <span style="font-size:20px">&#x1F4AC;</span>
         <div style="text-align:left">
           <div data-i18n="dash.buyerEnquiries">Buyer Enquiries</div>
@@ -4188,8 +4188,8 @@
   </div>
 
   <!-- SELLER ENQUIRIES MODAL -->
-  <div id="seller-enquiries-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;padding:20px;overflow-y:auto">
-    <div style="background:white;border-radius:16px;max-width:480px;margin:0 auto;overflow:hidden">
+  <div id="seller-enquiries-modal" onclick="if(event.target===this)this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9500;padding:20px;overflow-y:auto;align-items:flex-start;justify-content:center">
+    <div style="background:white;border-radius:16px;width:100%;max-width:480px;overflow:hidden;margin-top:10px">
       <div style="background:#2980b9;padding:16px 20px;display:flex;justify-content:space-between;align-items:center">
         <div style="color:white;font-size:16px;font-weight:800">&#x1F4AC; Buyer Enquiries</div>
         <button onclick="document.getElementById('seller-enquiries-modal').style.display='none'" style="background:none;border:none;color:white;font-size:22px;cursor:pointer">&#x2715;</button>
@@ -11101,7 +11101,7 @@ window.showSellerEnquiries = async function() {
   var modal = document.getElementById('seller-enquiries-modal');
   var list  = document.getElementById('seller-enquiries-list');
   if (!modal || !list) return;
-  modal.style.display = 'block';
+  modal.style.display = 'flex';
   list.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa">Loading...</div>';
   var tok = localStorage.getItem('cm237_token') || _sessionToken || '';
   try {
