@@ -3501,7 +3501,11 @@ if ($action === 'get_wallet_balance') {
     $user = authUser();
     if (!$user) fail('Login required.');
     $row = q1("SELECT COALESCE(wallet_balance,0) AS bal FROM cammarket237.users WHERE id=?", [$user['id']]);
-    ok(['wallet_balance' => intval($row['bal'] ?? 0)]);
+    $earned  = q1("SELECT COALESCE(SUM(reward_fcfa),0) AS t FROM cammarket237.referral_rewards WHERE referrer_id=? AND status='confirmed'", [$user['id']]);
+    $pending = q1("SELECT COALESCE(SUM(reward_fcfa),0) AS t FROM cammarket237.referral_rewards WHERE referrer_id=? AND status='pending'", [$user['id']]);
+    ok(['wallet_balance' => intval($row['bal'] ?? 0),
+        'earned_fcfa'   => intval($earned['t'] ?? 0),
+        'pending_fcfa'  => intval($pending['t'] ?? 0)]);
 }
 
 
@@ -3840,7 +3844,11 @@ if ($action === 'get_wallet_balance') {
     $user = authUser();
     if (!$user) fail('Login required.');
     $row = q1("SELECT COALESCE(wallet_balance,0) AS bal FROM cammarket237.users WHERE id=?", [$user['id']]);
-    ok(['wallet_balance' => intval($row['bal'] ?? 0)]);
+    $earned  = q1("SELECT COALESCE(SUM(reward_fcfa),0) AS t FROM cammarket237.referral_rewards WHERE referrer_id=? AND status='confirmed'", [$user['id']]);
+    $pending = q1("SELECT COALESCE(SUM(reward_fcfa),0) AS t FROM cammarket237.referral_rewards WHERE referrer_id=? AND status='pending'", [$user['id']]);
+    ok(['wallet_balance' => intval($row['bal'] ?? 0),
+        'earned_fcfa'   => intval($earned['t'] ?? 0),
+        'pending_fcfa'  => intval($pending['t'] ?? 0)]);
 }
 
 
