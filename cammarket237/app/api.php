@@ -68,7 +68,7 @@ ini_set('display_errors', '0');
 error_reporting(E_ALL);
 header('Content-Type: application/json');
 require_once __DIR__.'/verify_photos.php';
-$allowedOrigins = ['https://cammarket237.com', 'http://localhost:8080', 'http://localhost'];
+$allowedOrigins = ['https://cammarket237.com', 'https://naijamarket234.com', 'http://localhost:8080', 'http://localhost:8081', 'http://localhost'];
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 if (in_array($origin, $allowedOrigins)) {
     header("Access-Control-Allow-Origin: $origin");
@@ -268,8 +268,10 @@ if ($action === 'register_buyer') {
     if (in_array($pin, $weakPins)) fail('Please choose a less obvious PIN.');
     $pinHash = password_hash($pin, PASSWORD_DEFAULT);
 
-    $chk = db()->prepare("SELECT id FROM cammarket237.users WHERE phone=? AND role='buyer' LIMIT 1");
-    $chk->execute([$phone]);
+    $phoneVariants = normalizePhone($phone);
+    $placeholders  = implode(',', array_fill(0, count($phoneVariants), '?'));
+    $chk = db()->prepare("SELECT id FROM cammarket237.users WHERE phone IN ($placeholders) AND role='buyer' LIMIT 1");
+    $chk->execute($phoneVariants);
     if ($chk->fetch()) fail('Phone number already registered. Please login.');
 
     $hash  = password_hash($pass, PASSWORD_DEFAULT);
@@ -278,9 +280,9 @@ if ($action === 'register_buyer') {
 
     // Reuse referral code if same phone already has a seller account
     $existingRefStmt = db()->prepare(
-        "SELECT referral_code FROM cammarket237.users WHERE phone=? AND referral_code IS NOT NULL LIMIT 1"
+        "SELECT referral_code FROM cammarket237.users WHERE phone IN ($placeholders) AND referral_code IS NOT NULL LIMIT 1"
     );
-    $existingRefStmt->execute([$phone]);
+    $existingRefStmt->execute($phoneVariants);
     $existingRefRow = $existingRefStmt->fetch();
 
     // Generate referral code + signup bonus
@@ -299,21 +301,35 @@ if ($action === 'register_buyer') {
             $refUserId   = $ro['id'];
             $promoPoints = 20;
             $refPoints   = 10;
-            db()->prepare("UPDATE cammarket237.users SET referral_points=referral_points+5,
-                referral_count=referral_count+1 WHERE id=?")->execute([$ro['id']]);
+            try {
+                db()->prepare("UPDATE cammarket237.users SET referral_points=COALESCE(referral_points,0)+5,
+                    referral_count=COALESCE(referral_count,0)+1 WHERE id=?")->execute([$ro['id']]);
+            } catch(Exception $ex) {}
         }
     }
 
-    $stmt = db()->prepare(
-        "INSERT INTO cammarket237.users
-         (full_name,phone,password_hash,role,region,town,phone_verified,
-          session_token,session_expires_at,referral_code,promo_points,referral_points,
-          recovery_pin_hash,pin_set_at,referred_by,created_at)
-         VALUES (?,?,?,'buyer',?,?,false,?,?,?,?,?,?,NOW(),?,NOW())
-         RETURNING id,full_name,phone,role,region,town,session_token,referral_code,promo_points"
-    );
-    $stmt->execute([$name,$phone,$hash,$region,$town,$tok,$exp,$myRef,$promoPoints,$refPoints,$pinHash,$refUserId]);
-    $user = $stmt->fetch();
+    $user = null;
+    for ($buyerAttempt = 0; $buyerAttempt < 3; $buyerAttempt++) {
+        try {
+            $stmt = db()->prepare(
+                "INSERT INTO cammarket237.users
+                 (full_name,phone,password_hash,role,region,town,phone_verified,
+                  session_token,session_expires_at,referral_code,promo_points,referral_points,
+                  recovery_pin_hash,pin_set_at,referred_by,created_at)
+                 VALUES (?,?,?,'buyer',?,?,false,?,?,?,?,?,?,NOW(),?,NOW())
+                 RETURNING id,full_name,phone,role,region,town,session_token,referral_code,promo_points"
+            );
+            $stmt->execute([$name,$phone,$hash,$region,$town,$tok,$exp,$myRef,$promoPoints,$refPoints,$pinHash,$refUserId]);
+            $user = $stmt->fetch();
+            break;
+        } catch(Exception $e) {
+            if (strpos($e->getMessage(), 'users_referral_code_key') !== false && $buyerAttempt < 2) {
+                $myRef = uniqueReferralCode();
+                continue;
+            }
+            fail('Registration failed: ' . $e->getMessage());
+        }
+    }
 
     if ($refUserId) {
         try {
@@ -408,14 +424,18 @@ if ($action === 'register_seller') {
             $refUserId   = $ro['id'];
             $promoPoints = 20; // bonus for using referral
             $refPoints   = 10;
-            // Give referrer +5 points
-            db()->prepare(
-                "UPDATE cammarket237.users SET referral_points=referral_points+5,
-                 referral_count=referral_count+1 WHERE id=?"
-            )->execute([$ro['id']]);
+            try {
+                db()->prepare(
+                    "UPDATE cammarket237.users SET referral_points=COALESCE(referral_points,0)+5,
+                     referral_count=COALESCE(referral_count,0)+1 WHERE id=?"
+                )->execute([$ro['id']]);
+            } catch(Exception $ex) {}
         }
     }
 
+    $regAttempt = 0;
+    do {
+    $regRetry = false;
     db()->beginTransaction();
     try {
         // Create user
@@ -458,13 +478,14 @@ if ($action === 'register_seller') {
                  VALUES (?,?,?,NOW())
                  ON CONFLICT (referrer_id,referee_id) DO NOTHING"
             )->execute([$refUserId,$uid,$refCode]);
-            // 200 FCFA pending reward for seller referral (unlocks at 10 listings)
+            // Promo: 250 FCFA until Sep 10 2026, then 200 FCFA
+            $sellerRefReward = (time() < strtotime('2026-09-10')) ? 250 : 200;
             db()->prepare(
                 "INSERT INTO cammarket237.referral_rewards
                  (referrer_id,referee_id,referee_role,reward_fcfa,status)
-                 VALUES (?,?,'seller',200,'pending')
+                 VALUES (?,?,'seller',?,'pending')
                  ON CONFLICT (referee_id) DO NOTHING"
-            )->execute([$refUserId, $uid]);
+            )->execute([$refUserId, $uid, $sellerRefReward]);
         }
 
         db()->commit();
@@ -509,54 +530,25 @@ if ($action === 'register_seller') {
             'store'   => $storeArr,
             'message' => 'Seller account created! Welcome ' . $name . '. You got 30 FREE streaming minutes!',
         ]);
-
-        // Handle referral promo code
-        $promoCode = strtoupper(trim(p('promo_code')));
-        $promoBonus = false;
-        if ($promoCode) {
-            try {
-                $referrer = q1("SELECT id FROM cammarket237.users WHERE referral_code=? LIMIT 1", [$promoCode]);
-                if ($referrer && $referrer['id'] !== $userId) {
-                    db()->prepare("UPDATE cammarket237.users SET referred_by=? WHERE id=?")->execute([$referrer['id'], $userId]);
-                    // Referrer gets 5 points for seller referral
-                    db()->prepare("UPDATE cammarket237.users SET promo_points=COALESCE(promo_points,0)+5 WHERE id=?")->execute([$referrer['id']]);
-                    $promoBonus = true;
-                }
-            } catch(Exception $ex) {}
-        }
-
-        // Handle referral promo code
-        $promoCode = strtoupper(trim(p('promo_code')));
-        $promoBonus = false;
-        if ($promoCode) {
-            try {
-                $referrer = q1("SELECT id FROM cammarket237.users WHERE referral_code=? LIMIT 1", [$promoCode]);
-                if ($referrer && $referrer['id'] !== $userId) {
-                    db()->prepare("UPDATE cammarket237.users SET referred_by=? WHERE id=?")->execute([$referrer['id'], $userId]);
-                    // Referrer gets 5 points for seller referral
-                    db()->prepare("UPDATE cammarket237.users SET promo_points=COALESCE(promo_points,0)+5 WHERE id=?")->execute([$referrer['id']]);
-                    $promoBonus = true;
-                }
-            } catch(Exception $ex) {}
-        }
-
-        // Give 30 free streaming minutes to first 200 sellers
-        try {
-            $sellerCount = q1("SELECT COUNT(*) AS n FROM cammarket237.users WHERE role='seller'");
-            if (intval($sellerCount['n']) <= 200) {
-                $bal = q1("SELECT id FROM cammarket237.stream_balance WHERE seller_id=?", [$userId]);
-                if (!$bal) {
-                    db()->prepare("INSERT INTO cammarket237.stream_balance (seller_id,minutes_available,first_purchase_bonus_given) VALUES (?,30,false)")->execute([$userId]);
-                } else {
-                    db()->prepare("UPDATE cammarket237.stream_balance SET minutes_available=minutes_available+30 WHERE seller_id=?")->execute([$userId]);
-                }
-                db()->prepare("INSERT INTO cammarket237.stream_transactions (seller_id,transaction_type,minutes_added,amount_fcfa,note) VALUES (?,'weekly_free',30,0,'Welcome bonus - 30 free mins (first 200 sellers)')")->execute([$userId]);
-            }
-        } catch(Exception $ex) {}
     } catch(Exception $e) {
         db()->rollBack();
-        fail('Registration failed: ' . $e->getMessage());
+        if (strpos($e->getMessage(), 'users_referral_code_key') !== false && $regAttempt < 2) {
+            $myRef = uniqueReferralCode();
+            $regRetry = true;
+            $regAttempt++;
+        } else {
+            fail('Registration failed: ' . $e->getMessage());
+        }
     }
+    } while ($regRetry);
+}
+
+// ─── CHECK REFERRAL CODE ────────────────────────────────────
+if ($action === 'check_referral_code') {
+    $code = strtoupper(trim(p('code') ?: ''));
+    if (!$code) ok(['valid' => false]);
+    $row = q1("SELECT id FROM cammarket237.users WHERE referral_code=? LIMIT 1", [$code]);
+    ok(['valid' => !!$row]);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -690,7 +682,7 @@ if ($action === 'verify_otp') {
 if ($action === 'seller_login') {
     $phone = trim(p('phone'));
     $pass  = p('password');
-    $ip=getClientIP(); if(!in_array($phone,DEV_PHONES)){$rl=checkRateLimit($ip.'_'.$phone,'seller_login',5,300); if(!$rl['allowed']) fail('Too many login attempts. Wait '.$rl['wait_minutes'].' min(s).');}
+    $ip=getClientIP(); if(!in_array($phone,DEV_PHONES)){$rl=checkRateLimit($ip.'_'.$phone,'seller_login',200,300); if(!$rl['allowed']) fail('Too many login attempts. Wait '.$rl['wait_minutes'].' min(s).');}
     if (!$phone||!$pass) fail('Phone and password required.');
     $user = findUserByPhone($phone, 'seller');
 
@@ -960,8 +952,6 @@ if ($action === 'post_listing') {
     $user = authUser();
     if (!$user) fail('Please login first.');
     if ($user['role'] !== 'seller') fail('Only sellers can post items.');
-    if (!isCameroonPhone($user['phone']))
-        fail('A Cameroon phone number (+237) is required to post listings. Please update your profile with a valid Cameroon number.');
 
     foreach (['store_id','title','price','category','town'] as $f)
         if (empty($_POST[$f])) fail("Missing: $f");
@@ -1070,19 +1060,19 @@ if ($action === 'post_listing') {
             $isGuesthouse ? trim($_POST['host_bio']   ?? '') : null,
             $isGuesthouse ? $hlArr : null,
             $isGuesthouse && !empty($_POST['year_built']) ? intval($_POST['year_built']) : null,
-            // service flags (cast to bool)
-            $isGuesthouse ? !empty($_POST['offers_airport_pickup'])    : false,
-            $isGuesthouse ? !empty($_POST['offers_airport_dropoff'])   : false,
-            $isGuesthouse ? !empty($_POST['offers_local_transport'])   : false,
-            $isGuesthouse ? !empty($_POST['offers_breakfast'])         : false,
-            $isGuesthouse ? !empty($_POST['offers_meals'])             : false,
-            $isGuesthouse ? !empty($_POST['offers_restaurant_onsite']) : false,
-            $isGuesthouse ? !empty($_POST['offers_laundry'])           : false,
-            $isGuesthouse ? !empty($_POST['offers_housekeeping'])      : false,
-            $isGuesthouse ? !empty($_POST['offers_tour_guide'])        : false,
-            $isGuesthouse ? !empty($_POST['offers_event_space'])       : false,
-            $isGuesthouse ? !empty($_POST['offers_wifi'])              : false,
-            $isGuesthouse ? !empty($_POST['offers_generator'])         : false,
+            // service flags (null for non-guesthouse; avoids PDO bool→empty-string issue with PostgreSQL)
+            $isGuesthouse ? !empty($_POST['offers_airport_pickup'])    : null,
+            $isGuesthouse ? !empty($_POST['offers_airport_dropoff'])   : null,
+            $isGuesthouse ? !empty($_POST['offers_local_transport'])   : null,
+            $isGuesthouse ? !empty($_POST['offers_breakfast'])         : null,
+            $isGuesthouse ? !empty($_POST['offers_meals'])             : null,
+            $isGuesthouse ? !empty($_POST['offers_restaurant_onsite']) : null,
+            $isGuesthouse ? !empty($_POST['offers_laundry'])           : null,
+            $isGuesthouse ? !empty($_POST['offers_housekeeping'])      : null,
+            $isGuesthouse ? !empty($_POST['offers_tour_guide'])        : null,
+            $isGuesthouse ? !empty($_POST['offers_event_space'])       : null,
+            $isGuesthouse ? !empty($_POST['offers_wifi'])              : null,
+            $isGuesthouse ? !empty($_POST['offers_generator'])         : null,
         ]);
         $lid = $stmt->fetch()['id'];
 
@@ -2280,11 +2270,15 @@ if ($action === 'reactivate_account') {
 if ($action === 'get_listing') {
     $id = intval(g('id'));
     $listing = q1("SELECT l.*,
+        s.store_name, s.whatsapp, s.latitude, s.longitude, s.rating, s.trust_score,
+        s.id AS store_id,
         (SELECT media_url FROM cammarket237.listing_media WHERE listing_id=l.id AND media_role='main_image' ORDER BY sort_order LIMIT 1) AS main_photo,
         (SELECT media_url FROM cammarket237.listing_media WHERE listing_id=l.id AND media_role='extra_image' ORDER BY sort_order LIMIT 1) AS photo2,
         (SELECT media_url FROM cammarket237.listing_media WHERE listing_id=l.id AND media_role='extra_image' ORDER BY sort_order LIMIT 1 OFFSET 1) AS photo3,
         (SELECT media_url FROM cammarket237.listing_media WHERE listing_id=l.id AND media_role IN ('video_360','video','360view') ORDER BY sort_order LIMIT 1) AS video360
-        FROM cammarket237.listings l WHERE l.id=?", [$id]);
+        FROM cammarket237.listings l
+        LEFT JOIN cammarket237.stores s ON s.id = l.store_id
+        WHERE l.id=?", [$id]);
     if (!$listing) fail('Listing not found.');
     if (isset($listing['metadata']) && is_string($listing['metadata'])) {
         $listing['metadata'] = json_decode($listing['metadata'], true) ?: null;
@@ -2564,7 +2558,7 @@ if($action === 'post_service'){
 // ── BUYER LOGIN ────────────────────────────────────────
 if($action === 'buyer_login'){
     $phone = trim(p('phone')); $pass = p('password');
-    $ip=getClientIP(); if(!in_array($phone,DEV_PHONES)){$rl=checkRateLimit($ip.'_'.$phone,'buyer_login',5,300); if(!$rl['allowed']) fail('Too many login attempts. Wait '.$rl['wait_minutes'].' min(s).');}
+    $ip=getClientIP(); if(!in_array($phone,DEV_PHONES)){$rl=checkRateLimit($ip.'_'.$phone,'buyer_login',200,300); if(!$rl['allowed']) fail('Too many login attempts. Wait '.$rl['wait_minutes'].' min(s).');}
     if(!$phone || !$pass) fail('Phone and password required.');
     try {
         $user = findUserByPhone($phone, 'buyer');
@@ -3192,7 +3186,7 @@ if ($action === 'get_seller_notif_summary') {
     $storeRow = q1("SELECT id FROM cammarket237.stores WHERE user_id=? LIMIT 1", [$user['id']]);
     $sid = $storeRow ? intval($storeRow['id']) : 0;
     // Pending enquiries
-    $enq = q1("SELECT COUNT(*) AS n FROM cammarket237.enquiries WHERE store_id=? AND status='pending'", [$sid]);
+    $enq = q1("SELECT COUNT(*) AS n FROM cammarket237.enquiries WHERE seller_id=? AND status='pending'", [$user['id']]);
     // Distinct buyers with seller's items in cart
     $cart = q1("SELECT COUNT(DISTINCT ci.buyer_id) AS n
         FROM cammarket237.cart_items ci
@@ -4000,83 +3994,6 @@ if ($action === 'get_deals') {
 
     ok(['deals' => $deals]);
 }
-
-if ($action === 'get_my_deals') {
-    $user = authUser();
-    if (!$user) fail('Login required.');
-    // Individual listing deals (not store-wide)
-    $deals = q("SELECT ld.*, l.title, lm.media_url AS main_photo,
-        EXTRACT(EPOCH FROM (ld.ends_at - NOW())) AS seconds_left
-        FROM cammarket237.listing_deals ld
-        JOIN cammarket237.listings l ON l.id=ld.listing_id
-        LEFT JOIN cammarket237.listing_media lm ON lm.listing_id=l.id AND lm.media_role='main_image'
-        WHERE ld.seller_id=? AND ld.is_active=true AND ld.deal_type != 'store_wide'
-        ORDER BY ld.created_at DESC", [$user['id']]);
-    // Collapse all store-wide deals into one summary entry
-    $sw = q1("SELECT discount_percent, ends_at, COUNT(*) AS cnt,
-        EXTRACT(EPOCH FROM (ends_at - NOW())) AS seconds_left
-        FROM cammarket237.listing_deals
-        WHERE seller_id=? AND is_active=true AND deal_type='store_wide'
-        GROUP BY discount_percent, ends_at ORDER BY ends_at ASC LIMIT 1", [$user['id']]);
-    if ($sw) {
-        array_unshift($deals, [
-            'is_store_wide'    => true,
-            'title'            => 'Store-wide Deal ('.$sw['cnt'].' items)',
-            'discount_percent' => $sw['discount_percent'],
-            'deal_price'       => null,
-            'seconds_left'     => $sw['seconds_left'],
-            'main_photo'       => null,
-            'listing_id'       => 0
-        ]);
-    }
-    ok(['deals' => $deals]);
-}
-
-
-
-// ── NEW ITEMS NOTIFICATIONS ───────────────────────────────
-
-if ($action === 'get_new_items_count') {
-    $hours = 48;
-    $row = q1("SELECT COUNT(*) AS cnt FROM cammarket237.listings l
-        JOIN cammarket237.stores s ON s.id=l.store_id
-        WHERE l.status='active'
-        AND l.created_at > NOW() - INTERVAL '" . $hours . " hours'
-        AND COALESCE(l.moderation_status,'approved')='approved'");
-    ok(['count' => intval($row['cnt'])]);
-}
-
-if ($action === 'get_new_items') {
-    $hours = 48;
-    $town   = g('town') ?: '';
-    $region = g('region') ?: '';
-
-    $where = ["l.status='active'",
-              "l.created_at > NOW() - INTERVAL '" . $hours . " hours'",
-              "COALESCE(l.moderation_status,'approved')='approved'"];
-    $params = [];
-
-    if ($town)   { $where[] = "l.town=?";   $params[] = $town; }
-    if ($region) { $where[] = "l.region=?"; $params[] = $region; }
-
-    $wClause = implode(" AND ", $where);
-
-    $listings = q("SELECT l.id, l.title, l.price, l.category, l.town,
-        lm.media_url AS main_photo, l.condition, l.created_at,
-        s.store_name, s.whatsapp, s.rating as store_rating,
-        u.full_name as seller_name
-        FROM cammarket237.listings l
-        JOIN cammarket237.stores s ON s.id=l.store_id
-        JOIN cammarket237.users u ON u.id=s.user_id
-        LEFT JOIN cammarket237.listing_media lm ON lm.listing_id=l.id AND lm.media_role='main_image'
-        WHERE $wClause
-        ORDER BY l.created_at DESC
-        LIMIT 30", $params);
-
-    ok(['listings' => $listings, 'hours' => $hours]);
-}
-
-
 
 // ── TOGGLE STOCK STATUS ───────────────────────────────
 if ($action === 'toggle_stock') {

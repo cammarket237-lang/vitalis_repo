@@ -509,50 +509,6 @@ if ($action === 'register_seller') {
             'store'   => $storeArr,
             'message' => 'Seller account created! Welcome ' . $name . '. You got 30 FREE streaming minutes!',
         ]);
-
-        // Handle referral promo code
-        $promoCode = strtoupper(trim(p('promo_code')));
-        $promoBonus = false;
-        if ($promoCode) {
-            try {
-                $referrer = q1("SELECT id FROM cammarket237.users WHERE referral_code=? LIMIT 1", [$promoCode]);
-                if ($referrer && $referrer['id'] !== $userId) {
-                    db()->prepare("UPDATE cammarket237.users SET referred_by=? WHERE id=?")->execute([$referrer['id'], $userId]);
-                    // Referrer gets 5 points for seller referral
-                    db()->prepare("UPDATE cammarket237.users SET promo_points=COALESCE(promo_points,0)+5 WHERE id=?")->execute([$referrer['id']]);
-                    $promoBonus = true;
-                }
-            } catch(Exception $ex) {}
-        }
-
-        // Handle referral promo code
-        $promoCode = strtoupper(trim(p('promo_code')));
-        $promoBonus = false;
-        if ($promoCode) {
-            try {
-                $referrer = q1("SELECT id FROM cammarket237.users WHERE referral_code=? LIMIT 1", [$promoCode]);
-                if ($referrer && $referrer['id'] !== $userId) {
-                    db()->prepare("UPDATE cammarket237.users SET referred_by=? WHERE id=?")->execute([$referrer['id'], $userId]);
-                    // Referrer gets 5 points for seller referral
-                    db()->prepare("UPDATE cammarket237.users SET promo_points=COALESCE(promo_points,0)+5 WHERE id=?")->execute([$referrer['id']]);
-                    $promoBonus = true;
-                }
-            } catch(Exception $ex) {}
-        }
-
-        // Give 30 free streaming minutes to first 200 sellers
-        try {
-            $sellerCount = q1("SELECT COUNT(*) AS n FROM cammarket237.users WHERE role='seller'");
-            if (intval($sellerCount['n']) <= 200) {
-                $bal = q1("SELECT id FROM cammarket237.stream_balance WHERE seller_id=?", [$userId]);
-                if (!$bal) {
-                    db()->prepare("INSERT INTO cammarket237.stream_balance (seller_id,minutes_available,first_purchase_bonus_given) VALUES (?,30,false)")->execute([$userId]);
-                } else {
-                    db()->prepare("UPDATE cammarket237.stream_balance SET minutes_available=minutes_available+30 WHERE seller_id=?")->execute([$userId]);
-                }
-                db()->prepare("INSERT INTO cammarket237.stream_transactions (seller_id,transaction_type,minutes_added,amount_fcfa,note) VALUES (?,'weekly_free',30,0,'Welcome bonus - 30 free mins (first 200 sellers)')")->execute([$userId]);
-            }
-        } catch(Exception $ex) {}
     } catch(Exception $e) {
         db()->rollBack();
         fail('Registration failed: ' . $e->getMessage());
@@ -4000,83 +3956,6 @@ if ($action === 'get_deals') {
 
     ok(['deals' => $deals]);
 }
-
-if ($action === 'get_my_deals') {
-    $user = authUser();
-    if (!$user) fail('Login required.');
-    // Individual listing deals (not store-wide)
-    $deals = q("SELECT ld.*, l.title, lm.media_url AS main_photo,
-        EXTRACT(EPOCH FROM (ld.ends_at - NOW())) AS seconds_left
-        FROM cammarket237.listing_deals ld
-        JOIN cammarket237.listings l ON l.id=ld.listing_id
-        LEFT JOIN cammarket237.listing_media lm ON lm.listing_id=l.id AND lm.media_role='main_image'
-        WHERE ld.seller_id=? AND ld.is_active=true AND ld.deal_type != 'store_wide'
-        ORDER BY ld.created_at DESC", [$user['id']]);
-    // Collapse all store-wide deals into one summary entry
-    $sw = q1("SELECT discount_percent, ends_at, COUNT(*) AS cnt,
-        EXTRACT(EPOCH FROM (ends_at - NOW())) AS seconds_left
-        FROM cammarket237.listing_deals
-        WHERE seller_id=? AND is_active=true AND deal_type='store_wide'
-        GROUP BY discount_percent, ends_at ORDER BY ends_at ASC LIMIT 1", [$user['id']]);
-    if ($sw) {
-        array_unshift($deals, [
-            'is_store_wide'    => true,
-            'title'            => 'Store-wide Deal ('.$sw['cnt'].' items)',
-            'discount_percent' => $sw['discount_percent'],
-            'deal_price'       => null,
-            'seconds_left'     => $sw['seconds_left'],
-            'main_photo'       => null,
-            'listing_id'       => 0
-        ]);
-    }
-    ok(['deals' => $deals]);
-}
-
-
-
-// ── NEW ITEMS NOTIFICATIONS ───────────────────────────────
-
-if ($action === 'get_new_items_count') {
-    $hours = 48;
-    $row = q1("SELECT COUNT(*) AS cnt FROM cammarket237.listings l
-        JOIN cammarket237.stores s ON s.id=l.store_id
-        WHERE l.status='active'
-        AND l.created_at > NOW() - INTERVAL '" . $hours . " hours'
-        AND COALESCE(l.moderation_status,'approved')='approved'");
-    ok(['count' => intval($row['cnt'])]);
-}
-
-if ($action === 'get_new_items') {
-    $hours = 48;
-    $town   = g('town') ?: '';
-    $region = g('region') ?: '';
-
-    $where = ["l.status='active'",
-              "l.created_at > NOW() - INTERVAL '" . $hours . " hours'",
-              "COALESCE(l.moderation_status,'approved')='approved'"];
-    $params = [];
-
-    if ($town)   { $where[] = "l.town=?";   $params[] = $town; }
-    if ($region) { $where[] = "l.region=?"; $params[] = $region; }
-
-    $wClause = implode(" AND ", $where);
-
-    $listings = q("SELECT l.id, l.title, l.price, l.category, l.town,
-        lm.media_url AS main_photo, l.condition, l.created_at,
-        s.store_name, s.whatsapp, s.rating as store_rating,
-        u.full_name as seller_name
-        FROM cammarket237.listings l
-        JOIN cammarket237.stores s ON s.id=l.store_id
-        JOIN cammarket237.users u ON u.id=s.user_id
-        LEFT JOIN cammarket237.listing_media lm ON lm.listing_id=l.id AND lm.media_role='main_image'
-        WHERE $wClause
-        ORDER BY l.created_at DESC
-        LIMIT 30", $params);
-
-    ok(['listings' => $listings, 'hours' => $hours]);
-}
-
-
 
 // ── TOGGLE STOCK STATUS ───────────────────────────────
 if ($action === 'toggle_stock') {

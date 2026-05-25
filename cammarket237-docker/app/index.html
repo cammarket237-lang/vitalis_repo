@@ -560,10 +560,6 @@
         <div style="font-size:12px;color:#aaa;margin-bottom:8px" data-i18n="login.noAccount">Not a member yet?</div>
         <button onclick="window.buyerTab('register')" style="background:none;border:1.5px solid #1a7a3c;color:#1a7a3c;border-radius:10px;padding:8px 20px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer" data-i18n="signup.createAccount">Create Account</button>
       </div>
-      <div style="text-align:center;margin-top:10px">
-        <div style="font-size:12px;color:#aaa;margin-bottom:6px" data-i18n="nav.browse">Just browsing?</div>
-        <button onclick="window.openGuestOtp()" style="background:none;border:1.5px solid #ddd;color:#888;border-radius:10px;padding:7px 16px;font-family:inherit;font-size:12px;cursor:pointer">Get 24hr Guest Access (OTP)</button>
-      </div>
     </div>
 
     <!-- REGISTER -->
@@ -624,18 +620,6 @@
       <div class="alert-r" id="buyer-reg-err" data-i18n="errors.allFieldsRequired">All fields are required.</div>
       <button class="btn btn-green" onclick="window.registerBuyer()" data-i18n="signup.createAccount">Create Buyer Account &#8594;</button>
     </div>
-  </div>
-
-  <!-- BUYER OTP -->
-  <div class="screen" id="screen-buyer-otp">
-    <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer" onclick="window.go('buyer-auth')">&#8592; <span data-i18n="btn.back">Back</span></button>
-    <div class="title" data-i18n="otp.guestTitle">Guest Access Code</div>
-    <p id="otp-msg" style="font-size:13px;color:#666;margin-bottom:14px" data-i18n="otp.guestHint">Enter the code for 24-hour read-only guest access.</p>
-    <div class="alert-y" id="dev-hint"></div>
-    <div class="field"><input id="otp-input" class="otp-in" type="number" maxlength="6" placeholder="______"/></div>
-    <div class="alert-r" id="otp-error" data-i18n="otp.failed">Failed to verify OTP. Please try again.</div>
-    <button class="btn btn-dark" onclick="window.verifyOtp()" data-i18n="otp.verify">Verify</button>
-    <div style="text-align:center;margin-top:11px;font-size:12px;color:#1a7a3c;cursor:pointer" onclick="window.go('buyer-auth')">Use a different phone</div>
   </div>
 
   <!-- BUYER SEARCH -->
@@ -806,6 +790,35 @@
       <button onclick="window.goSaved()" style="padding:7px 12px;border:1.5px solid #ddd;border-radius:10px;background:white;font-size:16px;cursor:pointer" title="Saved items">&#10084;&#65039;</button>
     </div>
 
+    <!-- Category Filter Dropdown -->
+    <div style="margin-bottom:10px">
+      <div style="font-size:12px;color:#0f1923;font-weight:900;text-transform:uppercase;letter-spacing:0.7px;margin-bottom:6px">&#x1F4CB; Filter by Service Type</div>
+      <select id="category-filter" onchange="(function(v){_currentCat=v;window.doSearch();})(this.value)" style="width:100%;border:1.5px solid #ddd;border-radius:10px;padding:9px 12px;font-family:inherit;font-size:13px;background:white;color:#333;cursor:pointer">
+        <option value="">&#x1F50D; All Categories</option>
+        <optgroup label="&#x1F6D2; Marketplace">
+          <option value="Buy &amp; Sell Cars">&#x1F697; Buy &amp; Sell Cars</option>
+          <option value="Phones &amp; Accessories">&#x1F4F1; Phones &amp; Accessories</option>
+          <option value="Electronics">&#x1F4BB; Electronics</option>
+          <option value="Clothing &amp; Fashion">&#x1F455; Clothing &amp; Fashion</option>
+          <option value="Agriculture">&#x1F33E; Agriculture / Farm Produce</option>
+          <option value="Food &amp; Groceries">&#x1F96C; Food &amp; Groceries</option>
+          <option value="Furniture &amp; Home">&#x1F6CB;&#xFE0F; Furniture &amp; Home</option>
+          <option value="Beauty &amp; Health">&#x1F48A; Beauty &amp; Health</option>
+          <option value="Vehicles &amp; Parts">&#x1F699; Vehicles &amp; Parts</option>
+          <option value="Books &amp; Stationery">&#x1F4DA; Books &amp; Stationery</option>
+        </optgroup>
+        <optgroup label="&#x1F3E0; Rentals &amp; Accommodation">
+          <option value="Apartments &amp; Rentals">&#x1F3E0; Apartments &amp; Rentals</option>
+          <option value="Guesthouses &amp; Hotels">&#x1F3E8; Guesthouses &amp; Hotels</option>
+          <option value="Car Rental">&#x1F698; Car Rental</option>
+        </optgroup>
+        <optgroup label="&#x1F6A6; Services">
+          <option value="Transport &amp; Drivers">&#x1F68C; Transport &amp; Drivers</option>
+          <option value="Delivery Service">&#x1F4E6; Delivery Service</option>
+        </optgroup>
+      </select>
+    </div>
+
     <div style="margin-bottom:12px">
       <div class="label" style="margin-bottom:7px" data-i18n="search.range">Search range:</div>
       <div style="display:flex;gap:7px;flex-wrap:wrap">
@@ -822,6 +835,13 @@
         <button onclick="document.getElementById('deals-section').style.display='none'" style="background:none;border:none;font-size:12px;color:#aaa;cursor:pointer" data-i18n="search.seeAll">See All</button>
       </div>
       <div id="deals-list" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none"></div>
+    </div>
+
+    <!-- Country selector -->
+    <div style="display:flex;gap:6px;margin-bottom:10px" id="country-toggle">
+      <button id="ct-cm"   onclick="window.setShopCountry('cm')"   style="flex:1;padding:8px 4px;border-radius:10px;border:1.5px solid #ddd;background:#1a7a3c;color:white;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">&#x1F1E8;&#x1F1F2; Cameroon</button>
+      <button id="ct-both" onclick="window.setShopCountry('both')" style="flex:1;padding:8px 4px;border-radius:10px;border:1.5px solid #ddd;background:#f0f0f0;color:#555;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">&#x1F30D; Both</button>
+      <button id="ct-ng"   onclick="window.setShopCountry('ng')"   style="flex:1;padding:8px 4px;border-radius:10px;border:1.5px solid #ddd;background:#f0f0f0;color:#555;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">&#x1F1F3;&#x1F1EC; Nigeria</button>
     </div>
 
     <div id="search-results"></div>
@@ -1404,6 +1424,89 @@
         </div>
       </div>
 
+      <!-- CAR RENTAL FIELDS (shown when category = Car Rental) -->
+      <div id="rental-fields" style="display:none;background:#f3e5f5;border-radius:14px;padding:14px;margin-bottom:12px;border:1.5px solid #ce93d8">
+        <div style="font-size:12px;font-weight:800;color:#6a1b9a;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px">&#x1F698; Rental Details</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Vehicle Type *</label>
+            <select id="p-rent-vtype" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="sedan">Sedan</option>
+              <option value="suv">SUV / 4x4</option>
+              <option value="pickup">Pickup / Truck</option>
+              <option value="minibus">Minibus (7–14 seats)</option>
+              <option value="bus">Bus (15+ seats)</option>
+              <option value="motorbike">Motorbike</option>
+              <option value="van">Van / Cargo</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Seats</label>
+            <select id="p-rent-seats" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="2">2</option><option value="4">4</option><option value="5">5</option>
+              <option value="7">7</option><option value="8">8</option><option value="12">12</option>
+              <option value="16">16</option><option value="30">30+</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Make</label>
+            <select id="p-rent-make" onchange="window.updateRentalModels(this.value)" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select Make</option>
+              <option>Toyota</option><option>Honda</option><option>Mercedes-Benz</option>
+              <option>BMW</option><option>Nissan</option><option>Hyundai</option>
+              <option>Kia</option><option>Ford</option><option>Peugeot</option>
+              <option>Renault</option><option>Volkswagen</option><option>Mitsubishi</option>
+              <option>Suzuki</option><option>Lexus</option><option>Land Rover</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Model</label>
+            <select id="p-rent-model" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select make first</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Year</label>
+            <input id="p-rent-year" type="number" placeholder="e.g. 2020" min="1990" max="2025" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Deposit (FCFA)</label>
+            <input id="p-rent-deposit" type="number" placeholder="e.g. 50000" min="0" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Driver Included</label>
+            <select id="p-rent-driver" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="yes">Yes — with driver</option>
+              <option value="no">No — self-drive</option>
+              <option value="optional">Optional (extra fee)</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Fuel Policy</label>
+            <select id="p-rent-fuel" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="full_to_full">Full-to-Full</option>
+              <option value="included">Fuel Included</option>
+              <option value="renter_pays">Renter Pays</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="label" style="font-size:12px">Pickup Location</label>
+          <input id="p-rent-pickup" type="text" placeholder="e.g. Douala Airport, Bonapriso, Bonanjo" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+        </div>
+      </div>
+
       <!-- APARTMENT FIELDS (shown when category = Apartments & Rentals) -->
       <div id="apartment-fields" style="display:none;background:#e3f2fd;border-radius:14px;padding:14px;margin-bottom:12px;border:1.5px solid #90caf9">
         <div style="font-size:12px;font-weight:800;color:#1565c0;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px">&#x1F3E0; Property Details</div>
@@ -1461,6 +1564,277 @@
             <option value="yearly">Per Year</option>
             <option value="outright">Outright Purchase</option>
           </select>
+        </div>
+      </div>
+
+      <!-- TRANSPORT FIELDS -->
+      <div id="transport-fields" style="display:none;background:#ede7f6;border-radius:14px;padding:14px;margin-bottom:12px;border:1.5px solid #b39ddb">
+        <div style="font-size:12px;font-weight:800;color:#4527a0;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px">&#x1F68C; Transport Details</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">From (City/Town) *</label>
+            <input id="p-trp-from" type="text" placeholder="e.g. Douala" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">To (City/Town) *</label>
+            <input id="p-trp-to" type="text" placeholder="e.g. Yaoundé" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Vehicle Type</label>
+            <select id="p-trp-vtype" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="bus">Bus / Coach</option>
+              <option value="minibus">Minibus</option>
+              <option value="shared_taxi">Shared Taxi</option>
+              <option value="private_car">Private Car</option>
+              <option value="motorbike">Motorbike (Boda)</option>
+              <option value="tricycle">Tricycle (Keke)</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Seats Available</label>
+            <input id="p-trp-seats" type="number" placeholder="e.g. 4" min="1" max="80" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Departure Time</label>
+            <input id="p-trp-time" type="time" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Frequency</label>
+            <select id="p-trp-freq" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="daily">Daily</option>
+              <option value="weekdays">Weekdays only</option>
+              <option value="weekends">Weekends only</option>
+              <option value="on_demand">On Demand</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- AGRICULTURE FIELDS -->
+      <div id="agriculture-fields" style="display:none;background:#fff3e0;border-radius:14px;padding:14px;margin-bottom:12px;border:1.5px solid #ffcc80">
+        <div style="font-size:12px;font-weight:800;color:#e65100;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px">&#x1F33E; Farm Produce Details</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Unit *</label>
+            <select id="p-agr-unit" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select unit</option>
+              <option value="kg">Kilogram (kg)</option>
+              <option value="bag_50">Bag (50 kg)</option>
+              <option value="bag_100">Bag (100 kg)</option>
+              <option value="crate">Crate</option>
+              <option value="basket">Basket</option>
+              <option value="bunch">Bunch</option>
+              <option value="piece">Piece / Each</option>
+              <option value="liter">Litre</option>
+              <option value="ton">Ton</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Quantity Available</label>
+            <input id="p-agr-qty" type="number" placeholder="e.g. 50" min="1" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Harvest Date</label>
+            <input id="p-agr-harvest" type="date" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Farm Location</label>
+            <input id="p-agr-farm" type="text" placeholder="e.g. Bafoussam, NW Region" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="label" style="font-size:12px">Organic / Chemical-free?</label>
+          <select id="p-agr-organic" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+            <option value="">Select</option>
+            <option value="yes">Yes — Organic</option>
+            <option value="no">No</option>
+            <option value="partial">Partially</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- DELIVERY FIELDS -->
+      <div id="delivery-fields" style="display:none;background:#e0f7fa;border-radius:14px;padding:14px;margin-bottom:12px;border:1.5px solid #80deea">
+        <div style="font-size:12px;font-weight:800;color:#006064;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px">&#x1F4E6; Delivery Details</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Pickup Zone *</label>
+            <input id="p-del-from" type="text" placeholder="e.g. Douala, Akwa" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Delivery Zone *</label>
+            <input id="p-del-to" type="text" placeholder="e.g. Nationwide or Yaoundé" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Vehicle Type</label>
+            <select id="p-del-vtype" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="motorbike">Motorbike</option>
+              <option value="car">Car</option>
+              <option value="pickup">Pickup / Truck</option>
+              <option value="van">Van</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Max Weight</label>
+            <select id="p-del-weight" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="5kg">Up to 5 kg</option>
+              <option value="20kg">5 – 20 kg</option>
+              <option value="50kg">20 – 50 kg</option>
+              <option value="200kg">50 – 200 kg</option>
+              <option value="any">Any weight</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="label" style="font-size:12px">Delivery Time</label>
+          <select id="p-del-time" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+            <option value="">Select</option>
+            <option value="same_day">Same Day</option>
+            <option value="next_day">Next Day</option>
+            <option value="2_3_days">2 – 3 Days</option>
+            <option value="flexible">Flexible</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ELECTRONICS FIELDS -->
+      <div id="electronics-fields" style="display:none;background:#eceff1;border-radius:14px;padding:14px;margin-bottom:12px;border:1.5px solid #b0bec5">
+        <div style="font-size:12px;font-weight:800;color:#263238;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px">&#x1F4BB; Electronics Details</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Storage</label>
+            <select id="p-elec-storage" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="16GB">16 GB</option><option value="32GB">32 GB</option>
+              <option value="64GB">64 GB</option><option value="128GB">128 GB</option>
+              <option value="256GB">256 GB</option><option value="512GB">512 GB</option>
+              <option value="1TB">1 TB</option><option value="2TB">2 TB</option>
+              <option value="na">N/A</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">RAM</label>
+            <select id="p-elec-ram" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="2GB">2 GB</option><option value="4GB">4 GB</option>
+              <option value="6GB">6 GB</option><option value="8GB">8 GB</option>
+              <option value="12GB">12 GB</option><option value="16GB">16 GB</option>
+              <option value="32GB">32 GB</option><option value="na">N/A</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Screen Size</label>
+            <input id="p-elec-screen" type="text" placeholder="e.g. 15.6 inch" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Warranty</label>
+            <select id="p-elec-warranty" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="none">No Warranty</option>
+              <option value="3m">3 Months</option>
+              <option value="6m">6 Months</option>
+              <option value="1y">1 Year</option>
+              <option value="2y">2 Years</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHONES FIELDS -->
+      <div id="phones-fields" style="display:none;background:#e8eaf6;border-radius:14px;padding:14px;margin-bottom:12px;border:1.5px solid #9fa8da">
+        <div style="font-size:12px;font-weight:800;color:#283593;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px">&#x1F4F1; Phone Details</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Storage</label>
+            <select id="p-ph-storage" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="16GB">16 GB</option><option value="32GB">32 GB</option>
+              <option value="64GB">64 GB</option><option value="128GB">128 GB</option>
+              <option value="256GB">256 GB</option><option value="512GB">512 GB</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">RAM</label>
+            <select id="p-ph-ram" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="2GB">2 GB</option><option value="3GB">3 GB</option>
+              <option value="4GB">4 GB</option><option value="6GB">6 GB</option>
+              <option value="8GB">8 GB</option><option value="12GB">12 GB</option>
+              <option value="16GB">16 GB</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Network</label>
+            <select id="p-ph-network" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="2G">2G</option><option value="3G">3G</option>
+              <option value="4G">4G LTE</option><option value="5G">5G</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">OS</label>
+            <select id="p-ph-os" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="android">Android</option>
+              <option value="ios">iOS (iPhone)</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- CLOTHING FIELDS -->
+      <div id="clothing-fields" style="display:none;background:#fce4ec;border-radius:14px;padding:14px;margin-bottom:12px;border:1.5px solid #f48fb1">
+        <div style="font-size:12px;font-weight:800;color:#880e4f;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px">&#x1F457; Clothing Details</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Size</label>
+            <select id="p-cl-size" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="XS">XS</option><option value="S">S</option>
+              <option value="M">M</option><option value="L">L</option>
+              <option value="XL">XL</option><option value="XXL">XXL</option>
+              <option value="XXXL">XXXL</option>
+              <option value="free">Free Size</option>
+              <option value="custom">Custom / Made-to-Measure</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Gender</label>
+            <select id="p-cl-gender" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:white">
+              <option value="">Select</option>
+              <option value="men">Men</option>
+              <option value="women">Women</option>
+              <option value="unisex">Unisex</option>
+              <option value="kids">Kids / Children</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0">
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Color</label>
+            <input id="p-cl-color" type="text" placeholder="e.g. Black, Red, Multi" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="label" style="font-size:12px">Material</label>
+            <input id="p-cl-material" type="text" placeholder="e.g. Cotton, Polyester" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
         </div>
       </div>
 
@@ -1730,23 +2104,6 @@
         <div id="sh-sub" style="font-size:13px;opacity:0.85;line-height:1.5">Find or list a service</div>
       </div>
       <div style="padding:0 16px;margin-top:-18px">
-        <!-- Find card -->
-        <div onclick="window.goFindService()" style="background:white;border-radius:16px;padding:20px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.1);margin-bottom:12px;border:1px solid #e8f5e9">
-          <div style="display:flex;align-items:flex-start;gap:14px">
-            <div id="sh-find-icon" style="width:52px;height:52px;background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">&#x1F50D;</div>
-            <div style="flex:1">
-              <div id="sh-find-title" style="font-size:16px;font-weight:900;color:#1a7a3c;margin-bottom:5px">Find Near Me</div>
-              <div id="sh-find-desc" style="font-size:12px;color:#666;line-height:1.6">Browse listings near you and contact providers directly.</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid #f0f0f0">
-            <div id="sh-find-tags" style="display:flex;gap:8px;flex-wrap:wrap">
-              <span style="background:#e8f5e9;color:#1a7a3c;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px">&#x1F4CD; Uses your location</span>
-              <span style="background:#e8f5e9;color:#1a7a3c;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px">Free to use</span>
-            </div>
-            <span id="sh-find-arrow" style="color:#1a7a3c;font-size:20px;font-weight:700">&#x203A;</span>
-          </div>
-        </div>
         <!-- List card -->
         <div onclick="window.goListService()" style="background:white;border-radius:16px;padding:20px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.1);margin-bottom:16px;border:1px solid #fff3e0">
           <div style="display:flex;align-items:flex-start;gap:14px">
@@ -1954,7 +2311,7 @@
 
     <!-- Post Service FAB (sellers only) -->
     <div id="svc-post-btn" style="display:none;position:fixed;bottom:80px;right:16px;z-index:100">
-      <button onclick="window.go('post-service')" style="background:#1a7a3c;color:white;border:none;border-radius:50%;width:56px;height:56px;font-size:24px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3)">+</button>
+      <button onclick="(function(){window.go('post-service');setTimeout(function(){var t=document.getElementById('ps-type');var l=document.getElementById('ps-type-locked');if(t){t.style.display='';t.value='';}if(l){l.style.display='none';l.innerHTML='';}},150);})()" style="background:#1a7a3c;color:white;border:none;border-radius:50%;width:56px;height:56px;font-size:24px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3)">+</button>
     </div>
   </div>
 
@@ -2029,7 +2386,7 @@
         <!-- Service type -->
         <div class="field">
           <label class="label">Service Type *</label>
-          <select id="ps-type" style="width:100%;padding:12px;border:1.5px solid #ddd;border-radius:10px;font-family:inherit;font-size:14px;background:white">
+          <select id="ps-type" onchange="window.onServiceTypeChange(this.value)" style="width:100%;padding:12px;border:1.5px solid #ddd;border-radius:10px;font-family:inherit;font-size:14px;background:white">
             <option value="">Select service type</option>
             <option value="transport">&#128652; Driver/Transport</option>
             <option value="plumber">&#128295; Plumber/Electrician/Repairs</option>
@@ -2040,10 +2397,11 @@
             <option value="tutoring">&#128218; Tutoring/Teaching</option>
             <option value="other">&#128188; Other Service</option>
           </select>
+          <div id="ps-type-locked" style="display:none;padding:12px;border:1.5px solid #1a7a3c;border-radius:10px;background:#f0faf4;font-size:14px;font-weight:700;color:#0f1923"></div>
         </div>
         <div class="field">
           <label class="label">Title *</label>
-          <input id="ps-title" type="text" placeholder="e.g. Toyota Corolla for Hire, 2-bedroom apartment..."/>
+          <input id="ps-title" type="text" placeholder="Select a service type first..."/>
         </div>
         <div class="field">
           <label class="label">Description *</label>
@@ -2071,8 +2429,8 @@
           <input id="ps-avail" type="text" placeholder="e.g. Monday-Friday 8am-6pm, Weekends available"/>
         </div>
         <div class="field">
-          <label class="label">Features (comma separated)</label>
-          <input id="ps-features" type="text" placeholder="e.g. AC, GPS, Insurance, WiFi, Parking"/>
+          <label class="label">Key Highlights (optional)</label>
+          <input id="ps-features" type="text" placeholder="e.g. Licensed, 5 years experience, Free quote"/>
         </div>
         <!-- Photos -->
         <div class="label" style="margin-bottom:8px">Photos (at least 1) *</div>
@@ -3619,21 +3977,12 @@
       <div style="font-size:12px;opacity:0.85;line-height:1.6">Your video plays in the buyer feed across all of Cameroon.<br>Perfect for product launches and brand awareness.</div>
     </div>
     <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">1. Choose your package</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px">
-      <div id="vpkg-1" onclick="window.selectVideoPkg(1,'Starter Video','50000')" style="border:2px solid #eee;border-radius:12px;padding:14px;text-align:center;cursor:pointer">
-        <div style="font-size:13px;font-weight:800;color:#0f1923;margin-bottom:4px">Starter</div>
-        <div style="font-size:11px;color:#666;margin-bottom:8px">5,000 users &middot; 3 days</div>
-        <div style="font-size:16px;font-weight:900;color:#8e44ad">50,000 FCFA</div>
-      </div>
-      <div id="vpkg-2" onclick="window.selectVideoPkg(2,'Pro Video','100000')" style="border:2px solid #eee;border-radius:12px;padding:14px;text-align:center;cursor:pointer">
-        <div style="font-size:13px;font-weight:800;color:#0f1923;margin-bottom:4px">Pro</div>
-        <div style="font-size:11px;color:#666;margin-bottom:8px">20,000 users &middot; 7 days</div>
-        <div style="font-size:16px;font-weight:900;color:#8e44ad">100,000 FCFA</div>
-      </div>
+    <div id="vpkg-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px">
+      <div style="grid-column:1/-1;text-align:center;padding:14px;color:#aaa">Loading…</div>
     </div>
-    <input type="hidden" id="vpkg-id" value="1">
-    <input type="hidden" id="vpkg-name" value="Starter Video">
-    <input type="hidden" id="vpkg-price" value="50000">
+    <input type="hidden" id="vpkg-id" value="5">
+    <input type="hidden" id="vpkg-name" value="Video Starter">
+    <input type="hidden" id="vpkg-price" value="9000">
     <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">2. Your business</div>
     <div style="background:#f9f9f9;border-radius:12px;padding:14px;margin-bottom:18px;display:flex;flex-direction:column;gap:10px">
       <div>
@@ -3709,17 +4058,8 @@
       <div style="font-size:12px;opacity:0.85;line-height:1.6">Reach buyers near your venue.<br>Concerts, bar nights, markets, sports, and more.</div>
     </div>
     <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">1. Choose your package</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px">
-      <div id="epkg-1" onclick="window.selectEventPkg(1,'Event Starter','35000')" style="border:2px solid #eee;border-radius:12px;padding:14px;text-align:center;cursor:pointer">
-        <div style="font-size:13px;font-weight:800;color:#0f1923;margin-bottom:4px">Starter</div>
-        <div style="font-size:11px;color:#666;margin-bottom:8px">5,000 nearby users</div>
-        <div style="font-size:16px;font-weight:900;color:#2980b9">35,000 FCFA</div>
-      </div>
-      <div id="epkg-2" onclick="window.selectEventPkg(2,'Event Premium','65000')" style="border:2px solid #eee;border-radius:12px;padding:14px;text-align:center;cursor:pointer">
-        <div style="font-size:13px;font-weight:800;color:#0f1923;margin-bottom:4px">Premium</div>
-        <div style="font-size:11px;color:#666;margin-bottom:8px">20,000 nearby users</div>
-        <div style="font-size:16px;font-weight:900;color:#2980b9">65,000 FCFA</div>
-      </div>
+    <div id="epkg-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px">
+      <div style="grid-column:1/-1;text-align:center;padding:14px;color:#aaa">Loading…</div>
     </div>
     <input type="hidden" id="epkg-id" value="1">
     <input type="hidden" id="epkg-name" value="Event Starter">
@@ -5082,6 +5422,13 @@ function waOpen(url) {
   a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
+function normalizeWA(phone) {
+  var n = (phone || '').replace(/[^0-9]/g, '');
+  if (n.startsWith('00237')) return n.slice(2);
+  if (n.startsWith('237'))   return n;
+  if (n.startsWith('0'))     n = n.slice(1);
+  return '237' + n;
+}
 window._itemCache = {};
 var _buyerTown = '', _buyerRegion = '', _buyerGPS = null, _buyerRange = 'national';
 var _sellerTown = '', _sellerRegion = '', _sellerGPS = null, _sellerStoreId = null;
@@ -5116,17 +5463,25 @@ window.go = function(id) {
   window._adHandleScreenChange && window._adHandleScreenChange(id);
   if (id === 'cart') setTimeout(function(){ if(window.loadCart) window.loadCart(); }, 100);
   if (id === 'post-item') {
-    var u = _currentUser || JSON.parse(localStorage.getItem('cm237_user') || 'null');
-    var isCam = u && window.isCameroonPhone(u.phone);
     var banner = document.getElementById('cameroon-phone-banner');
     var postBtn = document.getElementById('post-btn');
-    if (banner) banner.style.display = isCam ? 'none' : 'flex';
-    if (postBtn) { postBtn.disabled = !isCam; postBtn.style.opacity = isCam ? '1' : '0.5'; }
+    if (banner) banner.style.display = 'none';
+    if (postBtn) { postBtn.disabled = false; postBtn.style.opacity = '1'; }
   }
   if (id === 'seller-dash' || id === 'buyer-search') {
     window.showPromoStrip && window.showPromoStrip(id);
   }
   if (id === 'seller-dash') {
+    // If arriving here after "Find Near Me" flow, redirect to buyer-search with category
+    var catIntentSeller = sessionStorage.getItem('_cat_intent');
+    if (catIntentSeller) {
+      sessionStorage.removeItem('_cat_intent');
+      _currentCat = catIntentSeller;
+      var catDropSeller = document.getElementById('category-filter');
+      if (catDropSeller) catDropSeller.value = catIntentSeller;
+      setTimeout(function() { window.go('buyer-search'); setTimeout(function(){ if(window.doSearch) window.doSearch(); }, 200); }, 100);
+      return;
+    }
     setTimeout(function(){ window.loadAdCarousel && window.loadAdCarousel(); }, 600);
     setTimeout(function(){ window.loadSellerNotifBadge && window.loadSellerNotifBadge(); }, 400);
     var ghIntent = sessionStorage.getItem('_gh_intent');
@@ -5152,6 +5507,8 @@ window.go = function(id) {
     if (catIntent) {
       sessionStorage.removeItem('_cat_intent');
       _currentCat = catIntent;
+      var catDropEl = document.getElementById('category-filter');
+      if (catDropEl) catDropEl.value = catIntent;
       setTimeout(function(){ if (window.doSearch) window.doSearch(); }, 300);
     }
   }
@@ -5172,14 +5529,11 @@ window.go = function(id) {
   if (id === 'guesthouse-hub') {
     setTimeout(function(){ window.renderGuesthouseHub && window.renderGuesthouseHub(); }, 0);
   }
-  if (id === 'sponsored-ad' || id === 'boost-listing' || id === 'video-ad' || id === 'event-ad' || id === 'advertise-hub') {
+  if (id === 'sponsored-ad' || id === 'boost-listing' || id === 'video-ad' || id === 'event-ad') {
     var _adTok = localStorage.getItem('cm237_token') || _sessionToken || '';
     if (!_adTok) {
-      document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
-      var _roleEl = document.getElementById('screen-role');
-      if (_roleEl) _roleEl.classList.add('active');
-      window.scrollTo(0, 0);
-      setTimeout(function(){ alert('Please log in to access Ads.'); }, 100);
+      sessionStorage.setItem('_auth_gate_return', id);
+      window.go('buyer-auth');
       return;
     }
   }
@@ -5190,10 +5544,10 @@ window.go = function(id) {
     window.loadBoostListingScreen && window.loadBoostListingScreen();
   }
   if (id === 'video-ad') {
-    window.selectVideoPkg && window.selectVideoPkg(1,'Starter Video','50000');
+    window.loadVideoAdPackages && window.loadVideoAdPackages();
   }
   if (id === 'event-ad') {
-    window.selectEventPkg && window.selectEventPkg(1,'Event Starter','35000');
+    window.loadEventAdPackages && window.loadEventAdPackages();
   }
   if (id === 'advertise-hub') {
     window.loadAdvertiseStats && window.loadAdvertiseStats();
@@ -5415,9 +5769,13 @@ window.fillCities = function(selId, lblId, region) {
 
 // \u2500\u2500 GUEST CONTACT CHECK \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 window.canContactSeller = function(title, msg) {
-  var user = null;
-  try { user = JSON.parse(localStorage.getItem('cm237_user')); } catch(e) {}
-  if (!user || user.role === 'guest' || !user.id || user.id === 0) {
+  var blocked = _isGuest;
+  if (!blocked) {
+    var user = null;
+    try { user = JSON.parse(localStorage.getItem('cm237_user')); } catch(e) {}
+    blocked = (!user || user.role === 'guest' || !user.id || user.id === 0);
+  }
+  if (blocked) {
     var t = document.getElementById('auth-gate-title');
     var m = document.getElementById('auth-gate-msg');
     if (t) t.textContent = title || 'Create a free account first';
@@ -5452,100 +5810,8 @@ window.afterBuyerAuth = function() {
 };
 
 // \u2500\u2500 SEND OTP \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-window.sendOtp = async function() {
-  var phone = document.getElementById('buyer-phone').value.trim();
-  if (!phone) { alert('Please enter your phone number'); return; }
-  var btn = document.getElementById('send-code-btn') || document.querySelector('#buyer-login .btn');
-  if (btn) { btn.textContent = 'Sending...'; btn.disabled = true; }
-  try {
-    var fd = new FormData();
-    fd.append('action', 'send_otp');
-    fd.append('phone', phone);
-    var d = await (await fetch('/api.php', {method:'POST', body:fd})).json();
-    if (btn) { btn.textContent = 'Send Code'; btn.disabled = false; }
-    if (d.success) {
-      var msg = document.getElementById('otp-msg');
-      var hint = document.getElementById('dev-hint');
-      if (msg) msg.innerHTML = 'Enter the code for <strong>' + esc(phone) + '</strong>';
-      if (hint) {
-        // Only show dev code for new phones (guests)
-        if (d.exists) {
-          hint.style.display = 'block';
-          hint.innerHTML = '<div style="padding:10px;background:#e8f5e9;border-radius:10px;text-align:center">'
-            + '<div style="font-size:13px;color:#1a7a3c;font-weight:700">\u2705 Code sent to your WhatsApp</div>'
-            + '<div style="font-size:11px;color:#e74c3c;font-weight:700;margin-top:6px">\uD83D\uDEAB Do NOT share this code with anyone</div>'
-            + '</div>';
-          if (d.wa_link) window.open(d.wa_link, '_blank');
-        } else {
-          hint.style.display = 'block';
-          hint.innerHTML = '<div style="padding:12px;background:#fff3cd;border-radius:10px;text-align:center">'
-            + '<div style="font-size:11px;color:#888;margin-bottom:4px">24-hour guest access code:</div>'
-            + '<div style="font-size:32px;font-weight:900;color:#e67e22;letter-spacing:8px">' + d.dev_code + '</div>'
-            + '<div style="font-size:11px;color:#888;margin-top:4px">Register for a full account</div>'
-            + '<div style="font-size:11px;color:#e74c3c;font-weight:700;margin-top:6px">\uD83D\uDEAB Do NOT share this code with anyone</div>'
-            + '</div>';
-          if (d.wa_link) window.open(d.wa_link, '_blank');
-        }
-      }
-      var inp = document.getElementById('otp-input');
-      var err = document.getElementById('otp-error');
-      if (inp) inp.value = '';
-      if (err) err.style.display = 'none';
-      go('buyer-otp');
-    } else {
-      alert(d.error || 'Could not generate code');
-    }
-  } catch(e) {
-    if (btn) { btn.textContent = 'Send Code'; btn.disabled = false; }
-    alert('Network error: ' + e.message);
-  }
-};
 
 // \u2500\u2500 VERIFY OTP \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-window.verifyOtp = async function() {
-  var phone = document.getElementById('buyer-phone').value.trim();
-  var otp   = document.getElementById('otp-input').value.trim();
-  if (!otp) { alert('Enter the 6-digit code'); return; }
-  var btn = document.querySelector('#screen-buyer-otp .btn-dark');
-  if (btn) { btn.textContent = 'Verifying...'; btn.disabled = true; }
-  try {
-    var fd = new FormData();
-    fd.append('action', 'verify_otp');
-    fd.append('phone', phone);
-    fd.append('otp', otp);
-    var d = await (await fetch('/api.php', {method:'POST', body:fd})).json();
-    if (btn) { btn.textContent = 'Verify'; btn.disabled = false; }
-    if (d.success) {
-      if (d.guest) {
-        // 24hr read-only guest access
-        _isGuest = true;
-        localStorage.setItem('cm237_user', JSON.stringify(d.user));
-        localStorage.setItem('cm237_guest_time', Date.now().toString());
-        _buyerTown = ''; _buyerRegion = '';
-        go('buyer-search');
-        window.showWelcome();
-        setTimeout(function(){ if(window.doSearch) window.doSearch(); }, 200);
-      } else {
-        window.saveSession(d.user, null);
-        _buyerTown   = d.user.town   || '';
-        _buyerRegion = d.user.region || '';
-        window.afterBuyerAuth();
-        window.showWelcome();
-        setTimeout(function(){ if(window.doSearch) window.doSearch(); }, 200);
-      }
-    } else if (d.expired) {
-      alert('Code expired after 24 hours. Please register to continue.');
-      go('buyer-auth');
-      setTimeout(function(){ buyerTab('register'); }, 200);
-    } else {
-      var err = document.getElementById('otp-error');
-      if (err) { err.textContent = d.error || 'Invalid code'; err.style.display = 'block'; }
-    }
-  } catch(e) {
-    if (btn) { btn.textContent = 'Verify'; btn.disabled = false; }
-    alert('Error: ' + e.message);
-  }
-};
 
 // \u2500\u2500 REGISTER BUYER \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 window.registerBuyer = async function() {
@@ -5953,6 +6219,8 @@ var _currentCat = '';
 
 window.setCat = function(cat) {
   _currentCat = cat;
+  var catDrop = document.getElementById('category-filter');
+  if (catDrop) catDrop.value = cat || '';
   // Reset all category buttons to default
   document.querySelectorAll('[id^="cat-"]').forEach(function(btn) {
     btn.style.background = 'white';
@@ -5983,6 +6251,20 @@ window.setCat = function(cat) {
   window.doSearch();
 };
 
+window.setShopCountry = function(c) {
+  localStorage.setItem('_shopCountry', c);
+  ['cm','both','ng'].forEach(function(x) {
+    var b = document.getElementById('ct-'+x);
+    if (!b) return;
+    var on = (x === c);
+    b.style.background   = on ? '#1a7a3c' : '#f0f0f0';
+    b.style.color        = on ? 'white'   : '#555';
+    b.style.fontWeight   = on ? '800'     : '700';
+    b.style.borderColor  = on ? '#1a7a3c' : '#ddd';
+  });
+  window.doSearch();
+};
+
 window.doSearch = async function() {
   // Load deals only once per session (not on every search)
   if (!window._dealsLoaded) { window._dealsLoaded = true; window.loadDeals && window.loadDeals(); }
@@ -5996,30 +6278,52 @@ window.doSearch = async function() {
   var container = document.getElementById('search-results');
   if (!container) return;
   container.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa">Loading items...</div>';
+
+  var shopCountry = localStorage.getItem('_shopCountry') || 'cm';
+  var params = '?action=get_listings'
+    + '&q='      + encodeURIComponent(qval)
+    + '&cat='    + encodeURIComponent(_currentCat||'')
+    + '&town='   + encodeURIComponent(_buyerTown||'')
+    + '&region=' + encodeURIComponent(_buyerRegion||'')
+    + '&range='  + (_buyerRange||'national');
+  if (_buyerGPS) params += '&lat=' + _buyerGPS.lat + '&lng=' + _buyerGPS.lng;
+
   try {
-    var url = '/api.php?action=get_listings'
-      + '&q='      + encodeURIComponent(qval)
-      + '&cat='    + encodeURIComponent(_currentCat||'')
-      + '&town='   + encodeURIComponent(_buyerTown||'')
-      + '&region=' + encodeURIComponent(_buyerRegion||'')
-      + '&range='  + (_buyerRange||'national');
-    if (_buyerGPS) url += '&lat=' + _buyerGPS.lat + '&lng=' + _buyerGPS.lng;
-    var d = await (await fetch(url)).json();
-    if (d.success && d.listings && d.listings.length) {
+    var listings = [];
+
+    if (shopCountry === 'ng') {
+      var d = await (await fetch('https://naijamarket234.com/api.php' + params)).json();
+      listings = (d.success && d.listings) ? d.listings.map(function(i){i._src='ng';return i;}) : [];
+
+    } else if (shopCountry === 'both') {
+      var results = await Promise.all([
+        fetch('/api.php' + params).then(function(r){return r.json();}).catch(function(){return {};}),
+        fetch('https://naijamarket234.com/api.php' + params).then(function(r){return r.json();}).catch(function(){return {};})
+      ]);
+      var cmList = (results[0].success && results[0].listings) ? results[0].listings : [];
+      var ngList = (results[1].success && results[1].listings) ? results[1].listings.map(function(i){i._src='ng';return i;}) : [];
+      listings = cmList.concat(ngList);
+
+    } else {
+      // Default: Cameroon only — original behaviour unchanged
+      var d = await (await fetch('/api.php' + params)).json();
+      listings = (d.success && d.listings) ? d.listings : [];
+    }
+
+    if (listings.length) {
       var nearby = [], regional = [], national = [];
-      d.listings.forEach(function(item) {
+      listings.forEach(function(item) {
+        if (item._src === 'ng') { national.push(item); return; }
         if (item.town === _buyerTown) nearby.push(item);
         else if (item.region === _buyerRegion) regional.push(item);
         else national.push(item);
       });
       var html = '';
       if (nearby.length)   html += '<div class="section-label">'+window.t('search.nearby')+'</div><div class="items-grid">'   + nearby.map(window.renderItem).join('')   + '</div>';
-      if (regional.length) html += '<div class="section-label">'+window.t('search.inRegion')+'</div><div class="items-grid">'   + regional.map(window.renderItem).join('')  + '</div>';
-      if (national.length) html += '<div class="section-label">'+window.t('search.elsewhere')+'</div><div class="items-grid">' + national.map(window.renderItem).join('') + '</div>';
+      if (regional.length) html += '<div class="section-label">'+window.t('search.inRegion')+'</div><div class="items-grid">' + regional.map(window.renderItem).join('')  + '</div>';
+      if (national.length) html += '<div class="section-label">'+window.t('search.elsewhere')+'</div><div class="items-grid">'+national.map(window.renderItem).join('') + '</div>';
       container.innerHTML = html || '<div style="text-align:center;padding:20px;color:#aaa">'+window.t('search.noItems')+'</div>';
-      // Store items for map
-      window._mapItems = d.listings;
-      // Refresh map if open
+      window._mapItems = listings;
       if (_buyerMapOpen && _buyerMapInst) { _buyerMapInst.remove(); _buyerMapInst = null; window.toggleBuyerMap(); window.toggleBuyerMap(); }
     } else {
       container.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa">No items found. Try a different search.</div>';
@@ -6032,8 +6336,9 @@ window.doSearch = async function() {
 window.renderItem = function(item) {
   window._itemCache[item.id] = item;
   var name  = esc(item.title || '');
-  var price = item.price ? Number(item.price).toLocaleString() + ' FCFA' : '';
+  var price = item.price ? Number(item.price).toLocaleString() + (item._src === 'ng' ? ' &#x20A6;' : ' FCFA') : '';
   var town  = esc(item.town  || '');
+  var srcBadge = item._src === 'ng' ? '<span style="position:absolute;top:6px;left:6px;font-size:10px;background:rgba(0,0,0,.55);color:white;border-radius:5px;padding:1px 5px;font-weight:700">&#x1F1F3;&#x1F1EC;</span>' : '';
   var cond  = item.condition || '';
   // Car subtitle: "2019 · Toyota · 65,000 km"
   var carSubtitle = '';
@@ -6062,8 +6367,8 @@ window.renderItem = function(item) {
     ? '<img src="' + item.main_photo + '" style="width:100%;height:100px;object-fit:cover;border-radius:10px 10px 0 0" onerror="this.src=&apos;&apos;"/>'
     : '<div style="width:100%;height:100px;border-radius:10px 10px 0 0;background:#e8e0d0;display:flex;align-items:center;justify-content:center;font-size:28px">\uD83D\uDCE6</div>';
   var saved = window._savedItems && window._savedItems[item.id] ? '\u2764\uFE0F' : '\uD83E\uDD0D';
-  return '<div class="itm" data-item-id="' + item.id + '" style="cursor:pointer" onclick="var _ci=window._itemCache[this.dataset.itemId];if(_ci)window.showItem(_ci);">'
-    + img
+  return '<div class="itm" data-item-id="' + item.id + '" style="cursor:pointer;position:relative" onclick="var _ci=window._itemCache[this.dataset.itemId];if(_ci)window.showItem(_ci);">'
+    + img + srcBadge
     + '<div style="padding:10px">'
     + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">'
     + '<div style="font-weight:700;color:#0f1923;font-size:11px;flex:1;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + name + '</div>'
@@ -6175,45 +6480,117 @@ window.showItem = async function(raw) {
   if (cond && item.condition) { cond.textContent = item.condition.toUpperCase(); cond.style.display = 'inline-block'; }
   else if (cond) cond.style.display = 'none';
 
-  // Car / Apartment specs grid
+  // Category specs grid
   var specsEl = document.getElementById('det-specs');
   if (specsEl) {
     var meta = item.metadata;
     if (typeof meta === 'string') { try { meta = JSON.parse(meta); } catch(e) { meta = null; } }
-    var isCatCar = item.category && item.category.toLowerCase().includes('buy') && item.category.toLowerCase().includes('car');
-    var isCatApt = item.category && item.category.toLowerCase().includes('apartment');
+    var cat2 = (item.category || '').toLowerCase();
+    var cap  = function(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; };
+    var lbl  = function(map, k){ return map[k] || cap(k); };
     var specsHtml = '';
-    if (isCatCar && meta && (meta.make || meta.model || meta.year)) {
-      var cap = function(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; };
-      var rows = [
-        meta.make         ? ['Make',        meta.make]                                       : null,
-        meta.model        ? ['Model',       meta.model]                                      : null,
-        meta.year         ? ['Year',        meta.year]                                       : null,
-        meta.mileage      ? ['Mileage',     Number(meta.mileage).toLocaleString() + ' km']  : null,
-        meta.transmission ? ['Gearbox',     cap(meta.transmission)]                          : null,
-        meta.fuel         ? ['Fuel',        cap(meta.fuel)]                                  : null,
-        meta.color        ? ['Color',       meta.color]                                      : null
-      ].filter(Boolean);
-      specsHtml = '<div style="font-size:11px;font-weight:800;color:#e65100;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">&#x1F697; Car Specs</div>'
+    var mkGrid = function(icon, color, title, rows) {
+      var filtered = rows.filter(Boolean);
+      if (!filtered.length) return '';
+      return '<div style="font-size:11px;font-weight:800;color:'+color+';text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">'+icon+' '+title+'</div>'
         + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'
-        + rows.map(function(r){ return '<div style="background:white;border-radius:8px;padding:7px 10px"><div style="font-size:10px;color:#aaa;font-weight:600">'+r[0]+'</div><div style="font-size:13px;font-weight:700;color:#0f1923">'+r[1]+'</div></div>'; }).join('')
+        + filtered.map(function(r){ return '<div style="background:white;border-radius:8px;padding:7px 10px"><div style="font-size:10px;color:#aaa;font-weight:600">'+r[0]+'</div><div style="font-size:13px;font-weight:700;color:#0f1923">'+r[1]+'</div></div>'; }).join('')
         + '</div>';
-    } else if (isCatApt && meta && (meta.bedrooms !== undefined || meta.bathrooms || meta.furnished)) {
-      var aptLabels = {furnished:'Furnished',semi:'Semi-furnished',unfurnished:'Unfurnished',
-        self_contain:'Self-Contain',studio:'Studio',apartment:'Apartment',villa:'Villa',duplex:'Duplex',house:'Full House',
-        monthly:'Per Month',yearly:'Per Year',outright:'Outright'};
-      var beds = meta.bedrooms !== undefined && meta.bedrooms !== '' ? (meta.bedrooms == 0 ? 'Studio' : meta.bedrooms + ' Bed' + (meta.bedrooms > 1 ? 's' : '')) : null;
-      var aptRows = [
-        beds                                ? ['Bedrooms',  beds]                                       : null,
-        meta.bathrooms                      ? ['Bathrooms', meta.bathrooms + ' Bath']                   : null,
-        meta.furnished && aptLabels[meta.furnished]   ? ['Furnished',    aptLabels[meta.furnished]]     : null,
-        meta.property_type && aptLabels[meta.property_type] ? ['Type',  aptLabels[meta.property_type]] : null,
-        meta.price_period && aptLabels[meta.price_period]   ? ['Period',aptLabels[meta.price_period]]  : null
-      ].filter(Boolean);
-      specsHtml = '<div style="font-size:11px;font-weight:800;color:#1565c0;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">&#x1F3E0; Property Details</div>'
-        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'
-        + aptRows.map(function(r){ return '<div style="background:white;border-radius:8px;padding:7px 10px"><div style="font-size:10px;color:#aaa;font-weight:600">'+r[0]+'</div><div style="font-size:13px;font-weight:700;color:#0f1923">'+r[1]+'</div></div>'; }).join('')
-        + '</div>';
+    };
+    if (meta) {
+      if (cat2.includes('buy') && cat2.includes('car')) {
+        specsHtml = mkGrid('&#x1F697;','#e65100','Car Specs',[
+          meta.make         && ['Make',    meta.make],
+          meta.model        && ['Model',   meta.model],
+          meta.year         && ['Year',    meta.year],
+          meta.mileage      && ['Mileage', Number(meta.mileage).toLocaleString()+' km'],
+          meta.transmission && ['Gearbox', cap(meta.transmission)],
+          meta.fuel         && ['Fuel',    cap(meta.fuel)],
+          meta.color        && ['Color',   meta.color]
+        ]);
+      } else if (cat2.includes('car rental') || cat2 === 'car rental') {
+        var driverMap = {yes:'With Driver',no:'Self-Drive',optional:'Driver Optional'};
+        var fuelMap   = {full_to_full:'Full-to-Full',included:'Fuel Included',renter_pays:'Renter Pays'};
+        var vtMap     = {sedan:'Sedan',suv:'SUV / 4x4',pickup:'Pickup',minibus:'Minibus',bus:'Bus',motorbike:'Motorbike',van:'Van'};
+        specsHtml = mkGrid('&#x1F698;','#6a1b9a','Rental Info',[
+          meta.vehicle_type && ['Vehicle',  lbl(vtMap, meta.vehicle_type)],
+          meta.seats        && ['Seats',    meta.seats],
+          meta.make         && ['Make',     meta.make],
+          meta.model        && ['Model',    meta.model],
+          meta.year         && ['Year',     meta.year],
+          meta.driver       && ['Driver',   lbl(driverMap, meta.driver)],
+          meta.fuel_policy  && ['Fuel',     lbl(fuelMap, meta.fuel_policy)],
+          meta.deposit      && ['Deposit',  Number(meta.deposit).toLocaleString()+' FCFA'],
+          meta.pickup       && ['Pickup',   meta.pickup]
+        ]);
+      } else if (cat2.includes('apartment')) {
+        var aptL = {furnished:'Furnished',semi:'Semi-furnished',unfurnished:'Unfurnished',
+          self_contain:'Self-Contain',studio:'Studio',apartment:'Apartment',villa:'Villa',duplex:'Duplex',house:'Full House',
+          monthly:'Per Month',yearly:'Per Year',outright:'Outright'};
+        var beds = meta.bedrooms !== undefined && meta.bedrooms !== '' ? (meta.bedrooms == 0 ? 'Studio' : meta.bedrooms+' Bed'+(meta.bedrooms>1?'s':'')) : null;
+        specsHtml = mkGrid('&#x1F3E0;','#1565c0','Property Details',[
+          beds                                              && ['Bedrooms',  beds],
+          meta.bathrooms                                    && ['Bathrooms', meta.bathrooms+' Bath'],
+          meta.furnished   && aptL[meta.furnished]          && ['Furnished', aptL[meta.furnished]],
+          meta.property_type && aptL[meta.property_type]   && ['Type',      aptL[meta.property_type]],
+          meta.price_period && aptL[meta.price_period]     && ['Period',    aptL[meta.price_period]]
+        ]);
+      } else if (cat2.includes('transport')) {
+        var vtL2 = {bus:'Bus',minibus:'Minibus',shared_taxi:'Shared Taxi',private_car:'Private Car',motorbike:'Motorbike',tricycle:'Tricycle'};
+        var frqL = {daily:'Daily',weekdays:'Weekdays',weekends:'Weekends',on_demand:'On Demand'};
+        specsHtml = mkGrid('&#x1F68C;','#4527a0','Trip Details',[
+          meta.from         && ['From',      meta.from],
+          meta.to           && ['To',        meta.to],
+          meta.vehicle_type && ['Vehicle',   lbl(vtL2, meta.vehicle_type)],
+          meta.seats        && ['Seats',     meta.seats+' available'],
+          meta.departure_time && ['Departs', meta.departure_time],
+          meta.frequency    && ['Schedule',  lbl(frqL, meta.frequency)]
+        ]);
+      } else if (cat2.includes('agr') || cat2.includes('farm')) {
+        var unitL = {kg:'Kilogram',bag_50:'Bag (50kg)',bag_100:'Bag (100kg)',crate:'Crate',basket:'Basket',bunch:'Bunch',piece:'Piece',liter:'Litre',ton:'Ton'};
+        var orgL  = {yes:'Organic',no:'Not Organic',partial:'Partially Organic'};
+        specsHtml = mkGrid('&#x1F33E;','#e65100','Produce Details',[
+          meta.unit         && ['Unit',     lbl(unitL, meta.unit)],
+          meta.quantity     && ['Quantity', meta.quantity+' '+lbl(unitL, meta.unit)],
+          meta.harvest_date && ['Harvested',meta.harvest_date],
+          meta.farm_location && ['Farm',   meta.farm_location],
+          meta.organic      && ['Organic', lbl(orgL, meta.organic)]
+        ]);
+      } else if (cat2.includes('delivery')) {
+        var delVL = {motorbike:'Motorbike',car:'Car',pickup:'Pickup/Truck',van:'Van'};
+        var delTL = {same_day:'Same Day',next_day:'Next Day','2_3_days':'2–3 Days',flexible:'Flexible'};
+        specsHtml = mkGrid('&#x1F4E6;','#006064','Delivery Info',[
+          meta.from          && ['Pickup',   meta.from],
+          meta.to            && ['Delivers To', meta.to],
+          meta.vehicle_type  && ['Vehicle',  lbl(delVL, meta.vehicle_type)],
+          meta.max_weight    && ['Max Weight',meta.max_weight],
+          meta.delivery_time && ['Time',     lbl(delTL, meta.delivery_time)]
+        ]);
+      } else if (cat2.includes('electronics')) {
+        var wL = {none:'No Warranty','3m':'3 Months','6m':'6 Months','1y':'1 Year','2y':'2 Years'};
+        specsHtml = mkGrid('&#x1F4BB;','#263238','Specs',[
+          meta.storage && ['Storage',  meta.storage],
+          meta.ram     && ['RAM',      meta.ram],
+          meta.screen  && ['Screen',   meta.screen],
+          meta.warranty && ['Warranty',lbl(wL, meta.warranty)]
+        ]);
+      } else if (cat2.includes('phone')) {
+        var osL = {android:'Android',ios:'iOS (iPhone)',other:'Other'};
+        specsHtml = mkGrid('&#x1F4F1;','#283593','Phone Specs',[
+          meta.storage && ['Storage', meta.storage],
+          meta.ram     && ['RAM',     meta.ram],
+          meta.network && ['Network', meta.network],
+          meta.os      && ['OS',      lbl(osL, meta.os)]
+        ]);
+      } else if (cat2.includes('cloth') || cat2.includes('fashion')) {
+        var genL = {men:'Men',women:'Women',unisex:'Unisex',kids:'Kids'};
+        specsHtml = mkGrid('&#x1F457;','#880e4f','Details',[
+          meta.size     && ['Size',     meta.size],
+          meta.gender   && ['For',      lbl(genL, meta.gender)],
+          meta.color    && ['Color',    meta.color],
+          meta.material && ['Material', meta.material]
+        ]);
+      }
     }
     specsEl.innerHTML = specsHtml;
     specsEl.style.display = specsHtml ? 'block' : 'none';
@@ -6366,15 +6743,14 @@ window.contactSellerDet = function() {
 window.contactAnnouncedStore = function(wa) {
   window._authGateReturn = 'buyer-search';
   if (!window.canContactSeller('Create an account to contact this seller', 'Register free on CamMarket237 to send WhatsApp messages to sellers.')) return;
-  var n = wa.replace(/[^0-9]/g, '');
-  if (!n.startsWith('237')) n = '237' + n;
+  var n = normalizeWA(wa);
   waOpen('https://wa.me/' + n, '_blank');
 };
 
 window.contactCartSeller = function(wa) {
   window._authGateReturn = 'cart';
   if (!window.canContactSeller('Create an account to contact this seller', 'Register free on CamMarket237 to send WhatsApp messages to sellers and buy safely.')) return;
-  var n = wa.replace(/[^0-9]/g, '');
+  var n = normalizeWA(wa);
   if (!n.startsWith('237')) n = '237' + n;
   waOpen('https://wa.me/' + n + '?text=' + encodeURIComponent('Hi, I have an item from your store in my CamMarket237 cart. Is it still available?'), '_blank');
 };
@@ -6870,10 +7246,6 @@ window.submitBulkImport = async function() {
 
 window.submitPost = async function() {
   var postUser = _currentUser || JSON.parse(localStorage.getItem('cm237_user') || 'null');
-  if (!window.isCameroonPhone(postUser && postUser.phone)) {
-    alert(window.t('post.cameroonRequired'));
-    return;
-  }
   var title = document.getElementById('p-title').value.trim();
   var cat   = document.getElementById('p-cat').value;
   var price = document.getElementById('p-price').value;
@@ -6923,26 +7295,43 @@ window.submitPost = async function() {
       Object.keys(window._ghSubmitExtra).forEach(function(k) { fd.append(k, window._ghSubmitExtra[k] || ''); });
       window._ghSubmitExtra = null;
     }
-    // Car / Apartment metadata
+    // Category-specific metadata
+    var _gv = function(id){ return (document.getElementById(id)||{}).value||''; };
+    var _meta = null;
     if (cat === 'Buy & Sell Cars') {
-      fd.append('metadata', JSON.stringify({
-        make:         (document.getElementById('p-car-make')         || {}).value || '',
-        model:        (document.getElementById('p-car-model')        || {}).value || '',
-        year:         (document.getElementById('p-car-year')         || {}).value || '',
-        mileage:      (document.getElementById('p-car-mileage')      || {}).value || '',
-        transmission: (document.getElementById('p-car-transmission') || {}).value || '',
-        fuel:         (document.getElementById('p-car-fuel')         || {}).value || '',
-        color:        (document.getElementById('p-car-color')        || {}).value || ''
-      }));
+      _meta = { make:_gv('p-car-make'), model:_gv('p-car-model'), year:_gv('p-car-year'),
+                mileage:_gv('p-car-mileage'), transmission:_gv('p-car-transmission'),
+                fuel:_gv('p-car-fuel'), color:_gv('p-car-color') };
+    } else if (cat === 'Car Rental') {
+      _meta = { vehicle_type:_gv('p-rent-vtype'), seats:_gv('p-rent-seats'),
+                make:_gv('p-rent-make'), model:_gv('p-rent-model'), year:_gv('p-rent-year'),
+                deposit:_gv('p-rent-deposit'), driver:_gv('p-rent-driver'),
+                fuel_policy:_gv('p-rent-fuel'), pickup:_gv('p-rent-pickup') };
     } else if (cat === 'Apartments & Rentals') {
-      fd.append('metadata', JSON.stringify({
-        bedrooms:      (document.getElementById('p-apt-beds')      || {}).value || '',
-        bathrooms:     (document.getElementById('p-apt-baths')     || {}).value || '',
-        furnished:     (document.getElementById('p-apt-furnished') || {}).value || '',
-        property_type: (document.getElementById('p-apt-type')      || {}).value || '',
-        price_period:  (document.getElementById('p-apt-period')    || {}).value || ''
-      }));
+      _meta = { bedrooms:_gv('p-apt-beds'), bathrooms:_gv('p-apt-baths'),
+                furnished:_gv('p-apt-furnished'), property_type:_gv('p-apt-type'),
+                price_period:_gv('p-apt-period') };
+    } else if (cat === 'Transport & Drivers') {
+      _meta = { from:_gv('p-trp-from'), to:_gv('p-trp-to'), vehicle_type:_gv('p-trp-vtype'),
+                seats:_gv('p-trp-seats'), departure_time:_gv('p-trp-time'), frequency:_gv('p-trp-freq') };
+    } else if (cat === 'Agriculture' || cat === 'Farm/Agricultural Produce') {
+      _meta = { unit:_gv('p-agr-unit'), quantity:_gv('p-agr-qty'),
+                harvest_date:_gv('p-agr-harvest'), farm_location:_gv('p-agr-farm'),
+                organic:_gv('p-agr-organic') };
+    } else if (cat === 'Delivery Service') {
+      _meta = { from:_gv('p-del-from'), to:_gv('p-del-to'), vehicle_type:_gv('p-del-vtype'),
+                max_weight:_gv('p-del-weight'), delivery_time:_gv('p-del-time') };
+    } else if (cat === 'Electronics') {
+      _meta = { storage:_gv('p-elec-storage'), ram:_gv('p-elec-ram'),
+                screen:_gv('p-elec-screen'), warranty:_gv('p-elec-warranty') };
+    } else if (cat === 'Phones & Accessories') {
+      _meta = { storage:_gv('p-ph-storage'), ram:_gv('p-ph-ram'),
+                network:_gv('p-ph-network'), os:_gv('p-ph-os') };
+    } else if (cat === 'Clothing & Fashion') {
+      _meta = { size:_gv('p-cl-size'), gender:_gv('p-cl-gender'),
+                color:_gv('p-cl-color'), material:_gv('p-cl-material') };
     }
+    if (_meta) fd.append('metadata', JSON.stringify(_meta));
     var d = await (await fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token': freshToken || _sessionToken || localStorage.getItem('cm237_token') || ''}})).json();
     if (ck) ck.style.display = 'none';
     if (d.rejected) {
@@ -9226,7 +9615,7 @@ function _adShowSlide(sfx, idx) {
   if (ad.advertiser_phone) {
     var waNum = ad.advertiser_phone.replace(/[^0-9]/g,'');
     if (waNum.length === 9) waNum = '237' + waNum;
-    html += '<a href="https://wa.me/'+waNum+'" target="_blank" style="display:flex;align-items:center;gap:4px;background:#25D366;color:white;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap">&#x1F4DE; Chat</a>';
+    html += '<button onclick="window._adChatClick(\''+waNum+'\')" style="display:flex;align-items:center;gap:4px;background:#25D366;color:white;border:none;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap">&#x1F4DE; Chat</button>';
   }
   html += '<button onclick="window.go(\'advertise-hub\')" style="background:#f5f5f5;color:#888;border:none;border-radius:10px;padding:9px 10px;font-size:10px;cursor:pointer;font-family:inherit;white-space:nowrap">Ads</button>'
     + '</div>';
@@ -9326,6 +9715,7 @@ window.loadAdCarousel = async function() {
 
 
 window._adClick = function(btn) {
+  if (!window.canContactSeller('Create an account to access this offer', 'Register free on CamMarket237 to browse exclusive deals and contact advertisers.')) return;
   var idx = parseInt(btn.dataset.ai);
   var ads = window._adFeed;
   if (!ads || !ads[idx]) return;
@@ -9336,6 +9726,11 @@ window._adClick = function(btn) {
   fd.append('campaign_id', ad.id);
   fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token':tok}}).catch(function(){});
   if (ad.push_link_path) window.open(ad.push_link_path, '_blank');
+};
+
+window._adChatClick = function(waNum) {
+  if (!window.canContactSeller('Create an account to chat with this advertiser', 'Register free on CamMarket237 to contact sellers and advertisers.')) return;
+  waOpen('https://wa.me/' + waNum, '_blank');
 };
 
 // Load ad packages into package-selection grid
@@ -9553,12 +9948,32 @@ window.loadAdvertiseStats = async function() {
 
 // ── VIDEO AD ───────────────────────────────────────────────────
 window.selectVideoPkg = function(id, name, price) {
-  [1,2].forEach(function(i){ var el=document.getElementById('vpkg-'+i); if(el){el.style.borderColor='#eee';el.style.background='white';} });
-  var el = document.getElementById('vpkg-'+id);
+  document.querySelectorAll('[id^="vpkg-tile-"]').forEach(function(el){el.style.borderColor='#eee';el.style.background='white';});
+  var el=document.getElementById('vpkg-tile-'+id);
   if(el){el.style.borderColor='#8e44ad';el.style.background='#f9f0ff';}
   document.getElementById('vpkg-id').value=id;
   document.getElementById('vpkg-name').value=name;
   document.getElementById('vpkg-price').value=price;
+};
+
+window.loadVideoAdPackages = async function() {
+  var grid=document.getElementById('vpkg-grid');
+  if(!grid)return;
+  grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:14px;color:#aaa">Loading…</div>';
+  try {
+    var d=await(await fetch('/api.php?action=get_ad_packages&ad_type=video_ad')).json();
+    var pkgs=d.packages||[];
+    if(!pkgs.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:14px;color:#aaa">No packages available.</div>';return;}
+    var curr=pkgs[0].currency_code==='NGN'?'₦':'FCFA';
+    grid.innerHTML=pkgs.map(function(pkg){
+      return '<div id="vpkg-tile-'+pkg.id+'" onclick="window.selectVideoPkg('+pkg.id+',\''+pkg.name.replace(/'/g,"\\'")+'\','+pkg.price+')" style="border:2px solid #eee;border-radius:12px;padding:14px;text-align:center;cursor:pointer">'+
+        '<div style="font-size:13px;font-weight:800;color:#0f1923;margin-bottom:4px">'+pkg.name+'</div>'+
+        '<div style="font-size:11px;color:#666;margin-bottom:8px">'+Number(pkg.audience_cap).toLocaleString()+' buyers &middot; '+pkg.duration_days+' days</div>'+
+        '<div style="font-size:16px;font-weight:900;color:#8e44ad">'+Number(pkg.price).toLocaleString()+' '+curr+'</div>'+
+        '</div>';
+    }).join('');
+    window.selectVideoPkg(pkgs[0].id,pkgs[0].name,pkgs[0].price);
+  } catch(e){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:14px;color:#e74c3c">Failed to load packages.</div>';}
 };
 
 window._vadFile = null;
@@ -9681,14 +10096,33 @@ window.submitVideoAd = async function() {
 
 // ── EVENT AD ───────────────────────────────────────────────────
 window.selectEventPkg = function(id, name, price) {
-  [1,2].forEach(function(i){ var el=document.getElementById('epkg-'+i); if(el){el.style.borderColor='#eee';el.style.background='white';} });
-  var el=document.getElementById('epkg-'+id);
+  document.querySelectorAll('[id^="epkg-tile-"]').forEach(function(el){el.style.borderColor='#eee';el.style.background='white';});
+  var el=document.getElementById('epkg-tile-'+id);
   if(el){el.style.borderColor='#2980b9';el.style.background='#eaf4fd';}
   document.getElementById('epkg-id').value=id;
   document.getElementById('epkg-name').value=name;
   document.getElementById('epkg-price').value=price;
 };
-window.selectEventPkg(1,'Event Starter','35000');
+
+window.loadEventAdPackages = async function() {
+  var grid=document.getElementById('epkg-grid');
+  if(!grid)return;
+  grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:14px;color:#aaa">Loading…</div>';
+  try {
+    var d=await(await fetch('/api.php?action=get_ad_packages&ad_type=event_ad')).json();
+    var pkgs=d.packages||[];
+    if(!pkgs.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:14px;color:#aaa">No packages available.</div>';return;}
+    var curr=pkgs[0].currency_code==='NGN'?'₦':'FCFA';
+    grid.innerHTML=pkgs.map(function(pkg){
+      return '<div id="epkg-tile-'+pkg.id+'" onclick="window.selectEventPkg('+pkg.id+',\''+pkg.name.replace(/'/g,"\\'")+'\','+pkg.price+')" style="border:2px solid #eee;border-radius:12px;padding:14px;text-align:center;cursor:pointer">'+
+        '<div style="font-size:13px;font-weight:800;color:#0f1923;margin-bottom:4px">'+pkg.name+'</div>'+
+        '<div style="font-size:11px;color:#666;margin-bottom:8px">'+Number(pkg.audience_cap).toLocaleString()+' nearby users</div>'+
+        '<div style="font-size:16px;font-weight:900;color:#2980b9">'+Number(pkg.price).toLocaleString()+' '+curr+'</div>'+
+        '</div>';
+    }).join('');
+    window.selectEventPkg(pkgs[0].id,pkgs[0].name,pkgs[0].price);
+  } catch(e){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:14px;color:#e74c3c">Failed to load packages.</div>';}
+};
 
 window._eadFile = null;
 
@@ -9935,31 +10369,59 @@ var _currentGuesthouse = null;
 
 // Show/hide guesthouse-specific form fields based on category selection
 window.onCategoryChange = function(val) {
-  var ghFields  = document.getElementById('guesthouse-fields');
-  var carFields = document.getElementById('car-fields');
-  var aptFields = document.getElementById('apartment-fields');
-  var condField = document.getElementById('pf-condition');
+  var ids = ['guesthouse-fields','car-fields','rental-fields','apartment-fields',
+             'transport-fields','agriculture-fields','delivery-fields',
+             'electronics-fields','phones-fields','clothing-fields'];
+  ids.forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
+  var show = function(id){ var el=document.getElementById(id); if(el) el.style.display='block'; };
+  var condField  = document.getElementById('pf-condition');
   var priceLabel = document.getElementById('price-label');
   var titleInput = document.getElementById('p-title');
-  var ltype = document.getElementById('p-ltype');
-  var isGH  = val === 'Guesthouses & Hotels';
-  var isCar = val === 'Buy & Sell Cars';
-  var isApt = val === 'Apartments & Rentals';
-  if (ghFields)  ghFields.style.display  = isGH  ? 'block' : 'none';
-  if (carFields) carFields.style.display = isCar ? 'block' : 'none';
-  if (aptFields) aptFields.style.display = isApt ? 'block' : 'none';
-  if (condField) condField.style.display = isGH  ? 'none'  : '';
-  if (priceLabel) priceLabel.textContent = isGH  ? 'Price per night (FCFA) *'
-    : isApt ? 'Rent / Price (FCFA) *'
-    : window.t('create.price') || 'Price (FCFA) *';
-  if (titleInput) titleInput.placeholder = isCar ? 'e.g. Toyota Corolla 2019 Manual'
-    : isApt ? 'e.g. 2-Bedroom Self-Contain in Bonanjo'
-    : isGH  ? 'e.g. Green Valley Guesthouse Buea'
-    : 'e.g. Samsung Galaxy A35 128GB';
-  if (ltype) {
-    if (isApt) ltype.value = 'rent';
-    else if (isCar) ltype.value = 'sale';
-  }
+  var ltype      = document.getElementById('p-ltype');
+  var noCondCats = ['Guesthouses & Hotels','Car Rental','Transport & Drivers','Delivery Service'];
+  if (condField) condField.style.display = noCondCats.indexOf(val) !== -1 ? 'none' : '';
+  var priceLabelMap = {
+    'Guesthouses & Hotels':'Price per night (FCFA) *',
+    'Car Rental':'Daily Rate (FCFA) *',
+    'Transport & Drivers':'Price per Seat (FCFA) *',
+    'Delivery Service':'Delivery Fee (FCFA) *',
+    'Apartments & Rentals':'Rent / Price (FCFA) *'
+  };
+  if (priceLabel) priceLabel.textContent = priceLabelMap[val] || window.t('create.price') || 'Price (FCFA) *';
+  var phMap = {
+    'Buy & Sell Cars':'e.g. Toyota Corolla 2019 Manual',
+    'Car Rental':'e.g. Toyota HiAce 2020 — 7 seats with driver',
+    'Apartments & Rentals':'e.g. 2-Bedroom Self-Contain in Bonanjo',
+    'Guesthouses & Hotels':'e.g. Green Valley Guesthouse Buea',
+    'Transport & Drivers':'e.g. Douala → Yaoundé daily shuttle',
+    'Agriculture':'e.g. Fresh Tomatoes — Farm Direct',
+    'Farm/Agricultural Produce':'e.g. Fresh Tomatoes — Farm Direct',
+    'Delivery Service':'e.g. Same-day delivery Douala',
+    'Electronics':'e.g. HP Laptop Core i5 256GB SSD',
+    'Phones & Accessories':'e.g. Samsung Galaxy A55 128GB Black',
+    'Clothing & Fashion':'e.g. Men\'s Slim Fit Suit — Navy Blue'
+  };
+  if (titleInput) titleInput.placeholder = phMap[val] || 'e.g. Samsung Galaxy A35 128GB';
+  var ltypeMap = {
+    'Apartments & Rentals':'rent', 'Car Rental':'rent',
+    'Transport & Drivers':'service', 'Delivery Service':'service',
+    'Buy & Sell Cars':'sale'
+  };
+  if (ltype && ltypeMap[val]) ltype.value = ltypeMap[val];
+  var fieldMap = {
+    'Guesthouses & Hotels':'guesthouse-fields',
+    'Buy & Sell Cars':'car-fields',
+    'Car Rental':'rental-fields',
+    'Apartments & Rentals':'apartment-fields',
+    'Transport & Drivers':'transport-fields',
+    'Agriculture':'agriculture-fields',
+    'Farm/Agricultural Produce':'agriculture-fields',
+    'Delivery Service':'delivery-fields',
+    'Electronics':'electronics-fields',
+    'Phones & Accessories':'phones-fields',
+    'Clothing & Fashion':'clothing-fields'
+  };
+  if (fieldMap[val]) show(fieldMap[val]);
 };
 
 var _CAR_MODELS = {
@@ -9983,6 +10445,42 @@ var _CAR_MODELS = {
 
 window.updateCarModels = function(make) {
   var sel = document.getElementById('p-car-model');
+  if (!sel) return;
+  var models = _CAR_MODELS[make] || [];
+  if (!models.length) { sel.innerHTML = '<option value="">Select make first</option>'; return; }
+  sel.innerHTML = '<option value="">Select Model</option>'
+    + models.map(function(m){ return '<option value="'+m+'">'+m+'</option>'; }).join('');
+};
+
+window.onServiceTypeChange = function(val) {
+  var titles = {
+    transport:   'e.g. Reliable driver available — Douala & surroundings',
+    plumber:     'e.g. Licensed plumber & electrician — Yaoundé',
+    catering:    'e.g. Professional catering for weddings & events',
+    photography: 'e.g. Event photographer & videographer — Douala',
+    cleaning:    'e.g. Home & office cleaning service — Buea',
+    security:    'e.g. Trained security guard available 24/7',
+    tutoring:    'e.g. Maths & Physics tutor — O/A Level',
+    other:       'e.g. Describe your service briefly'
+  };
+  var features = {
+    transport:   'e.g. Air-conditioned, Experienced driver, Long trips',
+    plumber:     'e.g. Licensed, Emergency calls, Free estimate',
+    catering:    'e.g. Up to 500 guests, Equipment provided, Buffet or sit-down',
+    photography: 'e.g. HD video, Drone footage, Same-day preview',
+    cleaning:    'e.g. Own equipment, Deep clean, Offices & homes',
+    security:    'e.g. Armed, Uniformed, 24/7 availability',
+    tutoring:    'e.g. Online & in-person, Past questions, Group sessions',
+    other:       'e.g. Licensed, 5 years experience, Free quote'
+  };
+  var ti = document.getElementById('ps-title');
+  var fi = document.getElementById('ps-features');
+  if (ti) ti.placeholder = titles[val]   || 'Describe your service briefly';
+  if (fi) fi.placeholder = features[val] || 'e.g. Licensed, 5 years experience, Free quote';
+};
+
+window.updateRentalModels = function(make) {
+  var sel = document.getElementById('p-rent-model');
   if (!sel) return;
   var models = _CAR_MODELS[make] || [];
   if (!models.length) { sel.innerHTML = '<option value="">Select make first</option>'; return; }
@@ -10125,8 +10623,8 @@ window.contactGuesthouse = function(method) {
   )) return;
   var gh = _currentGuesthouse;
   var phone = gh.whatsapp || gh.phone || '';
-  var clean = phone.replace(/\D/g, '');
-  if (!clean) { alert('No contact number available for this host.'); return; }
+  var clean = normalizeWA(phone);
+  if (!clean || clean === '237') { alert('No contact number available for this host.'); return; }
   var msg = encodeURIComponent('Hello 👋 I saw "' + (gh.store_name || gh.title) + '" on CamMarket237. I\'d like to know more about availability and pricing. Thank you!');
   if (method === 'whatsapp') {
     waOpen('https://wa.me/' + clean + '?text=' + msg, '_blank');
@@ -10250,7 +10748,7 @@ var SERVICE_HUB_CFG = {
   buy_sell_car: { icon:'&#x1F697;', color:'#c0392b', tkey:'buySellCar', prodCat:'Buy & Sell Cars' },
   car_rental:   { icon:'&#x1F698;', color:'#0f1923', tkey:'carRental',  prodCat:'Car Rental' },
   apartment:    { icon:'&#x1F3E0;', color:'#2980b9', tkey:'apartment',  prodCat:'Apartments & Rentals' },
-  transport:    { icon:'&#x1F68C;', color:'#8e44ad', tkey:'transport' },
+  transport:    { icon:'&#x1F68C;', color:'#8e44ad', tkey:'transport',  prodCat:'Transport & Drivers' },
   plumber:      { icon:'&#x1F527;', color:'#e67e22', tkey:'plumber' },
   catering:     { icon:'&#x1F37D;&#xFE0F;', color:'#c0392b', tkey:'catering' },
   photography:  { icon:'&#x1F4F8;', color:'#16a085', tkey:'photography' },
@@ -10263,8 +10761,8 @@ var SERVICE_HUB_CFG = {
   furniture_home:  { icon:'&#x1F6CB;&#xFE0F;', color:'#6a1b9a', tkey:'furnitureHome', prodCat:'Furniture & Home' },
   beauty_health:   { icon:'&#x1F48A;', color:'#c62828', tkey:'beautyHealth',   prodCat:'Beauty & Health' },
   vehicles_parts:  { icon:'&#x1F699;', color:'#b71c1c', tkey:'vehiclesParts', prodCat:'Vehicles & Parts' },
-  agriculture:     { icon:'&#x1F33E;', color:'#e65100', tkey:'agriculture' },
-  delivery:        { icon:'&#x1F4E6;', color:'#0097a7', tkey:'delivery' },
+  agriculture:     { icon:'&#x1F33E;', color:'#e65100', tkey:'agriculture', prodCat:'Agriculture' },
+  delivery:        { icon:'&#x1F4E6;', color:'#0097a7', tkey:'delivery',    prodCat:'Delivery Service' },
   books:           { icon:'&#x1F4DA;', color:'#00695c', tkey:'books',          prodCat:'Books & Stationery' },
   other:           { icon:'&#x1F4BC;', color:'#7f8c8d', tkey:'other' }
 };
@@ -10274,6 +10772,26 @@ window._currentServiceHub = null;
 window.openServiceHub = function(type) {
   var cfg = SERVICE_HUB_CFG[type] || SERVICE_HUB_CFG['other'];
   window._currentServiceHub = type;
+  var user = _currentUser || JSON.parse(localStorage.getItem('cm237_user') || 'null');
+  var isSeller = user && user.role === 'seller';
+  if (cfg.prodCat) {
+    if (!isSeller) {
+      // Buyer or guest: skip hub, go straight to filtered search
+      _currentCat = cfg.prodCat;
+      window.go('buyer-search');
+      setTimeout(function() {
+        var drop = document.getElementById('category-filter');
+        if (drop) drop.value = cfg.prodCat;
+        if (window.doSearch) window.doSearch();
+      }, 200);
+      return;
+    }
+    // Seller with prodCat: fall through to show hub (List card only)
+  } else if (!isSeller) {
+    // No prodCat + not a seller: go to services listing screen directly
+    window.openService(type);
+    return;
+  }
   var k = 'hub.' + cfg.tkey + '.';
   var hdr = document.getElementById('sh-header');
   if (hdr) hdr.style.background = 'linear-gradient(135deg,' + cfg.color + ' 0%,' + cfg.color + 'bb 100%)';
@@ -10305,7 +10823,11 @@ window.goFindService = function() {
     var user = _currentUser || JSON.parse(localStorage.getItem('cm237_user') || 'null');
     if (!user) { sessionStorage.setItem('_cat_intent', cfg.prodCat); window.go('buyer-auth'); return; }
     window.go('buyer-search');
-    setTimeout(function(){ if (window.doSearch) window.doSearch(); }, 200);
+    setTimeout(function(){
+      var drop = document.getElementById('category-filter');
+      if (drop) drop.value = cfg.prodCat;
+      if (window.doSearch) window.doSearch();
+    }, 200);
     return;
   }
   window.openService(type);
@@ -10332,8 +10854,17 @@ window.goListService = function() {
   }
   window.go('post-service');
   setTimeout(function() {
-    var typeEl = document.getElementById('ps-type');
-    if (typeEl) { typeEl.value = type; }
+    var typeEl   = document.getElementById('ps-type');
+    var lockedEl = document.getElementById('ps-type-locked');
+    var labelMap = {
+      transport:'&#128652; Driver/Transport', plumber:'&#128295; Plumber/Electrician/Repairs',
+      catering:'&#127869;&#65039; Catering/Food Services', photography:'&#128248; Photography/Videography',
+      cleaning:'&#129529; Cleaning Services', security:'&#128130; Security Services',
+      tutoring:'&#128218; Tutoring/Teaching', other:'&#128188; Other Service'
+    };
+    if (typeEl)   { typeEl.value = type; typeEl.style.display = 'none'; }
+    if (lockedEl) { lockedEl.innerHTML = labelMap[type] || type; lockedEl.style.display = 'block'; }
+    window.onServiceTypeChange(type);
   }, 150);
 };
 
@@ -10717,9 +11248,8 @@ window.proceedToWhatsApp = function() {
   fd2.append('item_price', p.price || 0);
   fetch('/api.php', {method:'POST',body:fd2,headers:{'X-Session-Token':tok}});
   // Build WhatsApp message
-  var n = p.whatsapp ? p.whatsapp.replace(/[^0-9]/g,'') : '';
-  if (!n) { alert('No WhatsApp number available.'); return; }
-  if (!n.startsWith('237') && n.length <= 9) n = '237' + n;
+  var n = normalizeWA(p.whatsapp);
+  if (!n || n === '237') { alert('No WhatsApp number available.'); return; }
   var safetyMsg = '\uD83D\uDEE1\uFE0F [CamMarket237 Safety Notice]\n'
     + 'I am contacting you through CamMarket237.\n'
     + 'For my safety I will:\n'
@@ -12088,6 +12618,21 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 
 window.restoreSession = async function() {
+  // Guest intent overrides any existing session — check first
+  if (localStorage.getItem('cm237_guest_intent') === '1') {
+    localStorage.removeItem('cm237_guest_intent');
+    localStorage.removeItem('cm237_token');
+    localStorage.removeItem('cm237_user');
+    localStorage.removeItem('cm237_store');
+    _currentUser = null; _currentStore = null; _sessionToken = '';
+    _isGuest = true;
+    go('buyer-search');
+    window.showWelcome();
+    setTimeout(function(){ if(window.doSearch) window.doSearch(); }, 300);
+    window._handleDeepLink();
+    return;
+  }
+
   try {
     _sessionToken = localStorage.getItem('cm237_token') || '';
     _currentUser  = JSON.parse(localStorage.getItem('cm237_user')  || 'null');
@@ -12095,18 +12640,9 @@ window.restoreSession = async function() {
   } catch(e) { _currentUser = null; _currentStore = null; _sessionToken = ''; }
 
   if (!_currentUser || !_sessionToken) {
-    if (localStorage.getItem('cm237_guest_intent') === '1') {
-      localStorage.removeItem('cm237_guest_intent');
-      _isGuest = true;
-      go('buyer-search');
-      window.showWelcome();
-      setTimeout(function(){ if(window.doSearch) window.doSearch(); }, 300);
-      window._handleDeepLink();
-    } else {
-      // Preserve deep-link through login redirect
-      var _dlp = new URLSearchParams(window.location.search).get('item');
-      window.location.href = '/cammarket_login_classic.html' + (_dlp ? '?item=' + _dlp : '');
-    }
+    // Preserve deep-link through login redirect
+    var _dlp = new URLSearchParams(window.location.search).get('item');
+    window.location.href = '/cammarket_login_classic.html' + (_dlp ? '?item=' + _dlp : '');
     return;
   }
 
@@ -12153,22 +12689,36 @@ window.restoreSession = async function() {
     // Network error - use cached session (offline mode)
   }
 
-  if (_currentUser.role === 'seller') {
+  var _loginIntent = localStorage.getItem('cm237_login_intent') || '';
+  localStorage.removeItem('cm237_login_intent');
+
+  var _gateRet = sessionStorage.getItem('_auth_gate_return') || '';
+  sessionStorage.removeItem('_auth_gate_return');
+
+  if (_currentUser.role === 'seller' && _loginIntent !== 'buyer') {
     _sellerTown    = _currentUser.town   || '';
     _sellerRegion  = _currentUser.region || '';
     _sellerStoreId = _currentStore ? _currentStore.id : null;
     if (_currentStore && _currentStore.latitude) {
       _sellerGPS = {lat: parseFloat(_currentStore.latitude), lng: parseFloat(_currentStore.longitude)};
     }
-    window.launchSellerDash(_currentStore ? _currentStore.store_name : _currentUser.full_name, _currentStore);
+    if (_gateRet) {
+      go(_gateRet);
+    } else {
+      window.launchSellerDash(_currentStore ? _currentStore.store_name : _currentUser.full_name, _currentStore);
+    }
     setTimeout(function(){ if(window.checkAllNotifCounts) window.checkAllNotifCounts(); }, 1000);
     window._handleDeepLink();
 
-  } else if (_currentUser.role === 'buyer') {
+  } else if (_currentUser.role === 'buyer' || _loginIntent === 'buyer') {
     _buyerTown   = _currentUser.town   || '';
     _buyerRegion = _currentUser.region || '';
-    go('buyer-search');
-    window.showWelcome();
+    if (_gateRet) {
+      go(_gateRet);
+    } else {
+      go('buyer-search');
+      window.showWelcome();
+    }
     window.renderWalletFromStorage();
     setTimeout(window.refreshWalletBalance, 600);
     setTimeout(function(){ if(window.doSearch) window.doSearch(); }, 300);
@@ -12194,6 +12744,9 @@ document.addEventListener('click', function(e) {
 window.addEventListener('DOMContentLoaded', function() {
   window.restoreSession();
   window.updateAvatar();
+  // Restore country toggle state from localStorage
+  var saved = localStorage.getItem('_shopCountry') || 'cm';
+  if (window.setShopCountry) window.setShopCountry(saved);
 });
 
 </script>
@@ -12401,7 +12954,7 @@ window.showService = function(raw) {
 window.contactServiceProvider = function() {
   if (!window.canContactSeller()) return;
   var svc=_currentSvc; if(!svc||!svc.whatsapp) return;
-  var n=svc.whatsapp.replace(/[^0-9]/g,''); if(!n.startsWith('237')) n='237'+n;
+  var n=normalizeWA(svc.whatsapp);
   var msg='Hello, I found your service on CamMarket237: '+(svc.title||'')+'. I would like more information.';
   waOpen('https://wa.me/'+n+'?text='+encodeURIComponent(msg),'_blank');
 };
@@ -12492,11 +13045,6 @@ window.loginBuyer = async function() {
 };
 
 // \u2500\u2500 OPEN GUEST OTP (for browse-only access) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-window.openGuestOtp = function() {
-  var phone = document.getElementById('buyer-phone').value.trim();
-  if (!phone) { alert('Enter your phone number first'); return; }
-  window.sendOtp(); // existing OTP flow
-};
 
 // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 // FORGOT PASSWORD & PASSWORD STRENGTH

@@ -46,6 +46,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $act = $_POST['action'];
     $id  = intval($_POST['id'] ?? 0);
 
+    // Dating237 actions
+    if ($act === 'dating_suspend' && $id) {
+        run("UPDATE dating237.users SET session_token=NULL, session_expires_at=NOW(), is_active=false WHERE id=?", [$id]);
+        $msg = "Dating237 user #$id suspended";
+    }
+    if ($act === 'dating_reinstate' && $id) {
+        run("UPDATE dating237.users SET is_active=true WHERE id=?", [$id]);
+        $msg = "Dating237 user #$id reinstated";
+    }
+    if ($act === 'dating_delete' && $id) {
+        run("DELETE FROM dating237.users WHERE id=?", [$id]);
+        $msg = "Dating237 user #$id deleted";
+    }
+    if ($act === 'dating_del_msg' && $id) {
+        run("DELETE FROM dating237.messages WHERE id=?", [$id]);
+        $msg = "Dating237 message #$id deleted";
+    }
+    if ($act === 'dating237_content' && isset($_POST['content_id'])) {
+        $cid = intval($_POST['content_id']);
+        if ($_POST['content_action'] === 'toggle') {
+            run("UPDATE dating237.content_items SET active = NOT active WHERE id=?", [$cid]);
+            $msg = "Content item #$cid toggled";
+        }
+    }
+
     if ($act === 'suspend_user' && $id) {
         run("UPDATE cammarket237.users SET session_token=NULL, session_expires_at=NOW() WHERE id=?", [$id]);
         $msg = "User #$id suspended (session cleared)";
@@ -136,6 +161,13 @@ $stats = [
     'flags'    => q1("SELECT COUNT(*) AS n FROM cammarket237.verification_queue")['n'],
     'uploads'  => q1("SELECT COUNT(*) AS n FROM cammarket237.listing_media")['n'],
 ];
+$d237 = [
+    'users'    => q1("SELECT COUNT(*) AS n FROM dating237.users")['n'] ?? 0,
+    'active'   => q1("SELECT COUNT(*) AS n FROM dating237.users WHERE is_active=true")['n'] ?? 0,
+    'matches'  => q1("SELECT COUNT(*) AS n FROM dating237.match_stages")['n'] ?? 0,
+    'messages' => q1("SELECT COUNT(*) AS n FROM dating237.messages")['n'] ?? 0,
+    'trusted'  => q1("SELECT COUNT(*) AS n FROM dating237.match_stages WHERE stage=6")['n'] ?? 0,
+];
 
 function act($action, $id, $label, $color='#e74c3c') {
     echo "<form method='post' style='display:inline' onsubmit=\"return confirm('Sure?')\">
@@ -205,6 +237,7 @@ tr:hover td{background:#fafafa}
   <a href="?tab=uploads"    class="<?= $tab==='uploads'   ?'active':'' ?>">&#x1F4F7; Uploads</a>
   <a href="?tab=streaming"  class="<?= $tab==='streaming' ?'active':'' ?>">&#x1F4F9; Live Streams</a>
   <a href="?tab=ads"        class="<?= $tab==='ads'       ?'active':'' ?>">&#x1F4E3; Ads <?= ($adPending=q1("SELECT COUNT(*) AS n FROM cammarket237.ad_campaigns WHERE status='submitted'")['n'])>0 ? "<span style='background:#e67e22;color:white;border-radius:10px;padding:1px 7px;font-size:11px'>$adPending</span>" : '' ?></a>
+  <a href="?tab=dating237" class="<?= $tab==='dating237' ?'active':'' ?>" style="color:#d63af9;border-bottom-color:<?= $tab==='dating237'?'#d63af9':'transparent' ?>">&#x1F496; Dating237</a>
 </nav>
 
 <div class="content">
@@ -542,6 +575,283 @@ tr:hover td{background:#fafafa}
     <?php endforeach ?>
   </table>
   <?php endif ?>
+
+<?php endif ?>
+
+<?php if ($tab === 'dating237'): ?>
+<style>
+.d237-stat .n{color:#d63af9}
+.stage-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
+</style>
+<div class="section-title">&#x1F496; Dating237 — Platform Overview</div>
+
+<div class="stats">
+  <div class="stat d237-stat"><div class="n"><?= $d237['users'] ?></div><div class="l">Total Members</div></div>
+  <div class="stat d237-stat"><div class="n"><?= $d237['active'] ?></div><div class="l">Active Accounts</div></div>
+  <div class="stat d237-stat"><div class="n"><?= $d237['matches'] ?></div><div class="l">Matches</div></div>
+  <div class="stat d237-stat"><div class="n"><?= $d237['messages'] ?></div><div class="l">Messages Sent</div></div>
+  <div class="stat d237-stat"><div class="n" style="color:#fcd116"><?= $d237['trusted'] ?></div><div class="l">Stage 6 Pairs</div></div>
+  <div class="stat"><div class="n" style="font-size:18px"><a href="/dating237/" target="_blank" style="color:#d63af9;text-decoration:none">&#x1F517; Open App</a></div><div class="l">dating237/</div></div>
+</div>
+
+<?php
+$d237sub = $_GET['d237'] ?? 'users';
+$stageColors = [1=>'#6b7280',2=>'#3b82f6',3=>'#8b5cf6',4=>'#f59e0b',5=>'#ef4444',6=>'#fcd116'];
+$stageNames  = [1=>'Match',2=>'Talking',3=>'Connected',4=>'Close',5=>'Meeting-Ready',6=>'Trusted'];
+?>
+<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+  <a href="?tab=dating237&d237=users"    style="padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;background:<?= $d237sub==='users'?'#d63af9':'rgba(214,58,249,.12)' ?>;color:<?= $d237sub==='users'?'#fff':'#d63af9' ?>">Members</a>
+  <a href="?tab=dating237&d237=matches"  style="padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;background:<?= $d237sub==='matches'?'#d63af9':'rgba(214,58,249,.12)' ?>;color:<?= $d237sub==='matches'?'#fff':'#d63af9' ?>">Matches &amp; Stages</a>
+  <a href="?tab=dating237&d237=messages" style="padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;background:<?= $d237sub==='messages'?'#d63af9':'rgba(214,58,249,.12)' ?>;color:<?= $d237sub==='messages'?'#fff':'#d63af9' ?>">Recent Messages</a>
+  <a href="?tab=dating237&d237=stages"   style="padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;background:<?= $d237sub==='stages'?'#d63af9':'rgba(214,58,249,.12)' ?>;color:<?= $d237sub==='stages'?'#fff':'#d63af9' ?>">Stage Breakdown</a>
+  <a href="?tab=dating237&d237=content"  style="padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;background:<?= $d237sub==='content'?'#d63af9':'rgba(214,58,249,.12)' ?>;color:<?= $d237sub==='content'?'#fff':'#d63af9' ?>">&#x1F4DA; Content Library</a>
+</div>
+
+<?php if ($d237sub === 'users'): ?>
+<div class="section-title" style="font-size:15px">Members</div>
+<?php
+$dUsers = q("SELECT u.id, u.name, u.phone, u.gender, u.age, u.marital_status, u.region, u.relationship_intent,
+                    u.is_active, u.created_at,
+                    (SELECT COUNT(*) FROM dating237.match_stages ms WHERE ms.user1_id=u.id OR ms.user2_id=u.id) AS matches,
+                    (SELECT COUNT(*) FROM dating237.messages m WHERE m.from_user_id=u.id) AS msgs_sent
+             FROM dating237.users u
+             ORDER BY u.created_at DESC LIMIT 50");
+?>
+<table>
+  <tr>
+    <th>ID</th><th>Name</th><th>Phone</th><th>Gender</th><th>Age</th><th>Region</th><th>Intent</th><th>Matches</th><th>Msgs</th><th>Status</th><th>Joined</th><th>Actions</th>
+  </tr>
+  <?php foreach ($dUsers as $u): ?>
+  <tr>
+    <td><?= $u['id'] ?></td>
+    <td><strong><?= htmlspecialchars($u['name']) ?></strong></td>
+    <td><?= htmlspecialchars($u['phone']) ?></td>
+    <td><?= $u['gender'] ?></td>
+    <td><?= $u['age'] ?></td>
+    <td><?= htmlspecialchars($u['region'] ?? '—') ?></td>
+    <td style="font-size:11px"><?= htmlspecialchars(str_replace('_',' ', $u['relationship_intent'] ?? '—')) ?></td>
+    <td><?= $u['matches'] ?></td>
+    <td><?= $u['msgs_sent'] ?></td>
+    <td><span class="badge" style="background:<?= $u['is_active']?'#d4edda':'#f8d7da' ?>;color:<?= $u['is_active']?'#155724':'#721c24' ?>"><?= $u['is_active']?'Active':'Suspended' ?></span></td>
+    <td style="font-size:11px;color:#888"><?= date('d M Y', strtotime($u['created_at'])) ?></td>
+    <td>
+      <?php if ($u['is_active']): ?>
+        <form method="post" style="display:inline" onsubmit="return confirm('Suspend this user?')">
+          <input type="hidden" name="action" value="dating_suspend"/>
+          <input type="hidden" name="id" value="<?= $u['id'] ?>"/>
+          <button style="background:#e67e22;color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">Suspend</button>
+        </form>
+      <?php else: ?>
+        <form method="post" style="display:inline">
+          <input type="hidden" name="action" value="dating_reinstate"/>
+          <input type="hidden" name="id" value="<?= $u['id'] ?>"/>
+          <button style="background:#1a7a3c;color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">Reinstate</button>
+        </form>
+      <?php endif ?>
+      <form method="post" style="display:inline" onsubmit="return confirm('Permanently delete this user and all their data?')">
+        <input type="hidden" name="action" value="dating_delete"/>
+        <input type="hidden" name="id" value="<?= $u['id'] ?>"/>
+        <button style="background:#e74c3c;color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">Delete</button>
+      </form>
+    </td>
+  </tr>
+  <?php endforeach ?>
+</table>
+
+<?php elseif ($d237sub === 'matches'): ?>
+<div class="section-title" style="font-size:15px">Matches &amp; Stage Progression</div>
+<?php
+$dMatches = q("SELECT ms.id, ms.stage, ms.message_count, ms.matched_at,
+                      u1.name AS user1, u1.gender AS g1, u1.region AS r1,
+                      u2.name AS user2, u2.gender AS g2, u2.region AS r2,
+                      ms.user1_meeting_confirmed, ms.user2_meeting_confirmed
+               FROM dating237.match_stages ms
+               JOIN dating237.users u1 ON u1.id=ms.user1_id
+               JOIN dating237.users u2 ON u2.id=ms.user2_id
+               ORDER BY ms.stage DESC, ms.matched_at DESC LIMIT 60");
+?>
+<table>
+  <tr><th>ID</th><th>User 1</th><th>User 2</th><th>Stage</th><th>Messages</th><th>Matched</th><th>Days</th></tr>
+  <?php foreach ($dMatches as $m): ?>
+  <?php
+    $s = intval($m['stage']);
+    $col = $stageColors[$s] ?? '#6b7280';
+    $nm  = $stageNames[$s] ?? 'Match';
+    $days = round((time() - strtotime($m['matched_at'])) / 86400);
+  ?>
+  <tr>
+    <td><?= $m['id'] ?></td>
+    <td><strong><?= htmlspecialchars($m['user1']) ?></strong><br><span style="font-size:11px;color:#888"><?= htmlspecialchars($m['r1'] ?? '') ?></span></td>
+    <td><strong><?= htmlspecialchars($m['user2']) ?></strong><br><span style="font-size:11px;color:#888"><?= htmlspecialchars($m['r2'] ?? '') ?></span></td>
+    <td><span class="badge" style="background:<?= $col ?>;color:<?= $s===6?'#000':'#fff' ?>">S<?= $s ?> <?= $nm ?></span></td>
+    <td><?= $m['message_count'] ?></td>
+    <td style="font-size:11px;color:#888"><?= date('d M Y', strtotime($m['matched_at'])) ?></td>
+    <td><?= $days ?>d</td>
+  </tr>
+  <?php endforeach ?>
+</table>
+
+<?php elseif ($d237sub === 'messages'): ?>
+<div class="section-title" style="font-size:15px">Recent Messages (last 100)</div>
+<?php
+$dMsgs = q("SELECT m.id, m.body, m.created_at, m.seen,
+                   u1.name AS sender, u2.name AS recipient,
+                   ms.stage
+            FROM dating237.messages m
+            JOIN dating237.users u1 ON u1.id=m.from_user_id
+            JOIN dating237.users u2 ON u2.id=m.to_user_id
+            LEFT JOIN dating237.match_stages ms ON
+                (ms.user1_id=LEAST(m.from_user_id,m.to_user_id) AND ms.user2_id=GREATEST(m.from_user_id,m.to_user_id))
+            ORDER BY m.created_at DESC LIMIT 100");
+?>
+<table>
+  <tr><th>ID</th><th>From</th><th>To</th><th>Stage</th><th>Message</th><th>Sent</th><th>Actions</th></tr>
+  <?php foreach ($dMsgs as $m): ?>
+  <?php
+    $s = intval($m['stage'] ?? 1);
+    $col = $stageColors[$s] ?? '#6b7280';
+  ?>
+  <tr>
+    <td><?= $m['id'] ?></td>
+    <td><?= htmlspecialchars($m['sender']) ?></td>
+    <td><?= htmlspecialchars($m['recipient']) ?></td>
+    <td><span style="background:<?= $col ?>;color:#fff;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:700">S<?= $s ?></span></td>
+    <td style="max-width:320px;font-size:12px"><?= htmlspecialchars(mb_substr($m['body'], 0, 120)) ?><?= mb_strlen($m['body'])>120?'…':'' ?></td>
+    <td style="font-size:11px;color:#888;white-space:nowrap"><?= date('d M H:i', strtotime($m['created_at'])) ?></td>
+    <td>
+      <form method="post" style="display:inline" onsubmit="return confirm('Delete this message?')">
+        <input type="hidden" name="action" value="dating_del_msg"/>
+        <input type="hidden" name="id" value="<?= $m['id'] ?>"/>
+        <button style="background:#e74c3c;color:white;border:none;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer">Delete</button>
+      </form>
+    </td>
+  </tr>
+  <?php endforeach ?>
+</table>
+
+<?php elseif ($d237sub === 'stages'): ?>
+<div class="section-title" style="font-size:15px">Stage Breakdown</div>
+<?php
+$stageCounts = q("SELECT stage, COUNT(*) AS n FROM dating237.match_stages GROUP BY stage ORDER BY stage");
+$total = array_sum(array_column($stageCounts, 'n'));
+?>
+<div class="card">
+  <?php foreach ($stageCounts as $row): ?>
+  <?php
+    $s   = intval($row['stage']);
+    $col = $stageColors[$s] ?? '#6b7280';
+    $nm  = $stageNames[$s] ?? 'Match';
+    $pct = $total > 0 ? round($row['n']/$total*100) : 0;
+  ?>
+  <div style="margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+      <span style="font-weight:700;font-size:13px"><span class="stage-dot" style="background:<?= $col ?>"></span>Stage <?= $s ?> — <?= $nm ?></span>
+      <span style="font-size:13px;font-weight:700;color:<?= $col ?>"><?= $row['n'] ?> pairs (<?= $pct ?>%)</span>
+    </div>
+    <div style="height:8px;background:#eee;border-radius:4px">
+      <div style="height:8px;background:<?= $col ?>;border-radius:4px;width:<?= $pct ?>%"></div>
+    </div>
+  </div>
+  <?php endforeach ?>
+  <?php if (!$stageCounts): ?><div style="color:#888;text-align:center;padding:20px">No matches yet.</div><?php endif ?>
+</div>
+
+<div class="card">
+  <div style="font-weight:700;margin-bottom:12px">Platform Stats</div>
+  <?php
+  $avgMsgs   = q1("SELECT ROUND(AVG(message_count),1) AS n FROM dating237.match_stages")['n'] ?? 0;
+  $avgDays   = q1("SELECT ROUND(AVG(EXTRACT(DAY FROM NOW()-matched_at)),1) AS n FROM dating237.match_stages")['n'] ?? 0;
+  $genderSplit = q("SELECT gender, COUNT(*) AS n FROM dating237.users GROUP BY gender");
+  ?>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center">
+    <div><div style="font-size:24px;font-weight:900;color:#d63af9"><?= $avgMsgs ?></div><div style="font-size:12px;color:#888">Avg messages/match</div></div>
+    <div><div style="font-size:24px;font-weight:900;color:#d63af9"><?= $avgDays ?></div><div style="font-size:12px;color:#888">Avg match age (days)</div></div>
+    <div><div style="font-size:14px;font-weight:700;color:#d63af9"><?php foreach($genderSplit as $g) echo $g['gender'].': '.$g['n'].' '; ?></div><div style="font-size:12px;color:#888">Gender split</div></div>
+  </div>
+</div>
+
+<?php elseif ($d237sub === 'content'): ?>
+<?php
+$content_cat = $_GET['ccat'] ?? '';
+$content_lang = $_GET['clang'] ?? '';
+$where = "WHERE 1=1";
+$params = [];
+if ($content_cat)  { $where .= " AND ci.category_id=?"; $params[] = $content_cat; }
+if ($content_lang) { $where .= " AND ci.language=?";    $params[] = $content_lang; }
+$content_items = q("SELECT ci.id, ci.category_id, cc.label AS cat_label, ci.source_id, ci.language,
+                           LEFT(ci.body,120) AS body_preview, ci.author, ci.work_title,
+                           ci.show_count, ci.last_shown_at, ci.active
+                    FROM dating237.content_items ci
+                    JOIN dating237.content_categories cc ON cc.id=ci.category_id
+                    ORDER BY ci.category_id, ci.language, ci.id
+                    LIMIT 300", $params);
+$cats = q("SELECT id, label FROM dating237.content_categories ORDER BY id");
+$total_items = q1("SELECT COUNT(*) AS n FROM dating237.content_items")['n'] ?? 0;
+$active_items = q1("SELECT COUNT(*) AS n FROM dating237.content_items WHERE active=TRUE")['n'] ?? 0;
+$impressions = q1("SELECT COUNT(*) AS n FROM dating237.content_impressions")['n'] ?? 0;
+?>
+<div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+  <div class="stat d237-stat"><div class="n"><?= $total_items ?></div><div class="l">Total Items</div></div>
+  <div class="stat d237-stat"><div class="n"><?= $active_items ?></div><div class="l">Active</div></div>
+  <div class="stat d237-stat"><div class="n"><?= $impressions ?></div><div class="l">Total Shown</div></div>
+</div>
+
+<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+  <form method="get" style="display:contents">
+    <input type="hidden" name="tab" value="dating237"/>
+    <input type="hidden" name="d237" value="content"/>
+    <select name="ccat" style="padding:6px 10px;border-radius:8px;border:1px solid #ddd;font-size:13px">
+      <option value="">All categories</option>
+      <?php foreach ($cats as $c): ?>
+      <option value="<?= htmlspecialchars($c['id']) ?>"<?= $content_cat===$c['id']?' selected':'' ?>><?= htmlspecialchars($c['label']) ?></option>
+      <?php endforeach ?>
+    </select>
+    <select name="clang" style="padding:6px 10px;border-radius:8px;border:1px solid #ddd;font-size:13px">
+      <option value="">All languages</option>
+      <option value="en"<?= $content_lang==='en'?' selected':'' ?>>English</option>
+      <option value="fr"<?= $content_lang==='fr'?' selected':'' ?>>Français</option>
+      <option value="pcm"<?= $content_lang==='pcm'?' selected':'' ?>>Pidgin</option>
+    </select>
+    <button type="submit" style="padding:6px 16px;border-radius:8px;background:#d63af9;color:#fff;border:none;font-size:13px;cursor:pointer">Filter</button>
+  </form>
+</div>
+
+<div class="card" style="padding:0;overflow-x:auto">
+<table style="width:100%;border-collapse:collapse;font-size:12px">
+  <tr style="background:#f9f9f9;text-align:left">
+    <th style="padding:9px 12px">ID</th>
+    <th style="padding:9px 12px">Category</th>
+    <th style="padding:9px 12px">Lang</th>
+    <th style="padding:9px 12px">Source / Author</th>
+    <th style="padding:9px 12px">Preview</th>
+    <th style="padding:9px 12px">Shown</th>
+    <th style="padding:9px 12px">Status</th>
+  </tr>
+  <?php foreach ($content_items as $row): ?>
+  <tr style="border-top:1px solid #f0f0f0;background:<?= $row['active']?'#fff':'#fafafa' ?>">
+    <td style="padding:8px 12px;color:#888"><?= $row['id'] ?></td>
+    <td style="padding:8px 12px;font-size:11px;color:#555"><?= htmlspecialchars($row['cat_label']) ?></td>
+    <td style="padding:8px 12px"><span style="background:<?= $row['language']==='en'?'#e0f2fe':($row['language']==='fr'?'#fce7f3':'#f0fdf4') ?>;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:600"><?= strtoupper($row['language']) ?></span></td>
+    <td style="padding:8px 12px;font-size:11px;color:#444;max-width:130px"><?= htmlspecialchars(($row['author']??'') ?: ($row['source_id']??'')) ?></td>
+    <td style="padding:8px 12px;max-width:260px;color:<?= $row['active']?'#333':'#999' ?>;font-style:italic"><?= htmlspecialchars(str_replace("\n",' ',$row['body_preview']??'')) ?><?= strlen($row['body_preview']??'')>=120?'…':'' ?></td>
+    <td style="padding:8px 12px;text-align:center;color:#888"><?= $row['show_count']?:'—' ?></td>
+    <td style="padding:8px 12px">
+      <form method="post" style="display:inline">
+        <input type="hidden" name="action" value="dating237_content"/>
+        <input type="hidden" name="content_action" value="toggle"/>
+        <input type="hidden" name="content_id" value="<?= $row['id'] ?>"/>
+        <button type="submit" style="padding:4px 10px;border-radius:6px;border:none;cursor:pointer;font-size:11px;font-weight:600;background:<?= $row['active']?'#e5f9ee':'#fee2e2' ?>;color:<?= $row['active']?'#1a7a3c':'#ce1126' ?>"><?= $row['active']?'Active ✓':'Hidden' ?></button>
+      </form>
+    </td>
+  </tr>
+  <?php endforeach ?>
+  <?php if (!$content_items): ?>
+  <tr><td colspan="7" style="padding:20px;text-align:center;color:#888">No content items found.</td></tr>
+  <?php endif ?>
+</table>
+</div>
+
+<?php endif ?>
 
 <?php endif ?>
 </div>
