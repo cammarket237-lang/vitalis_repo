@@ -6204,7 +6204,7 @@ window.loadMyListings = async function() {
         var stock = l.stock_status === 'out_of_stock' ? '<span style="color:#e74c3c;font-size:10px">Out of stock</span>'
           : l.stock_status === 'coming_soon' ? '<span style="color:#2980b9;font-size:10px">Coming soon</span>'
           : '<span style="color:#1a7a3c;font-size:10px">In stock</span>';
-        return '<div style="border:1.5px solid #eee;border-radius:14px;padding:12px;margin-bottom:10px;background:white">'
+        return '<div data-listing-id="'+l.id+'" style="border:1.5px solid #eee;border-radius:14px;padding:12px;margin-bottom:10px;background:white">'
           // Top row: image + info
           + '<div style="display:flex;gap:10px;margin-bottom:10px">'
           + img
@@ -8843,8 +8843,10 @@ window.confirmDeleteListing = async function(id, title) {
   fd.append('action', 'delete_listing');
   fd.append('listing_id', id);
   var d = await (await fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token':tok}})).json();
-  if (d.success) { alert('\u2705 Listing deleted!'); window.loadMyListings(); }
-  else alert('\u274C ' + (d.error || 'Error deleting'));
+  if (d.success) {
+    var card = document.querySelector('[data-listing-id="'+id+'"]');
+    if (card) card.remove();
+  } else alert('\u274C ' + (d.error || 'Error deleting'));
 };
 
 
