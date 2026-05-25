@@ -2259,33 +2259,36 @@ if ($action === 'get_listing') {
 // DELETE LISTING
 // ═══════════════════════════════════════════════════════════
 if ($action === 'delete_listing') {
-    $user = authUser();
-    if (!$user || $user['role'] !== 'seller') fail('Sellers only.');
-    $listingId = intval(p('listing_id'));
+    try {
+        $user = authUser();
+        if (!$user || $user['role'] !== 'seller') fail('Sellers only.');
+        $listingId = intval(p('listing_id'));
 
-    // Verify ownership
-    $listing = q1("SELECT l.* FROM cammarket237.listings l
-        JOIN cammarket237.stores s ON s.id=l.store_id
-        WHERE l.id=? AND s.user_id=?", [$listingId, $user['id']]);
-    if (!$listing) fail('Listing not found or not yours.');
+        $listing = q1("SELECT l.id FROM cammarket237.listings l
+            JOIN cammarket237.stores s ON s.id=l.store_id
+            WHERE l.id=? AND s.user_id=?", [$listingId, $user['id']]);
+        if (!$listing) fail('Listing not found or not yours.');
 
-    // Soft delete - mark as inactive
-    db()->prepare("UPDATE cammarket237.listings SET status='inactive', updated_at=NOW() WHERE id=?")->execute([$listingId]);
+        db()->prepare("UPDATE cammarket237.listings SET status='deleted', updated_at=NOW() WHERE id=?")->execute([$listingId]);
 
-    // Notify cart holders
-    $cartBuyers = q("SELECT buyer_id FROM cammarket237.cart_items WHERE listing_id=?", [$listingId]);
-    foreach ($cartBuyers as $b) {
         try {
-            db()->prepare("INSERT INTO cammarket237.cart_notifications 
-                (buyer_id, listing_id, notification_type, message)
-                VALUES (?,?,?,?)")->execute([
-                $b['buyer_id'], $listingId, 'item_deleted',
-                'An item in your cart has been removed by the seller.'
-            ]);
+            $cartBuyers = q("SELECT buyer_id FROM cammarket237.cart_items WHERE listing_id=?", [$listingId]);
+            foreach ($cartBuyers as $b) {
+                try {
+                    db()->prepare("INSERT INTO cammarket237.cart_notifications
+                        (buyer_id, listing_id, notification_type, message)
+                        VALUES (?,?,?,?)")->execute([
+                        $b['buyer_id'], $listingId, 'item_deleted',
+                        'An item in your cart has been removed by the seller.'
+                    ]);
+                } catch(Exception $e) {}
+            }
         } catch(Exception $e) {}
-    }
 
-    ok(['message' => 'Listing deleted.']);
+        ok(['message' => 'Listing deleted.']);
+    } catch(Exception $e) {
+        fail('Delete failed: ' . $e->getMessage());
+    }
 }
 
 
