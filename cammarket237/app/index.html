@@ -8837,16 +8837,18 @@ window.saveEditListing = async function() {
 };
 
 window.confirmDeleteListing = async function(id, title) {
-  if (!confirm(window.t('manage.deleteConfirm') + '\n"' + title + '"\n\n' + window.t('manage.deleteWarning'))) return;
+  if (!confirm('Delete "' + title + '"?')) return;
   var tok = localStorage.getItem('cm237_token') || _sessionToken || '';
-  var fd = new FormData();
-  fd.append('action', 'delete_listing');
-  fd.append('listing_id', id);
-  var d = await (await fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token':tok}})).json();
-  if (d.success) {
-    var card = document.querySelector('[data-listing-id="'+id+'"]');
-    if (card) card.remove();
-  } else alert('\u274C ' + (d.error || 'Error deleting'));
+  try {
+    var fd = new FormData();
+    fd.append('action', 'delete_listing');
+    fd.append('listing_id', id);
+    var d = await (await fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token':tok}})).json();
+    if (d.success) {
+      var card = document.querySelector('[data-listing-id="'+id+'"]');
+      if (card) card.remove();
+    } else alert('\u274C ' + (d.error || 'Error deleting'));
+  } catch(e) { alert('\u274C ' + e.message); }
 };
 
 
