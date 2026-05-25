@@ -2071,37 +2071,6 @@ if ($action === 'edit_listing') {
         'price_changed' => $priceChanged, 'buyers_notified' => count($buyers)]);
 }
 
-// ═══════════════════════════════════════════════════════════
-// DELETE LISTING (marks as sold with badge)
-// ═══════════════════════════════════════════════════════════
-
-if ($action === 'delete_listing') {
-    $user = authUser();
-    if (!$user || $user['role'] !== 'seller') fail('Sellers only.');
-    $listingId = intval(p('listing_id'));
-
-    $listing = q1("SELECT l.*, s.user_id FROM cammarket237.listings l
-        LEFT JOIN cammarket237.stores s ON s.id=l.store_id WHERE l.id=?", [$listingId]);
-    if (!$listing || $listing['user_id'] != $user['id']) fail('Not your listing.');
-
-    // Mark as sold (stays on platform with SOLD badge)
-    db()->prepare("UPDATE cammarket237.listings
-        SET is_sold=true, sold_at=NOW(), status='sold' WHERE id=?")
-        ->execute([$listingId]);
-
-    // Notify buyers in cart
-    $buyers = q("SELECT DISTINCT buyer_id FROM cammarket237.cart_items WHERE listing_id=?", [$listingId]);
-    $notifStmt = db()->prepare("INSERT INTO cammarket237.cart_notifications
-        (buyer_id, listing_id, notification_type, message) VALUES (?,?,?,?)");
-    foreach ($buyers as $b) {
-        $notifStmt->execute([$b['buyer_id'], $listingId, 'removed',
-            ($listing['title'] ?? 'An item') . ' in your cart has been removed by the seller.']);
-    }
-
-    ok(['message' => 'Listing removed. ' . count($buyers) . ' buyers notified.']);
-}
-
-
 
 // ═══════════════════════════════════════════════════════════
 // STOCK STATUS MANAGEMENT
