@@ -2887,6 +2887,19 @@
         </div>
       </div>
 
+      <!-- FCFA Earnings Summary -->
+      <div id="inv-fcfa-summary" style="display:none;border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;background:#f8f9fa;border:1px solid #eee">
+        <div style="text-align:center;flex:1">
+          <div style="font-size:18px;font-weight:900;color:#1a7a3c" id="inv-earned-fcfa">0</div>
+          <div style="font-size:10px;color:#888;margin-top:2px">FCFA Earned</div>
+        </div>
+        <div style="width:1px;background:#eee;align-self:stretch"></div>
+        <div style="text-align:center;flex:1">
+          <div style="font-size:18px;font-weight:900;color:#f39c12" id="inv-pending-fcfa">0</div>
+          <div style="font-size:10px;color:#888;margin-top:2px">FCFA Pending</div>
+        </div>
+      </div>
+
       <!-- Promo Code -->
       <div style="background:#0f1923;border-radius:16px;padding:20px;margin-bottom:16px;text-align:center">
         <div style="font-size:12px;color:#aaa;margin-bottom:8px" data-i18n="invite.yourCode">YOUR PROMO CODE</div>
@@ -11648,16 +11661,33 @@ window.openInvite = async function() {
       document.getElementById('inv-points').textContent = d.promo_points || 0;
       document.getElementById('inv-rank').textContent = d.rank || '-';
 
+      // FCFA summary
+      var earnedFcfa = d.earned_fcfa || 0;
+      var pendingFcfa = d.pending_fcfa || 0;
+      if (earnedFcfa > 0 || pendingFcfa > 0) {
+        document.getElementById('inv-fcfa-summary').style.display = 'flex';
+        document.getElementById('inv-earned-fcfa').textContent = earnedFcfa;
+        document.getElementById('inv-pending-fcfa').textContent = pendingFcfa;
+      }
+
       // Load referrals list
       var list = document.getElementById('inv-referrals-list');
       if (d.referrals && d.referrals.length) {
         list.innerHTML = d.referrals.map(function(r) {
+          var fcfa = r.reward_fcfa || 0;
+          var badge;
+          if (r.status === 'confirmed') {
+            badge = '<span style="background:#e8f5e9;color:#1a7a3c;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">+' + fcfa + ' FCFA \u2713</span>';
+          } else {
+            var prog = (r.listings_posted !== undefined) ? ' (' + r.listings_posted + '/5)' : '';
+            badge = '<span style="background:#fff8e1;color:#f39c12;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">+' + fcfa + ' FCFA pending' + prog + '</span>';
+          }
           return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:white;border-radius:10px;margin-bottom:6px;box-shadow:0 1px 4px rgba(0,0,0,0.06)">'
             + '<div>'
             + '<div style="font-size:13px;font-weight:700;color:#0f1923">' + esc(r.full_name||'User') + '</div>'
             + '<div style="font-size:11px;color:#888">' + esc(r.role||'') + ' \u2022 ' + new Date(r.created_at).toLocaleDateString() + '</div>'
             + '</div>'
-            + '<span style="background:#e8f5e9;color:#1a7a3c;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">+' + (r.points_earned||50) + ' pts</span>'
+            + badge
             + '</div>';
         }).join('');
       } else {
