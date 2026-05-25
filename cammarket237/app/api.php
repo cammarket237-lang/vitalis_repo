@@ -3128,9 +3128,9 @@ if ($action === 'log_enquiry') {
     try {
         // Store enquiry
         db()->prepare("INSERT INTO cammarket237.enquiries
-            (buyer_id, listing_id, store_id, message, buyer_name, buyer_phone, status, created_at)
-            VALUES (?, ?, (SELECT id FROM cammarket237.stores WHERE user_id=? LIMIT 1), ?, ?, ?, 'pending', NOW())")
-            ->execute([$buyerId, $listingId, $sellerId,
+            (buyer_id, seller_id, listing_id, note, buyer_name, buyer_phone, status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, 'pending', NOW())")
+            ->execute([$buyerId, $sellerId, $listingId,
                 'Buyer enquiry via CamMarket237 for: '.$itemTitle.' at '.number_format($itemPrice).' FCFA',
                 $buyerName, $buyerPhone]);
 
@@ -3199,19 +3199,16 @@ if ($action === 'get_seller_enquiries') {
     $user = authUser();
     if (!$user || $user['role'] !== 'seller') fail('Sellers only.');
     try {
-        $storeId = q1("SELECT id FROM cammarket237.stores WHERE user_id=? LIMIT 1", [$user['id']]);
-        if (!$storeId) ok(['enquiries' => []]);
         $enquiries = q("SELECT e.*,
             u.full_name AS buyer_name, u.phone AS buyer_phone,
-            u.buyer_rating, u.buyer_review_count, u.buyer_badge,
             l.title AS item_title, l.price AS item_price
             FROM cammarket237.enquiries e
             LEFT JOIN cammarket237.users u ON u.id=e.buyer_id
             LEFT JOIN cammarket237.listings l ON l.id=e.listing_id
-            WHERE e.store_id=? AND e.status='pending'
-            ORDER BY e.created_at DESC LIMIT 20", [$storeId['id']]);
+            WHERE e.seller_id=? AND e.status='pending'
+            ORDER BY e.created_at DESC LIMIT 20", [$user['id']]);
         ok(['enquiries' => $enquiries]);
-    } catch(Exception $e) { ok(['enquiries' => []]); }
+    } catch(Exception $e) { fail('Error: ' . $e->getMessage()); }
 }
 
 // ── SELLER APPROVES SAFETY + MARKS AVAILABILITY ──────────
