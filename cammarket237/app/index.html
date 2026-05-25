@@ -7346,10 +7346,31 @@ window.submitPost = async function() {
         if(rl.includes('blur')||rl.includes('quality')) actions.push('Retake photos in better lighting');
         if(rl.includes('categor')||rl.includes('title')) actions.push('Update title/category to match photos');
         if(actions.length===0){ actions.push('Retake both photos of the actual item'); actions.push('Ensure good lighting and item is clearly visible'); }
+        // Build thumbnails of submitted photos so user can see what was rejected
+        var thumbs = [
+          {id:'mp1', lbl:'Front'},
+          {id:'mp2', lbl:'Back'},
+          {id:'mp3', lbl:'Side/Detail'}
+        ].filter(function(t){ var el=document.getElementById(t.id); return el && el.src && el.src.length > 10; });
+        var thumbHtml = '';
+        if (thumbs.length) {
+          thumbHtml = '<div style="margin-top:12px;margin-bottom:4px;font-weight:700;font-size:12px;color:#ce1126">Photos submitted (tap to replace):</div>'
+            +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">'
+            + thumbs.map(function(t){
+                var src = document.getElementById(t.id).src;
+                var galId = t.id==='mp1'?'photo1-gal': t.id==='mp2'?'photo2-gal':'p3gal';
+                return '<label for="'+galId+'" style="cursor:pointer;text-align:center">'
+                  +'<img src="'+src+'" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:2px solid #ce1126;display:block">'
+                  +'<div style="font-size:10px;color:#ce1126;font-weight:700;margin-top:3px">'+t.lbl+' \u2b06 Replace</div>'
+                  +'</label>';
+              }).join('')
+            +'</div>';
+        }
         rr.innerHTML = '<div style="color:#ce1126;font-weight:700;margin-bottom:8px">Reason: '+esc(reason)+'</div>'
           +'<div style="font-weight:700;margin-bottom:6px">How to fix:</div>'
           +actions.map(function(a){return '<div style="margin-bottom:5px;padding-left:8px">\u2192 '+a+'</div>';}).join('')
-          +'<div style="margin-top:10px;padding:8px;background:#fff3cd;border-radius:6px;font-size:12px"><b>Tip:</b> Photos must show the real physical item you are selling.</div>';
+          +'<div style="margin-top:10px;padding:8px;background:#fff3cd;border-radius:6px;font-size:12px"><b>Tip:</b> Photos must show the real physical item you are selling.</div>'
+          + thumbHtml;
       }
       if (btn) { btn.disabled = false; btn.textContent = 'Try Again'; }
     } else if (d.success) {
