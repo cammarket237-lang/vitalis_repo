@@ -161,13 +161,16 @@ $stats = [
     'flags'    => q1("SELECT COUNT(*) AS n FROM cammarket237.verification_queue")['n'],
     'uploads'  => q1("SELECT COUNT(*) AS n FROM cammarket237.listing_media")['n'],
 ];
-$d237 = [
-    'users'    => q1("SELECT COUNT(*) AS n FROM dating237.users")['n'] ?? 0,
-    'active'   => q1("SELECT COUNT(*) AS n FROM dating237.users WHERE is_active=true")['n'] ?? 0,
-    'matches'  => q1("SELECT COUNT(*) AS n FROM dating237.match_stages")['n'] ?? 0,
-    'messages' => q1("SELECT COUNT(*) AS n FROM dating237.messages")['n'] ?? 0,
-    'trusted'  => q1("SELECT COUNT(*) AS n FROM dating237.match_stages WHERE stage=6")['n'] ?? 0,
-];
+$d237 = ['users'=>0,'active'=>0,'matches'=>0,'messages'=>0,'trusted'=>0];
+try {
+    $d237 = [
+        'users'    => q1("SELECT COUNT(*) AS n FROM dating237.users")['n'] ?? 0,
+        'active'   => q1("SELECT COUNT(*) AS n FROM dating237.users WHERE is_active=true")['n'] ?? 0,
+        'matches'  => q1("SELECT COUNT(*) AS n FROM dating237.match_stages")['n'] ?? 0,
+        'messages' => q1("SELECT COUNT(*) AS n FROM dating237.messages")['n'] ?? 0,
+        'trusted'  => q1("SELECT COUNT(*) AS n FROM dating237.match_stages WHERE stage=6")['n'] ?? 0,
+    ];
+} catch (Exception $e) {}
 
 function act($action, $id, $label, $color='#e74c3c') {
     echo "<form method='post' style='display:inline' onsubmit=\"return confirm('Sure?')\">
@@ -598,6 +601,8 @@ tr:hover td{background:#fafafa}
 $d237sub = $_GET['d237'] ?? 'users';
 $stageColors = [1=>'#6b7280',2=>'#3b82f6',3=>'#8b5cf6',4=>'#f59e0b',5=>'#ef4444',6=>'#fcd116'];
 $stageNames  = [1=>'Match',2=>'Talking',3=>'Connected',4=>'Close',5=>'Meeting-Ready',6=>'Trusted'];
+$_d237schema = true;
+try { db()->query("SELECT 1 FROM dating237.users LIMIT 0"); } catch(Exception $_e) { $_d237schema = false; }
 ?>
 <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
   <a href="?tab=dating237&d237=users"    style="padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;background:<?= $d237sub==='users'?'#d63af9':'rgba(214,58,249,.12)' ?>;color:<?= $d237sub==='users'?'#fff':'#d63af9' ?>">Members</a>
@@ -607,7 +612,11 @@ $stageNames  = [1=>'Match',2=>'Talking',3=>'Connected',4=>'Close',5=>'Meeting-Re
   <a href="?tab=dating237&d237=content"  style="padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;background:<?= $d237sub==='content'?'#d63af9':'rgba(214,58,249,.12)' ?>;color:<?= $d237sub==='content'?'#fff':'#d63af9' ?>">&#x1F4DA; Content Library</a>
 </div>
 
-<?php if ($d237sub === 'users'): ?>
+<?php if (!$_d237schema): ?>
+<div style="padding:30px;text-align:center;color:#888;font-size:14px;background:white;border-radius:12px">
+  Dating237 schema not yet deployed on this server. Run the dating schema migration first.
+</div>
+<?php elseif ($d237sub === 'users'): ?>
 <div class="section-title" style="font-size:15px">Members</div>
 <?php
 $dUsers = q("SELECT u.id, u.name, u.phone, u.gender, u.age, u.marital_status, u.region, u.relationship_intent,
