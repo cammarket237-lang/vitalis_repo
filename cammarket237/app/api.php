@@ -986,35 +986,8 @@ if ($action === 'post_listing') {
     $vd = ['ok'=>true,'url'=>null,'path'=>null];
     if(!empty($_FILES['video']['name'])){ $vd=saveFile($_FILES['video'],'video'); if(!$vd['ok']){@unlink($p1['path']);@unlink($p2['path']);if($p3['path'])@unlink($p3['path']);fail($vd['error']);} }
 
-    // ── FULL VERIFICATION: Photos + Content Moderation ────
-    // Checks: real photos, no AI-generated, no dangerous items
-    // Zero API cost - runs locally using PHP GD only
-    // Photo verification with error handling
+    // AI verification disabled — all uploads pass automatically
     $ai = ['approved'=>true];
-    try {
-        $verResult = runFullVerification(
-            $p1['path'], $p2['path'],
-            !empty($p3['path']) ? $p3['path'] : null,
-            trim($_POST['title'] ?? ''),
-            trim($_POST['description'] ?? ''),
-            trim($_POST['category'] ?? ''),
-            intval($_POST['store_id'] ?? 0),
-            $user['id']
-        );
-        $ai = $verResult;
-    } catch(Throwable $verErr) {
-        // Verification failed - log but allow upload (fail open)
-        error_log('Verify error: ' . $verErr->getMessage());
-        $ai = ['approved'=>true];
-    }
-    if(!$ai['approved']){
-        @unlink($p1['path']); @unlink($p2['path']);
-        if(!empty($p3['path'])) @unlink($p3['path']);
-        if(!empty($vd['path'])) @unlink($vd['path']);
-        $ok_response = ['success'=>false,'rejected'=>true,'reason'=>$ai['reason']];
-        if(!empty($ai['flagged'])) $ok_response['flagged'] = true;
-        echo json_encode($ok_response); exit;
-    }
 
     // Save to DB
     $isGuesthouse = (strtolower(trim($category)) === 'guesthouses & hotels');
