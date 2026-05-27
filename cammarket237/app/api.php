@@ -4148,6 +4148,65 @@ if ($action === 'get_nearby_guesthouses') {
 // ADVERTISING PLATFORM
 // ═══════════════════════════════════════════════════════════════
 
+// ── SUPPORT TICKETS ────────────────────────────────────────────
+if ($action === 'submit_ticket') {
+    $user   = authUser();
+    $userId = $user ? $user['id'] : null;
+    $type   = trim($_POST['type']  ?? 'bug');
+    $title  = trim($_POST['title'] ?? '');
+    $desc   = trim($_POST['description'] ?? '');
+    if (!$title) fail('Title is required.');
+    if (strlen($desc) < 50) fail('Description must be at least 50 characters.');
+    if (!in_array($type, ['bug','feature'])) $type = 'bug';
+
+    // Auto-create table if missing
+    db()->prepare("CREATE TABLE IF NOT EXISTS cammarket237.support_tickets (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER,
+        type VARCHAR(20) NOT NULL DEFAULT 'bug',
+        title VARCHAR(200) NOT NULL,
+        description TEXT NOT NULL,
+        screenshot_url TEXT,
+        status VARCHAR(20) NOT NULL DEFAULT 'open',
+        created_at TIMESTAMP DEFAULT NOW()
+    )")->execute([]);
+
+    $screenshotUrl = null;
+    if (!empty($_FILES['screenshot']['name'])) {
+        $f = $_FILES['screenshot'];
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime  = finfo_file($finfo, $f['tmp_name']);
+        finfo_close($finfo);
+        if (!in_array($mime, ['image/jpeg','image/png','image/webp','image/gif']))
+            fail('Screenshot must be JPG/PNG/WEBP/GIF.');
+        if ($f['size'] > 5*1024*1024) fail('Screenshot max 5MB.');
+        $ext  = strtolower(pathinfo($f['name'], PATHINFO_EXTENSION));
+        $name = 'ticket_' . uniqid('', true) . '.' . $ext;
+        if (!is_dir(UPLOAD_DIR)) mkdir(UPLOAD_DIR, 0755, true);
+        move_uploaded_file($f['tmp_name'], UPLOAD_DIR . $name);
+        $screenshotUrl = UPLOAD_URL . $name;
+    }
+
+    $stmt = db()->prepare("INSERT INTO cammarket237.support_tickets
+        (user_id, type, title, description, screenshot_url, created_at)
+        VALUES (?,?,?,?,?,NOW()) RETURNING id");
+    $stmt->execute([$userId, $type, $title, $desc, $screenshotUrl]);
+    $row = $stmt->fetch();
+    ok(['ticket_id' => $row['id'], 'message' => 'Ticket submitted. We will review it shortly.']);
+}
+
+if ($action === 'get_my_tickets') {
+    $user = authUser();
+    if (!$user) ok(['tickets' => []]);
+    try {
+        $rows = q("SELECT id, type, title, status, created_at FROM cammarket237.support_tickets
+            WHERE user_id=? ORDER BY created_at DESC LIMIT 20", [$user['id']]);
+        ok(['tickets' => $rows]);
+    } catch (Exception $e) {
+        ok(['tickets' => []]);
+    }
+}
+
 // ── GET AD PACKAGES ────────────────────────────────────────────
 // ── UPLOAD VIDEO AD FILE ───────────────────────────────────────
 if ($action === 'upload_video_ad') {
