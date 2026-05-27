@@ -628,6 +628,7 @@
           </div>
           <button onclick="window.go('advertise-hub')" style="background:linear-gradient(135deg,#e67e22,#f39c12);color:white;border:none;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer;font-weight:700">&#x1F4E3; Ads</button>
           <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer" onclick="window.go('set-pin')" title="Set Recovery PIN">&#x1F510; PIN</button>
+          <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer" onclick="window.openSupport('buyer-search')">Help</button>
           <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer" onclick="window.signOut()" data-i18n="nav.logout">Sign out</button>
           <button class="lang-btn" data-lang="en" onclick="window.setLanguage('en')" style="padding:4px 8px;border:none;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;background:#1a7a3c;color:white">EN</button>
           <button class="lang-btn" data-lang="fr" onclick="window.setLanguage('fr')" style="padding:4px 8px;border:none;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;background:#f0f0f0;color:#333">FR</button>
@@ -639,22 +640,19 @@
     <!-- Combined Wallet + Invite Banner for Buyer -->
     <div id="buyer-wallet-banner" style="display:none;border-radius:14px;overflow:hidden;margin-bottom:10px">
       <!-- Green: wallet (left) -->
-      <div style="background:linear-gradient(135deg,#1a7a3c,#27ae60);color:white;padding:20px 18px;cursor:pointer;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center" onclick="window.showPointsModal()">
-        <div style="font-size:11px;opacity:0.8;margin-bottom:4px">&#x1F4B0; <span data-i18n="wallet.balance">Wallet Balance</span></div>
-        <div style="font-size:28px;font-weight:900;letter-spacing:-0.5px;margin-bottom:12px" id="buyer-wallet-fcfa">0 FCFA</div>
-        <div style="font-size:11px;opacity:0.75">FCFA Earned</div>
-        <div style="font-size:16px;font-weight:900;margin-bottom:8px" id="dash-earned-fcfa">0</div>
-        <div style="font-size:11px;opacity:0.75">Pending image upload</div>
-        <div style="font-size:16px;font-weight:900;color:#fcd116" id="dash-pending-fcfa">0</div>
+      <div style="background:linear-gradient(135deg,#1a7a3c,#27ae60);color:white;padding:8px 14px;cursor:pointer;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center" onclick="window.showPointsModal()">
+        <div style="font-size:10px;opacity:0.8;margin-bottom:2px">&#x1F4B0; <span data-i18n="wallet.balance">Wallet Balance</span></div>
+        <div style="font-size:22px;font-weight:900;letter-spacing:-0.5px;margin-bottom:2px" id="buyer-wallet-fcfa">0 FCFA</div>
+        <div style="font-size:10px;opacity:0.8">Earned <span id="dash-earned-fcfa" style="font-weight:900">0</span> &nbsp;·&nbsp; Pending <span id="dash-pending-fcfa" style="font-weight:900;color:#fcd116">0</span></div>
       </div>
       <!-- Divider -->
       <div style="width:1px;background:rgba(255,255,255,0.4)"></div>
       <!-- Orange: invite (right) -->
-      <div onclick="window.openInvite()" style="background:linear-gradient(135deg,#f39c12,#e67e22);color:white;padding:20px 18px;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:10px;flex:1">
-        <span style="font-size:30px">&#x1F381;</span>
-        <div style="font-weight:800;font-size:14px" data-i18n="dash.inviteEarn">Invite Friends &amp; Earn</div>
-        <div style="font-size:11px;opacity:0.9" data-i18n="dash.inviteSubtitle">Share your code. Earn rewards!</div>
-        <span style="font-size:20px">&#x276F;</span>
+      <div onclick="window.openInvite()" style="background:linear-gradient(135deg,#f39c12,#e67e22);color:white;padding:8px 14px;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;flex:1">
+        <span style="font-size:22px">&#x1F381;</span>
+        <div style="font-weight:800;font-size:13px" data-i18n="dash.inviteEarn">Invite Friends &amp; Earn</div>
+        <div style="font-size:10px;opacity:0.9" data-i18n="dash.inviteSubtitle">Share your code. Earn rewards!</div>
+        <span style="font-size:16px">&#x276F;</span>
       </div>
     </div>
 
@@ -972,6 +970,7 @@
           <span id="seller-notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#e74c3c;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;align-items:center;justify-content:center">0</span>
         </div>
         <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer" onclick="window.go('set-pin')" title="Set Recovery PIN">&#x1F510; <span data-i18n="dash.pin">PIN</span></button>
+        <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer" onclick="window.openSupport('seller-dash')">Help</button>
         <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer" onclick="window.signOut()" data-i18n="nav.logout">Sign out</button>
       </div>
     </div>
@@ -985,22 +984,19 @@
     <!-- Combined Wallet + Invite Banner for Seller -->
     <div id="seller-wallet-banner" style="display:none;border-radius:14px;overflow:hidden;margin-bottom:14px">
       <!-- Green: wallet (left) -->
-      <div style="background:linear-gradient(135deg,#1a7a3c,#27ae60);color:white;padding:20px 18px;cursor:pointer;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center" onclick="window.openInvite()">
-        <div style="font-size:11px;opacity:0.8;margin-bottom:4px">&#x1F4B0; <span data-i18n="wallet.balance">Wallet Balance</span></div>
-        <div style="font-size:28px;font-weight:900;letter-spacing:-0.5px;margin-bottom:12px" id="seller-wallet-fcfa">0 FCFA</div>
-        <div style="font-size:11px;opacity:0.75">FCFA Earned</div>
-        <div style="font-size:16px;font-weight:900;margin-bottom:8px" id="seller-dash-earned-fcfa">0</div>
-        <div style="font-size:11px;opacity:0.75">Pending</div>
-        <div style="font-size:16px;font-weight:900;color:#fcd116" id="seller-dash-pending-fcfa">0</div>
+      <div style="background:linear-gradient(135deg,#1a7a3c,#27ae60);color:white;padding:8px 14px;cursor:pointer;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center" onclick="window.openInvite()">
+        <div style="font-size:10px;opacity:0.8;margin-bottom:2px">&#x1F4B0; <span data-i18n="wallet.balance">Wallet Balance</span></div>
+        <div style="font-size:22px;font-weight:900;letter-spacing:-0.5px;margin-bottom:2px" id="seller-wallet-fcfa">0 FCFA</div>
+        <div style="font-size:10px;opacity:0.8">Earned <span id="seller-dash-earned-fcfa" style="font-weight:900">0</span> &nbsp;·&nbsp; Pending <span id="seller-dash-pending-fcfa" style="font-weight:900;color:#fcd116">0</span></div>
       </div>
       <!-- Divider -->
       <div style="width:1px;background:rgba(255,255,255,0.4)"></div>
       <!-- Orange: invite (right) -->
-      <div onclick="window.openInvite()" style="background:linear-gradient(135deg,#f39c12,#e67e22);color:white;padding:20px 18px;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:10px;flex:1">
-        <span style="font-size:30px">&#x1F381;</span>
-        <div style="font-weight:800;font-size:14px" data-i18n="dash.inviteEarn">Invite Friends &amp; Earn</div>
-        <div style="font-size:11px;opacity:0.9" data-i18n="dash.inviteSubtitle">Share your code. Earn rewards!</div>
-        <span style="font-size:20px">&#x276F;</span>
+      <div onclick="window.openInvite()" style="background:linear-gradient(135deg,#f39c12,#e67e22);color:white;padding:8px 14px;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;flex:1">
+        <span style="font-size:22px">&#x1F381;</span>
+        <div style="font-weight:800;font-size:13px" data-i18n="dash.inviteEarn">Invite Friends &amp; Earn</div>
+        <div style="font-size:10px;opacity:0.9" data-i18n="dash.inviteSubtitle">Share your code. Earn rewards!</div>
+        <span style="font-size:16px">&#x276F;</span>
       </div>
     </div>
 
@@ -1017,10 +1013,12 @@
     </div>
 
     <!-- GPS status on dashboard -->
-    <div class="alert-g" id="dash-gps-box" style="margin-bottom:14px">
-      <div class="at">&#128225; <span data-i18n="dash.gpsLocation">GPS Location</span></div>
-      <div id="dash-gps-info" style="font-size:12px;color:#555"></div>
-      <div id="dash-map" style="height:140px;border-radius:10px;margin-top:8px;border:1.5px solid #c8e6c9;position:relative;z-index:1;isolation:isolate"></div>
+    <div id="dash-gps-box" style="margin-bottom:12px;display:none">
+      <span onclick="window.openInMaps()" style="display:inline-flex;align-items:center;gap:6px;background:#e8f8ee;border:1.5px solid #a8d8b0;border-radius:20px;padding:6px 14px;cursor:pointer;font-size:13px;font-weight:700;color:#1a7a3c">
+        &#x2705; GPS Verified
+        <span style="color:#ccc;font-weight:400">|</span>
+        <span style="color:#2980b9;font-size:12px;font-weight:600">&#x1F4CD; <span data-i18n="dash.openInMaps">Open in Maps</span> &#x276F;</span>
+      </span>
     </div>
 
     <div style="font-size:12px;color:#888;margin-bottom:10px" data-i18n="dash.visibilityNote">
@@ -4494,6 +4492,7 @@ window.TRANSLATIONS = {
     'dash.share':'Share','dash.pin':'PIN',
     'dash.inviteEarnMore':'Invite & Earn More ???',
     'dash.gpsLocation':'GPS Location',
+    'dash.openInMaps':'Open in Maps',
     'dash.visibilityNote':'???? Your items are visible to all buyers in Cameroon. Buyers in your town see them first.',
     'dash.searchBuyersPh':'Search buyers or items???',
     'dash.postItem':'Post Item',
@@ -4850,6 +4849,7 @@ window.TRANSLATIONS = {
     'dash.share':'Partager','dash.pin':'PIN',
     'dash.inviteEarnMore':'Inviter & Gagner plus ???',
     'dash.gpsLocation':'Position GPS',
+    'dash.openInMaps':'Ouvrir dans Maps',
     'dash.visibilityNote':'???? Vos articles sont visibles par tous les acheteurs du Cameroun. Les acheteurs de votre ville les voient en premier.',
     'dash.searchBuyersPh':'Rechercher des acheteurs ou articles???',
     'dash.postItem':'Publier un article',
@@ -5202,6 +5202,7 @@ window.TRANSLATIONS = {
     'dash.share':'Share am','dash.pin':'PIN',
     'dash.inviteEarnMore':'Call friends, Earn more ???',
     'dash.gpsLocation':'GPS Position',
+    'dash.openInMaps':'Open for Maps',
     'dash.visibilityNote':'???? All buyers for Cameroon fit see your things. People for your town go see am first.',
     'dash.searchBuyersPh':'Find buyer or thing???',
     'dash.postItem':'Post your thing',
@@ -5866,6 +5867,23 @@ window.registerBuyer = async function() {
       var ph = document.getElementById('buyer-phone'); if (ph && regPhone) ph.value = regPhone;
       var msg = document.getElementById('buyer-reg-success');
       if (msg) { msg.innerHTML = '??? Account created! Please sign in.'; msg.style.display = 'block'; }
+    } else if (d.error === 'phone_linked' || d.error === 'wrong_pin') {
+      var pinPrompt = d.error === 'wrong_pin' ? 'Wrong PIN. Try again.\n\n' : '';
+      var pin = prompt(pinPrompt + 'This phone is already linked to ' + d.linked_name + '.\n\nEnter your 6-digit recovery PIN to confirm it\'s you:');
+      if (pin && /^[0-9]{6}$/.test(pin.trim())) {
+        fd.append('confirm_same_person', '1');
+        fd.append('existing_pin', pin.trim());
+        var d2 = await (await fetch('/api.php', {method:'POST', body:fd})).json();
+        if (d2.success) {
+          var regPhone = (document.getElementById('b-phone')||{}).value||'';
+          window.buyerTab('login');
+          var ph = document.getElementById('buyer-phone'); if (ph && regPhone) ph.value = regPhone;
+          var msg = document.getElementById('buyer-reg-success');
+          if (msg) { msg.innerHTML = '??? Account created! Please sign in.'; msg.style.display = 'block'; }
+        } else if (d2.error === 'phone_linked' || d2.error === 'wrong_pin') {
+          alert('Incorrect PIN. Registration blocked for security.');
+        } else { alert(d2.error || 'Registration failed'); }
+      } else if (pin !== null) { alert('PIN must be exactly 6 digits.'); }
     } else {
       alert(d.error || 'Registration failed');
     }
@@ -5916,6 +5934,13 @@ window.captureGPS = function() {
     },
     {enableHighAccuracy: true, timeout: 10000}
   );
+};
+
+window.openInMaps = function() {
+  if (!_sellerGPS) return;
+  var a = document.createElement('a');
+  a.href = 'https://www.google.com/maps?q=' + _sellerGPS.lat + ',' + _sellerGPS.lng;
+  a.target = '_blank'; a.rel = 'noopener'; a.click();
 };
 
 window.detectBuyerGPS = function(cb) {
@@ -6032,6 +6057,26 @@ window.registerSeller = function() {
         var sph = document.getElementById('sl-phone'); if (sph && regPhone) sph.value = regPhone;
         var msg = document.getElementById('seller-reg-success');
         if (msg) { msg.innerHTML = '??? Seller account created! Please sign in.'; msg.style.display = 'block'; }
+      } else if (d.error === 'phone_linked' || d.error === 'wrong_pin') {
+        var pinPrompt = d.error === 'wrong_pin' ? 'Wrong PIN. Try again.\n\n' : '';
+        var pin = prompt(pinPrompt + 'This phone is already linked to ' + d.linked_name + '.\n\nEnter your 6-digit recovery PIN to confirm it\'s you:');
+        if (pin && /^[0-9]{6}$/.test(pin.trim())) {
+          fd.append('confirm_same_person', '1');
+          fd.append('existing_pin', pin.trim());
+          fetch('/api.php', {method:'POST', body:fd})
+            .then(function(r){ return r.json(); })
+            .then(function(d2) {
+              if (d2.success) {
+                var regPhone = (document.getElementById('s-phone')||{}).value||'';
+                window.sellerTab('login');
+                var sph = document.getElementById('sl-phone'); if (sph && regPhone) sph.value = regPhone;
+                var msg = document.getElementById('seller-reg-success');
+                if (msg) { msg.innerHTML = '??? Seller account created! Please sign in.'; msg.style.display = 'block'; }
+              } else if (d2.error === 'phone_linked' || d2.error === 'wrong_pin') {
+                alert('??? Incorrect PIN. Registration blocked for security.');
+              } else { alert('??? ' + (d2.error || 'Registration failed.')); }
+            });
+        } else if (pin !== null) { alert('PIN must be exactly 6 digits.'); }
       } else {
         alert('??? ' + (d.error || 'Registration failed. Please try again.'));
       }
@@ -6171,24 +6216,14 @@ window.launchSellerDash = function(storeName, store) {
   var sg = document.getElementById('dash-gps-info');
   if (sn) sn.textContent = storeName || 'My Store';
   if (sm) sm.textContent = 'Location: ' + (_sellerTown||'') + (_sellerRegion?', '+_sellerRegion:'') + '  |  Visible nationwide';
-  if (sg) sg.textContent = _sellerGPS ? 'GPS: ' + _sellerGPS.lat.toFixed(4) + ', ' + _sellerGPS.lng.toFixed(4) + ' - Verified' : 'No GPS - tap to capture';
+  var gpsBox = document.getElementById('dash-gps-box');
+  if (gpsBox) gpsBox.style.display = _sellerGPS ? 'block' : 'none';
   // Load points and wallet balance for seller dashboard
   var tok = localStorage.getItem('cm237_token') || '';
   if(tok) window.loadUserPoints(tok);
   window.renderWalletFromStorage();
   setTimeout(window.refreshWalletBalance, 500);
   go('seller-dash');
-  if (_sellerGPS && window.L) {
-    setTimeout(function() {
-      var dm = document.getElementById('dash-map');
-      if (dm) {
-        if (_dashMap) { _dashMap.remove(); _dashMap = null; }
-        _dashMap = L.map('dash-map').setView([_sellerGPS.lat, _sellerGPS.lng], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'OSM'}).addTo(_dashMap);
-        L.marker([_sellerGPS.lat, _sellerGPS.lng]).addTo(_dashMap).bindPopup(storeName || 'Store').openPopup();
-      }
-    }, 300);
-  }
 };
 
 // \u2500\u2500 MY LISTINGS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -7406,9 +7441,14 @@ window.submitPost = async function() {
       if (btn) { btn.disabled = false; btn.textContent = 'Try Again'; }
     } else if (d.success) {
       var ap = document.getElementById('ai-approved'); if (ap) ap.style.display = 'block';
-      var am = document.getElementById('ai-ok-msg'); if (am) am.textContent = 'Item posted live! ID: ' + d.listing_id;
-      if (btn) btn.textContent = 'Posted!';
-      setTimeout(function(){ if(btn){btn.disabled=false;btn.textContent='Post Item for Sale';} go('seller-dash'); }, 3000);
+      if (d.pending_review) {
+        var am = document.getElementById('ai-ok-msg'); if (am) am.innerHTML = '&#x23F3; Submitted for Review<br><span style="font-size:12px;font-weight:400;color:#555">Our team will review your listing shortly. You\'ll see it go live in your dashboard once approved.</span>';
+        if (btn) btn.textContent = 'Submitted!';
+      } else {
+        var am = document.getElementById('ai-ok-msg'); if (am) am.textContent = 'Item posted live! ID: ' + d.listing_id;
+        if (btn) btn.textContent = 'Posted!';
+      }
+      setTimeout(function(){ if(btn){btn.disabled=false;btn.textContent='Post Item for Sale';} go('seller-dash'); }, 4000);
     } else {
       alert(d.error || 'Error posting item');
       if (btn) { btn.disabled = false; btn.textContent = 'Post Item for Sale'; }
@@ -8625,9 +8665,15 @@ window.onVideoSelected = function(input) {
   var lbl = document.getElementById('vid-lbl');
   var box = document.getElementById('bvid');
   if (input.files && input.files[0]) {
-    var name = input.files[0].name;
-    if (ico) ico.textContent = '???';
-    if (lbl) lbl.textContent = name.length > 30 ? name.substring(0,30)+'...' : name;
+    var file = input.files[0];
+    var allowed = ['video/mp4','video/webm','video/quicktime','video/mpeg','video/3gpp','video/3gpp2','video/x-msvideo','video/avi','video/mov','video/x-m4v'];
+    if (file.type && allowed.indexOf(file.type) === -1) {
+      alert('Video format not supported. Please use MP4, MOV, or WEBM.');
+      input.value = '';
+      return;
+    }
+    if (ico) ico.textContent = '🎬';
+    if (lbl) lbl.textContent = file.name.length > 30 ? file.name.substring(0,30)+'...' : file.name;
     if (box) box.classList.add('filled');
   }
 };
@@ -9681,7 +9727,8 @@ function _adShowSlide(sfx, idx) {
 // Auth/onboarding screens where banner should hide
 var _AD_HIDE_SCREENS = {
   'role':1,'buyer-auth':1,'buyer-otp':1,'seller-auth':1,
-  'set-pin':1,'forgot-password':1,'privacy':1,'terms':1,'safety-guide':1,'we-are-together':1
+  'set-pin':1,'forgot-password':1,'privacy':1,'terms':1,'safety-guide':1,'we-are-together':1,
+  'support':1
 };
 
 function _adUpdateBannerPosition() {
@@ -13375,6 +13422,185 @@ window.fpResetPassword = async function() {
     b.style.background = b.dataset.lang === lang ? '#1a7a3c' : '#f0f0f0';
     b.style.color = b.dataset.lang === lang ? 'white' : '#333';
   });
+})();
+</script>
+
+<!-- ═══ SUPPORT TICKET SCREEN ═══ -->
+<div class="screen" id="screen-support" style="padding:16px 16px 80px">
+  <button onclick="window.go(window._supportOrigin||'buyer-search')"
+    style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer;margin-bottom:16px;font-weight:700">
+    &#8592; Back
+  </button>
+  <div style="margin-bottom:18px">
+    <div style="font-size:18px;font-weight:800;color:#0f1923">&#x1F3AB; Help</div>
+    <div style="font-size:12px;color:#888;margin-top:2px">Report a bug or suggest a feature</div>
+  </div>
+
+  <!-- Type selector -->
+  <div style="display:flex;gap:8px;margin-bottom:16px">
+    <button id="ticket-tab-bug" onclick="window.setTicketType('bug')"
+      style="flex:1;padding:10px;border-radius:10px;border:2px solid #e74c3c;background:#e74c3c;color:white;font-size:13px;font-weight:700;cursor:pointer">
+      &#x1F41B; Bug Report
+    </button>
+    <button id="ticket-tab-feature" onclick="window.setTicketType('feature')"
+      style="flex:1;padding:10px;border-radius:10px;border:2px solid #ddd;background:white;color:#555;font-size:13px;font-weight:700;cursor:pointer">
+      &#x1F4A1; Feature Request
+    </button>
+  </div>
+
+  <!-- Form -->
+  <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+    <input id="ticket-title" type="text" maxlength="120" placeholder="Short title (e.g. Photos not uploading)"
+      style="padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;width:100%;box-sizing:border-box"/>
+
+    <textarea id="ticket-desc" rows="5" maxlength="2000"
+      placeholder="Describe the issue or feature in detail (min 50 characters)..."
+      style="padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;width:100%;box-sizing:border-box;resize:vertical"></textarea>
+
+    <!-- Screenshot upload -->
+    <div style="border:1.5px dashed #ccc;border-radius:10px;padding:12px;text-align:center;cursor:pointer;background:#fafafa"
+         onclick="document.getElementById('ticket-screenshot').click()">
+      <div id="ticket-preview-wrap" style="display:none;margin-bottom:8px">
+        <img id="ticket-preview-img" style="max-width:100%;max-height:180px;border-radius:8px;object-fit:contain"/>
+      </div>
+      <div id="ticket-upload-label" style="color:#888;font-size:13px">&#x1F4F7; Attach screenshot (optional)</div>
+      <input id="ticket-screenshot" type="file" accept="image/*" style="display:none" onchange="window.previewTicketScreenshot(this)"/>
+    </div>
+
+    <button onclick="window.submitTicket()"
+      style="padding:13px;background:#0f1923;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">
+      &#x1F680; Submit Ticket
+    </button>
+    <div id="ticket-msg" style="display:none;text-align:center;font-size:13px;font-weight:700;padding:10px;border-radius:8px"></div>
+  </div>
+
+  <!-- My past tickets -->
+  <div style="margin-top:28px">
+    <div style="font-size:15px;font-weight:800;color:#0f1923;margin-bottom:10px">&#x1F4CB; My Tickets</div>
+    <div id="my-tickets-list" style="font-size:13px;color:#888">Loading...</div>
+  </div>
+
+  <!-- Back button at bottom for easy navigation after scrolling -->
+  <button onclick="window.go(window._supportOrigin||'buyer-search')"
+    style="margin-top:24px;background:#f5f5f5;border:none;border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer;font-weight:700">
+    &#8592; Back
+  </button>
+</div>
+
+<script>
+(function(){
+  var _ticketType = 'bug';
+
+  window._supportOrigin = 'buyer-search';
+
+  window.openSupport = function(origin) {
+    window._supportOrigin = origin || 'buyer-search';
+    window.go('support');
+    var el = document.getElementById('screen-support');
+    if (el) el.scrollIntoView({block:'start'});
+    window.loadMyTickets();
+  };
+
+  window.setTicketType = function(type) {
+    _ticketType = type;
+    var bugBtn  = document.getElementById('ticket-tab-bug');
+    var featBtn = document.getElementById('ticket-tab-feature');
+    if (type === 'bug') {
+      bugBtn.style.background  = '#e74c3c'; bugBtn.style.color  = 'white'; bugBtn.style.borderColor  = '#e74c3c';
+      featBtn.style.background = 'white';   featBtn.style.color = '#555';  featBtn.style.borderColor = '#ddd';
+    } else {
+      featBtn.style.background = '#1a7a3c'; featBtn.style.color = 'white'; featBtn.style.borderColor = '#1a7a3c';
+      bugBtn.style.background  = 'white';   bugBtn.style.color  = '#555';  bugBtn.style.borderColor  = '#ddd';
+    }
+  };
+
+  window.previewTicketScreenshot = function(input) {
+    var file = input.files[0];
+    if (!file) return;
+    var wrap  = document.getElementById('ticket-preview-wrap');
+    var img   = document.getElementById('ticket-preview-img');
+    var label = document.getElementById('ticket-upload-label');
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      img.src = e.target.result;
+      wrap.style.display = 'block';
+      label.textContent  = '✓ ' + file.name;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.submitTicket = function() {
+    var title = (document.getElementById('ticket-title').value || '').trim();
+    var desc  = (document.getElementById('ticket-desc').value  || '').trim();
+    var msgEl = document.getElementById('ticket-msg');
+
+    if (title.length < 3)  { showMsg('Please enter a title.', 'err'); return; }
+    if (desc.length  < 50) { showMsg('Description must be at least 50 characters.', 'err'); return; }
+
+    var fd = new FormData();
+    fd.append('action', 'submit_ticket');
+    fd.append('type',   _ticketType);
+    fd.append('title',  title);
+    fd.append('description', desc);
+    var tok = localStorage.getItem('cm237_token') || '';
+    if (tok) fd.append('session_token', tok);
+    var file = document.getElementById('ticket-screenshot').files[0];
+    if (file) fd.append('screenshot', file);
+
+    showMsg('Submitting...', 'info');
+    fetch('api.php', {method:'POST', body:fd})
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d.success) {
+          showMsg('✅ ' + d.message, 'ok');
+          document.getElementById('ticket-title').value = '';
+          document.getElementById('ticket-desc').value  = '';
+          document.getElementById('ticket-screenshot').value = '';
+          document.getElementById('ticket-preview-wrap').style.display = 'none';
+          document.getElementById('ticket-upload-label').textContent = '📷 Attach screenshot (optional)';
+          window.loadMyTickets();
+        } else {
+          showMsg('❌ ' + (d.error || 'Failed to submit.'), 'err');
+        }
+      })
+      .catch(function(){ showMsg('❌ Network error. Please try again.', 'err'); });
+  };
+
+  function showMsg(text, type) {
+    var el = document.getElementById('ticket-msg');
+    el.textContent = text;
+    el.style.display = 'block';
+    el.style.background = type === 'ok' ? '#e8f8ee' : type === 'err' ? '#fde8e8' : '#f0f4ff';
+    el.style.color      = type === 'ok' ? '#1a7a3c' : type === 'err' ? '#c0392b' : '#2c3e50';
+  }
+
+  window.loadMyTickets = function() {
+    var list = document.getElementById('my-tickets-list');
+    if (!list) return;
+    var tok = localStorage.getItem('cm237_token') || '';
+    if (!tok) { list.innerHTML = '<span style="color:#aaa">Sign in to see your past tickets.</span>'; return; }
+    fetch('api.php?action=my_tickets&session_token=' + encodeURIComponent(tok))
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (!d.success || !d.tickets || !d.tickets.length) {
+          list.innerHTML = '<span style="color:#aaa">No tickets yet.</span>';
+          return;
+        }
+        var statusColor = {open:'#e74c3c', in_progress:'#f39c12', resolved:'#1a7a3c'};
+        list.innerHTML = d.tickets.map(function(t){
+          var sc = statusColor[t.status] || '#888';
+          var dt = new Date(t.created_at).toLocaleDateString();
+          return '<div style="border:1px solid #eee;border-radius:10px;padding:12px;margin-bottom:8px">'
+            + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
+            + '<div style="font-weight:700;font-size:14px;color:#0f1923">' + (t.title||'').replace(/</g,'&lt;') + '</div>'
+            + '<span style="background:' + sc + ';color:white;border-radius:8px;padding:2px 8px;font-size:11px;font-weight:700;white-space:nowrap">'
+            + t.status.replace('_',' ') + '</span></div>'
+            + '<div style="font-size:11px;color:#aaa;margin-top:4px">' + (t.type==='bug'?'🐛 Bug':'💡 Feature') + ' &nbsp;·&nbsp; ' + dt + '</div>'
+            + '</div>';
+        }).join('');
+      })
+      .catch(function(){ list.innerHTML = '<span style="color:#aaa">Could not load tickets.</span>'; });
+  };
 })();
 </script>
 </body>

@@ -377,10 +377,11 @@ function moderateContent($title, $description, $category, $storeId, $userId) {
     $flagCategory = '';
     $severity     = 'low'; // low, medium, high, critical
 
-    // Check banned keywords
+    // Check banned keywords (word-boundary match to avoid "clean" matching "lean")
     foreach ($BANNED_KEYWORDS as $catName => $keywords) {
         foreach ($keywords as $kw) {
-            if (strpos($text, $kw) !== false) {
+            $pattern = '/\b' . preg_quote($kw, '/') . '\b/i';
+            if (preg_match($pattern, $text)) {
                 $flagged[]    = $kw;
                 $flagCategory = $catName;
                 $severity     = in_array($catName, ['weapons','drugs','chemicals','trafficking'])
@@ -389,10 +390,10 @@ function moderateContent($title, $description, $category, $storeId, $userId) {
         }
     }
 
-    // Check suspicious keywords
+    // Check suspicious keywords (word-boundary match)
     $suspicious = [];
     foreach ($SUSPICIOUS_KEYWORDS as $kw) {
-        if (strpos($text, $kw) !== false) $suspicious[] = $kw;
+        if (preg_match('/\b' . preg_quote($kw, '/') . '\b/i', $text)) $suspicious[] = $kw;
     }
 
     $result = [
