@@ -13626,7 +13626,7 @@ window.fpResetPassword = async function() {
     </div>
 
     <!-- Account Info -->
-    <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:700">Account Info</div>
+    <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:700">Account Info</div>
     <div style="margin-bottom:12px">
       <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">Full Name *</label>
       <input id="ep-name" type="text" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box" placeholder="Your full name"/>
@@ -13635,20 +13635,25 @@ window.fpResetPassword = async function() {
       <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">Phone Number *</label>
       <input id="ep-phone" type="tel" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box" placeholder="+237XXXXXXXXX"/>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-      <div>
-        <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">Region</label>
-        <input id="ep-region" type="text" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box" placeholder="e.g. Centre"/>
-      </div>
-      <div>
-        <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">Town</label>
-        <input id="ep-town" type="text" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box" placeholder="e.g. Yaoundé"/>
-      </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">Region *</label>
+      <select id="ep-region" onchange="window.fillCities('ep-town','ep-town-lbl',this.value)" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box;background:white">
+        <option value="">Select Region</option>
+        <option>Adamawa</option><option>Centre</option><option>East</option>
+        <option>Far North</option><option>Littoral</option><option>North</option>
+        <option>North West</option><option>South</option><option>South West</option><option>West</option>
+      </select>
+    </div>
+    <div style="margin-bottom:16px">
+      <label id="ep-town-lbl" style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">Town / City *</label>
+      <select id="ep-town" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box;background:white">
+        <option value="">Select Town / City</option>
+      </select>
     </div>
 
     <!-- Seller-only store fields -->
     <div id="ep-store-section" style="display:none">
-      <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:700;border-top:1px solid #f0f0f0;padding-top:14px">Store Info</div>
+      <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:700;border-top:1px solid #f0f0f0;padding-top:16px">Store Info</div>
       <div style="margin-bottom:12px">
         <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">Store Name *</label>
         <input id="ep-store-name" type="text" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box" placeholder="Your store name"/>
@@ -13657,9 +13662,24 @@ window.fpResetPassword = async function() {
         <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">WhatsApp Number</label>
         <input id="ep-whatsapp" type="tel" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box" placeholder="+237XXXXXXXXX"/>
       </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">Nearest Market / Landmark</label>
+        <input id="ep-landmark" type="text" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box" placeholder="e.g. Bamenda main market shade 60"/>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">Store Address</label>
+        <input id="ep-store-address" type="text" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box" placeholder="Your store address"/>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:6px">Physical Store?</label>
+        <div style="display:flex;gap:8px">
+          <button id="ep-phys-yes" type="button" onclick="window._epSetPhysical(true)" style="flex:1;padding:9px;border:1.5px solid #ddd;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;background:#f9f9f9;color:#555">&#9989; Yes</button>
+          <button id="ep-phys-no"  type="button" onclick="window._epSetPhysical(false)" style="flex:1;padding:9px;border:1.5px solid #ddd;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;background:#f9f9f9;color:#555">&#10060; No</button>
+        </div>
+      </div>
       <div style="margin-bottom:16px">
-        <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">Area / Landmark</label>
-        <input id="ep-quarter" type="text" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box" placeholder="e.g. Bastos, near Total station"/>
+        <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">Business Description</label>
+        <textarea id="ep-bio" rows="3" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box;resize:vertical" placeholder="Tell buyers about your business…"></textarea>
       </div>
     </div>
 
@@ -13670,22 +13690,52 @@ window.fpResetPassword = async function() {
 
 <script>
 (function(){
+  var _epPhysical = false;
+
+  window._epSetPhysical = function(val) {
+    _epPhysical = val;
+    var yes = document.getElementById('ep-phys-yes');
+    var no  = document.getElementById('ep-phys-no');
+    if (yes) { yes.style.background = val  ? '#e8f5e9' : '#f9f9f9'; yes.style.borderColor = val  ? '#1a7a3c' : '#ddd'; yes.style.color = val  ? '#1a7a3c' : '#555'; }
+    if (no)  { no.style.background  = !val ? '#fef0f0' : '#f9f9f9'; no.style.borderColor  = !val ? '#e74c3c' : '#ddd'; no.style.color  = !val ? '#e74c3c' : '#555'; }
+  };
+
   window.openEditProfile = function() {
     var user  = JSON.parse(localStorage.getItem('cm237_user')  || 'null');
     var store = JSON.parse(localStorage.getItem('cm237_store') || 'null');
     if (!user) return;
 
-    document.getElementById('ep-name').value   = user.full_name  || '';
-    document.getElementById('ep-phone').value  = user.phone      || '';
-    document.getElementById('ep-region').value = user.region     || '';
-    document.getElementById('ep-town').value   = user.town       || '';
+    document.getElementById('ep-name').value  = user.full_name || '';
+    document.getElementById('ep-phone').value = user.phone     || '';
+
+    // Region SELECT — set value then populate town cascade
+    var regSel = document.getElementById('ep-region');
+    regSel.value = user.region || '';
+    window.fillCities('ep-town', 'ep-town-lbl', user.region || '');
+    // After fillCities populates options, set the saved town
+    var townSel = document.getElementById('ep-town');
+    var savedTown = user.town || (store && store.area_quarter) || '';
+    // Try to select matching option; if not found, add it
+    var found = false;
+    for (var i = 0; i < townSel.options.length; i++) {
+      if (townSel.options[i].value === savedTown) { townSel.value = savedTown; found = true; break; }
+    }
+    if (!found && savedTown) {
+      var o = document.createElement('option');
+      o.value = o.textContent = savedTown;
+      townSel.appendChild(o);
+      townSel.value = savedTown;
+    }
 
     var storeSection = document.getElementById('ep-store-section');
-    if (user.role === 'seller' && store) {
+    if (user.role === 'seller') {
       storeSection.style.display = 'block';
-      document.getElementById('ep-store-name').value = store.store_name   || '';
-      document.getElementById('ep-whatsapp').value   = store.whatsapp     || '';
-      document.getElementById('ep-quarter').value    = store.area_quarter || '';
+      document.getElementById('ep-store-name').value    = (store && store.store_name)          || '';
+      document.getElementById('ep-whatsapp').value      = (store && store.whatsapp)            || '';
+      document.getElementById('ep-landmark').value      = (store && store.landmark)            || '';
+      document.getElementById('ep-store-address').value = (store && store.store_address)       || '';
+      document.getElementById('ep-bio').value           = (store && store.business_description) || '';
+      window._epSetPhysical(!!(store && store.has_physical_store));
     } else {
       storeSection.style.display = 'none';
     }
@@ -13697,9 +13747,8 @@ window.fpResetPassword = async function() {
   };
 
   window.saveEditProfile = async function() {
-    var tok   = localStorage.getItem('cm237_token') || '';
-    var user  = JSON.parse(localStorage.getItem('cm237_user')  || 'null');
-    var store = JSON.parse(localStorage.getItem('cm237_store') || 'null');
+    var tok  = localStorage.getItem('cm237_token') || '';
+    var user = JSON.parse(localStorage.getItem('cm237_user')  || 'null');
     if (!tok || !user) return;
 
     var errEl = document.getElementById('ep-error');
@@ -13716,9 +13765,12 @@ window.fpResetPassword = async function() {
     fd.append('town',      document.getElementById('ep-town').value.trim());
 
     if (user.role === 'seller') {
-      fd.append('store_name',   document.getElementById('ep-store-name').value.trim());
-      fd.append('whatsapp',     document.getElementById('ep-whatsapp').value.trim());
-      fd.append('area_quarter', document.getElementById('ep-quarter').value.trim());
+      fd.append('store_name',           document.getElementById('ep-store-name').value.trim());
+      fd.append('whatsapp',             document.getElementById('ep-whatsapp').value.trim());
+      fd.append('landmark',             document.getElementById('ep-landmark').value.trim());
+      fd.append('store_address',        document.getElementById('ep-store-address').value.trim());
+      fd.append('has_physical_store',   _epPhysical ? '1' : '0');
+      fd.append('business_description', document.getElementById('ep-bio').value.trim());
     }
 
     try {
@@ -13726,7 +13778,7 @@ window.fpResetPassword = async function() {
       var d   = await res.json();
       if (!d.success) throw new Error(d.error || 'Update failed.');
 
-      // Update localStorage so dashboard reflects new info immediately
+      // Sync localStorage immediately
       user.full_name = document.getElementById('ep-name').value.trim();
       user.phone     = document.getElementById('ep-phone').value.trim();
       user.region    = document.getElementById('ep-region').value.trim();
@@ -13737,7 +13789,6 @@ window.fpResetPassword = async function() {
       if (d.store) {
         localStorage.setItem('cm237_store', JSON.stringify(d.store));
         if (window._currentStore) window._currentStore = d.store;
-        // Refresh store name on dashboard
         var sn = document.getElementById('dash-store-name');
         if (sn) sn.textContent = d.store.store_name || user.full_name;
       }

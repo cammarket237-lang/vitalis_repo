@@ -756,13 +756,21 @@ if ($action === 'update_profile') {
 
     $storeOut = null;
     if ($user['role'] === 'seller') {
-        $storeName = trim(p('store_name')   ?? '');
-        $whatsapp  = trim(p('whatsapp')     ?? '');
-        $quarter   = trim(p('area_quarter') ?? '');
+        $storeName    = trim(p('store_name')           ?? '');
+        $whatsapp     = trim(p('whatsapp')             ?? '');
+        $landmark     = trim(p('landmark')             ?? '');
+        $storeAddress = trim(p('store_address')        ?? '');
+        $hasPhysical  = p('has_physical_store') === '1';
+        $bizDesc      = trim(p('business_description') ?? '');
         if ($storeName) {
             db()->prepare(
-                "UPDATE cammarket237.stores SET store_name=?,area_quarter=?,whatsapp=?,region=? WHERE user_id=?"
-            )->execute([$storeName, $quarter, $whatsapp ?: $phone, $region, $user['id']]);
+                "UPDATE cammarket237.stores
+                 SET store_name=?,area_quarter=?,whatsapp=?,region=?,
+                     landmark=?,store_address=?,has_physical_store=?,business_description=?
+                 WHERE user_id=?"
+            )->execute([$storeName, $town, $whatsapp ?: $phone, $region,
+                        $landmark, $storeAddress, $hasPhysical, $bizDesc,
+                        $user['id']]);
         }
         $storeOut = q1("SELECT * FROM cammarket237.stores WHERE user_id=? LIMIT 1", [$user['id']]);
     }
