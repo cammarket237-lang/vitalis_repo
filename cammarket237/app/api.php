@@ -730,6 +730,47 @@ if ($action === 'seller_login') {
 }
 
 // ═══════════════════════════════════════════════════════════
+// UPDATE PROFILE — buyer or seller updates their profile info
+// ═══════════════════════════════════════════════════════════
+if ($action === 'update_profile') {
+    $user = requireAuth();
+
+    $name    = trim(p('full_name') ?? '');
+    $phone   = trim(p('phone')     ?? '');
+    $region  = trim(p('region')    ?? '');
+    $town    = trim(p('town')      ?? '');
+
+    if (!$name || strlen($name) < 2) fail('Name must be at least 2 characters.');
+    if (!$phone) fail('Phone number is required.');
+    if (!preg_match('/^\+?[0-9]{8,15}$/', preg_replace('/[\s\-]/','',$phone))) fail('Invalid phone number.');
+
+    // Check phone conflict only if phone actually changed
+    if ($phone !== $user['phone']) {
+        $conflict = q1("SELECT id FROM cammarket237.users WHERE phone=? AND id!=? LIMIT 1", [$phone, $user['id']]);
+        if ($conflict) fail('That phone number is already registered to another account.');
+    }
+
+    db()->prepare(
+        "UPDATE cammarket237.users SET full_name=?,phone=?,region=?,town=? WHERE id=?"
+    )->execute([$name, $phone, $region, $town, $user['id']]);
+
+    $storeOut = null;
+    if ($user['role'] === 'seller') {
+        $storeName = trim(p('store_name')   ?? '');
+        $whatsapp  = trim(p('whatsapp')     ?? '');
+        $quarter   = trim(p('area_quarter') ?? '');
+        if ($storeName) {
+            db()->prepare(
+                "UPDATE cammarket237.stores SET store_name=?,area_quarter=?,whatsapp=?,region=? WHERE user_id=?"
+            )->execute([$storeName, $quarter, $whatsapp ?: $phone, $region, $user['id']]);
+        }
+        $storeOut = q1("SELECT * FROM cammarket237.stores WHERE user_id=? LIMIT 1", [$user['id']]);
+    }
+
+    ok(['success' => true, 'message' => 'Profile updated.', 'store' => $storeOut]);
+}
+
+// ═══════════════════════════════════════════════════════════
 // CAMERA SEARCH — identify item in photo, return search keywords
 // ═══════════════════════════════════════════════════════════
 if ($action === 'camera_search') {
