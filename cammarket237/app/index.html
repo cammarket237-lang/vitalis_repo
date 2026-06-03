@@ -7190,10 +7190,28 @@ window.loadStoreProfile = async function(storeId, item) {
 
   go('store-profile');
 
+  // If opened without store details (promoted card / announcement), fetch the real store record.
+  if ((!item || !item.store_name) && storeId) {
+    try {
+      var _sd = await (await fetch(_apiBase + '?action=get_store&id=' + storeId)).json();
+      if (_sd && _sd.success && _sd.store) {
+        var _st = _sd.store;
+        item.store_name = _st.store_name; item.region = _st.region; item.rating = _st.rating;
+        item.whatsapp = _st.whatsapp; item.latitude = _st.latitude; item.longitude = _st.longitude;
+        window._profileStore = item;
+        if (sn) sn.textContent = item.store_name || 'Store';
+        if (sl) sl.textContent = item.region || '';
+        if (sr) sr.textContent = item.rating ? '⭐ ' + parseFloat(item.rating).toFixed(1) : '⭐ No ratings yet';
+        if (av) av.textContent = (item.store_name||'S').charAt(0).toUpperCase();
+        if (wb) wb.style.display = item.whatsapp ? 'block' : 'none';
+      }
+    } catch(e){}
+  }
+
   // Load store listings
   if (storeId) {
     try {
-      var d = await (await fetch(_apiBase + '?action=seller_listings&store_id=' + storeId)).json();
+      var d = await (await fetch(_apiBase + '?action=get_listings&store_id=' + storeId)).json();
       if (d.success && d.listings) {
         var lst = document.getElementById('sp-listings');
         var cnt = document.getElementById('sp-listings-count');
