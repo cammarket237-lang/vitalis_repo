@@ -2231,6 +2231,7 @@
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
               <div id="sp-name" style="font-size:18px;font-weight:800;color:white">Store</div>
               <div id="sp-badge" style="display:none;background:#fcd116;color:#0f1923;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px">VERIFIED</div>
+              <div id="sp-promoted" style="display:none;background:#f39c12;color:white;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px">&#x2B50; PROMOTED</div>
             </div>
             <div id="sp-location" style="color:#aaa;font-size:12px;margin-top:3px"></div>
             <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap">
@@ -6422,6 +6423,16 @@ window.doSearch = async function() {
   }
 };
 
+window._promotedStores = {};
+window.loadPromotedStores = async function(){
+  try {
+    var d = await (await fetch('/api.php?action=get_promoted_stores')).json();
+    var m = {}; (d.store_ids||[]).forEach(function(id){ m[id] = 1; });
+    window._promotedStores = m;
+  } catch(e){}
+};
+loadPromotedStores();   // populate shortly after load; refreshed when a store profile opens
+
 window.renderItem = function(item) {
   var _cacheKey = item._src === 'ng' ? 'ng_' + item.id : String(item.id);
   window._itemCache[_cacheKey] = item;
@@ -6457,8 +6468,10 @@ window.renderItem = function(item) {
     ? '<img src="' + item.main_photo + '" style="width:100%;height:100px;object-fit:cover;border-radius:10px 10px 0 0" onerror="this.src=&apos;&apos;"/>'
     : '<div style="width:100%;height:100px;border-radius:10px 10px 0 0;background:#e8e0d0;display:flex;align-items:center;justify-content:center;font-size:28px">\uD83D\uDCE6</div>';
   var saved = window._savedItems && window._savedItems[item.id] ? '\u2764\uFE0F' : '\uD83E\uDD0D';
+  var promoBadge = (item._src !== 'ng' && window._promotedStores && item.store_id && window._promotedStores[item.store_id])
+    ? '<span style="position:absolute;top:6px;right:6px;font-size:9px;background:#f39c12;color:white;border-radius:5px;padding:1px 6px;font-weight:800;z-index:2">&#x2B50; Promoted</span>' : '';
   return '<div class="itm" data-item-id="' + _cacheKey + '" style="cursor:pointer;position:relative" onclick="var _ci=window._itemCache[this.dataset.itemId];if(_ci)window.showItem(_ci);">'
-    + img + srcBadge
+    + img + srcBadge + promoBadge
     + '<div style="padding:10px">'
     + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">'
     + '<div style="font-weight:700;color:#0f1923;font-size:11px;flex:1;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + name + '</div>'
@@ -7096,6 +7109,11 @@ window.loadStoreProfile = async function(storeId, item) {
   if (sl) sl.textContent = (item.town||'') + (item.region?', '+item.region:'');
   if (sr) sr.textContent = item.rating ? '\u2B50 ' + parseFloat(item.rating).toFixed(1) : '\u2B50 No ratings yet';
   if (av) av.textContent = (item.store_name||'S').charAt(0).toUpperCase();
+
+  // "Promoted" badge if this store has an active store-boost
+  if (window.loadPromotedStores) { try { await window.loadPromotedStores(); } catch(e){} }
+  var spp = document.getElementById('sp-promoted');
+  if (spp) spp.style.display = (item && item._src !== 'ng' && window._promotedStores && window._promotedStores[storeId]) ? 'inline-block' : 'none';
 
   // Follow button
   var fb = document.getElementById('sp-follow-btn');
