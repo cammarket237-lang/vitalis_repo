@@ -3919,10 +3919,16 @@
       <button onclick="window.go('advertise-hub')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer">&#8592; <span data-i18n="btn.back">Back</span></button>
       <div style="font-size:17px;font-weight:800;color:#0f1923">&#x2B50; Boost My Listing</div>
     </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button id="boost-mode-item" onclick="window.setBoostMode('item')" style="flex:1;padding:10px;border:2px solid #f39c12;background:#f39c12;color:white;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">&#x2B50; Boost a listing</button>
+      <button id="boost-mode-store" onclick="window.setBoostMode('store')" style="flex:1;padding:10px;border:2px solid #ddd;background:white;color:#555;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">&#x1F3EA; Boost my whole store</button>
+    </div>
+    <div id="boost-step1">
     <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">1. Select a listing to boost</div>
     <div id="boost-listings-container" style="margin-bottom:18px">
       <div style="text-align:center;padding:24px;color:#aaa;font-size:13px">Loading your listings???</div>
     </div>
+    </div><!-- /boost-step1 -->
     <input type="hidden" id="boost-listing-id" value="">
     <div id="boost-step2" style="display:none">
       <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">2. Choose your package</div>
@@ -5479,6 +5485,15 @@ window.go = function(id) {
     var postBtn = document.getElementById('post-btn');
     if (banner) banner.style.display = 'none';
     if (postBtn) { postBtn.disabled = false; postBtn.style.opacity = '1'; }
+    // Unless we are opening the editor, ensure a fresh-create state.
+    if (!window._openingEditor) {
+      if (window._editMode && window._cmClearForNew) window._cmClearForNew();
+      window._editMode = false; window._editId = null;
+      if (window._cmSetEditLabels) window._cmSetEditLabels(false);
+      var condNew = document.getElementById('p-condition');
+      if (condNew && !condNew.value) condNew.value = 'new';   // Create defaults to New
+    }
+    window._openingEditor = false;
   }
   if (id === 'seller-dash' || id === 'buyer-search') {
     window.showPromoStrip && window.showPromoStrip(id);
@@ -7345,15 +7360,15 @@ window.submitPost = async function() {
     document.getElementById(f[1]).classList.toggle('error', !v);
     if (!v) ok = false;
   });
-  if (!p1 || !p2 || !p3) ok = false; // all 3 photos required; video optional
+  if (!window._editMode && (!p1 || !p2 || !p3)) ok = false; // 3 photos required for new listings; optional when editing
   var errEl = document.getElementById('post-err');
   if (errEl) { errEl.style.display = ok ? 'none' : 'block'; errEl.textContent = 'Please fill all required fields and upload all 3 photos (front, back, and side/detail).'; }
   if (!ok) return;
   ['ai-checking','ai-approved','ai-rejected'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
   var btn = document.getElementById('post-btn');
-  if (btn) { btn.disabled = true; btn.textContent = 'AI Verifying...'; }
+  if (btn) { btn.disabled = true; btn.textContent = window._editMode ? 'Saving...' : 'AI Verifying...'; }
   var ck = document.getElementById('ai-checking');
-  if (ck) ck.style.display = 'block';
+  if (ck && !window._editMode) ck.style.display = 'block';
   try {
     // Always get fresh token from localStorage before posting
     var freshToken = localStorage.getItem('cm237_token') || _sessionToken || '';
@@ -7370,7 +7385,7 @@ window.submitPost = async function() {
     fd.append('quantity',     document.getElementById('p-qty').value);
     if (_bulkOn) fd.append('bulk_available', '1');
     fd.append('bulk_note', document.getElementById('p-bknote').value.trim());
-    fd.append('photo1', p1); fd.append('photo2', p2); fd.append('photo3', p3);
+    if (p1) fd.append('photo1', p1); if (p2) fd.append('photo2', p2); if (p3) fd.append('photo3', p3);
     if (vid) fd.append('video', vid);
     if (window._ghSubmitExtra) {
       Object.keys(window._ghSubmitExtra).forEach(function(k) { fd.append(k, window._ghSubmitExtra[k] || ''); });
@@ -7413,6 +7428,13 @@ window.submitPost = async function() {
                 color:_gv('p-cl-color'), material:_gv('p-cl-material') };
     }
     if (_meta) fd.append('metadata', JSON.stringify(_meta));
+    // Condition (always sent — for both create and edit; defaults to New)
+    fd.append('condition', (document.getElementById('p-condition')||{}).value || 'new');
+    // Edit mode: switch to the edit endpoint and target the existing listing
+    if (window._editMode) {
+      fd.set('action', 'edit_listing');
+      fd.append('listing_id', window._editId);
+    }
     var d = await (await fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token': freshToken || _sessionToken || localStorage.getItem('cm237_token') || ''}})).json();
     if (ck) ck.style.display = 'none';
     if (d.rejected) {
@@ -7455,6 +7477,14 @@ window.submitPost = async function() {
       }
       if (btn) { btn.disabled = false; btn.textContent = 'Try Again'; }
     } else if (d.success) {
+      if (window._editMode) {
+        window._editMode = false; window._editId = null;
+        if (window._cmSetEditLabels) window._cmSetEditLabels(false);
+        if (btn) { btn.disabled = false; btn.textContent = '🚀 Post Item'; }
+        alert('✅ ' + (d.message || 'Listing updated.'));
+        go('seller-dash'); if (window.loadMyListings) window.loadMyListings();
+        return;
+      }
       var ap = document.getElementById('ai-approved'); if (ap) ap.style.display = 'block';
       if (d.pending_review) {
         var am = document.getElementById('ai-ok-msg'); if (am) am.innerHTML = '&#x23F3; Submitted for Review<br><span style="font-size:12px;font-weight:400;color:#555">Our team will review your listing shortly. You\'ll see it go live in your dashboard once approved.</span>';
@@ -8988,8 +9018,99 @@ window.cancelPostItem = function() {
   var err = document.getElementById('post-err');
   if (err) err.textContent = '';
 
+  // Reset edit mode so the next "Post Item" is a fresh create
+  window._editMode = false; window._editId = null;
+  if (window._cmSetEditLabels) window._cmSetEditLabels(false);
+
   // Go back to dashboard
   window.go('seller-dash');
+};
+
+// ─── FULL EDIT LISTING (reuses the Create form; covers all aspects + metadata) ───
+window._editMode = window._editMode || false;
+window._editId   = window._editId   || null;
+window._openingEditor = false;
+
+// Category → [formFieldId, metadataKey] map (mirror of the create _meta builder).
+var _CM_META = {
+  'Buy & Sell Cars': [['p-car-make','make'],['p-car-model','model'],['p-car-year','year'],['p-car-mileage','mileage'],['p-car-transmission','transmission'],['p-car-fuel','fuel'],['p-car-color','color']],
+  'Car Rental': [['p-rent-vtype','vehicle_type'],['p-rent-seats','seats'],['p-rent-make','make'],['p-rent-model','model'],['p-rent-year','year'],['p-rent-deposit','deposit'],['p-rent-driver','driver'],['p-rent-fuel','fuel_policy'],['p-rent-pickup','pickup']],
+  'Apartments & Rentals': [['p-apt-beds','bedrooms'],['p-apt-baths','bathrooms'],['p-apt-furnished','furnished'],['p-apt-type','property_type'],['p-apt-period','price_period']],
+  'Transport & Drivers': [['p-trp-from','from'],['p-trp-to','to'],['p-trp-vtype','vehicle_type'],['p-trp-seats','seats'],['p-trp-time','departure_time'],['p-trp-freq','frequency']],
+  'Agriculture': [['p-agr-unit','unit'],['p-agr-qty','quantity'],['p-agr-harvest','harvest_date'],['p-agr-farm','farm_location'],['p-agr-organic','organic']],
+  'Farm/Agricultural Produce': [['p-agr-unit','unit'],['p-agr-qty','quantity'],['p-agr-harvest','harvest_date'],['p-agr-farm','farm_location'],['p-agr-organic','organic']],
+  'Delivery Service': [['p-del-from','from'],['p-del-to','to'],['p-del-vtype','vehicle_type'],['p-del-weight','max_weight'],['p-del-time','delivery_time']],
+  'Electronics': [['p-elec-storage','storage'],['p-elec-ram','ram'],['p-elec-screen','screen'],['p-elec-warranty','warranty']],
+  'Phones & Accessories': [['p-ph-storage','storage'],['p-ph-ram','ram'],['p-ph-network','network'],['p-ph-os','os']],
+  'Clothing & Fashion': [['p-cl-size','size'],['p-cl-gender','gender'],['p-cl-color','color'],['p-cl-material','material']]
+};
+function _cmSetMeta(cat, meta) {
+  if (!meta || !_CM_META[cat]) return;
+  _CM_META[cat].forEach(function(f){ var e=document.getElementById(f[0]); if(e) e.value = (meta[f[1]]!=null ? meta[f[1]] : ''); });
+}
+function _cmClearMeta() {
+  Object.keys(_CM_META).forEach(function(c){ _CM_META[c].forEach(function(f){ var e=document.getElementById(f[0]); if(e){ if(e.tagName==='SELECT') e.selectedIndex=0; else e.value=''; } }); });
+}
+window._cmSetEditLabels = function(on) {
+  var ttl = document.querySelector('#screen-post-item .title');
+  var sub = document.querySelector('#screen-post-item .sub');
+  var btn = document.getElementById('post-btn');
+  if (on) {
+    if (ttl) { ttl.textContent = '✏️ Edit Listing'; ttl.removeAttribute('data-i18n'); }
+    if (sub) { sub.textContent = 'Update any details. Leave a photo empty to keep the current one.'; sub.removeAttribute('data-i18n'); }
+    if (btn) { btn.textContent = '💾 Save Changes'; btn.removeAttribute('data-i18n'); }
+  } else {
+    if (ttl && !ttl.getAttribute('data-i18n')) { ttl.textContent = 'Post Item for Sale'; ttl.setAttribute('data-i18n','create.title'); }
+    if (sub && !sub.getAttribute('data-i18n')) { sub.setAttribute('data-i18n','create.subtitle'); }
+    if (btn && !btn.getAttribute('data-i18n')) { btn.textContent = '🚀 Post Item'; btn.setAttribute('data-i18n','create.publishListing'); }
+  }
+};
+// Clear the create form when switching out of an edit into a fresh listing.
+window._cmClearForNew = function() {
+  ['p-title','p-desc','p-price','p-landmark','p-bulk-note'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
+  var q=document.getElementById('p-qty'); if(q) q.value='1';
+  ['p-cat','p-ltype','p-ptype'].forEach(function(id){ var e=document.getElementById(id); if(e) e.selectedIndex=0; });
+  var cond=document.getElementById('p-condition'); if(cond) cond.value='new';
+  _cmClearMeta();
+  if (window.onCategoryChange) window.onCategoryChange('');
+  ['mp1','mp2','mp3'].forEach(function(id){ var e=document.getElementById(id); if(e){ e.src=''; e.style.display='none'; } });
+  ['bp1','bp2','slot3-photo-area'].forEach(function(id){ var b=document.getElementById(id); if(b){ b.classList.remove('filled'); var mi=b.querySelector('.mico'),ml=b.querySelector('.mlb'); if(mi)mi.style.display=''; if(ml)ml.style.display=''; } });
+  ['photo1-cam','photo1-gal','photo2-cam','photo2-gal','p3cam','p3gal','video-cam','video-gal'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
+};
+function _cmShowExistingPhoto(previewId, boxId, url) {
+  if (!url) return;
+  var img=document.getElementById(previewId);
+  if (img) { img.src=url; img.style.display='block'; }
+  var box=document.getElementById(boxId);
+  if (box) { var mi=box.querySelector('.mico'),ml=box.querySelector('.mlb'); if(mi)mi.style.display='none'; if(ml)ml.style.display='none'; box.classList.add('filled'); }
+}
+// Open the unified editor for a listing id. Fetches the full listing and prefills the create form.
+window.openEditListing = async function(id) {
+  var tok = localStorage.getItem('cm237_token') || (typeof _sessionToken !== 'undefined' ? _sessionToken : '') || '';
+  var l;
+  try {
+    var d = await (await fetch('/api.php?action=get_listing&id=' + id, { headers:{ 'X-Session-Token': tok } })).json();
+    if (!d.success || !d.listing) { alert(d.error || 'Could not load listing.'); return; }
+    l = d.listing;
+  } catch(e) { alert('Error loading listing: ' + e.message); return; }
+  window._editMode = true; window._editId = id;
+  var set = function(fid, v){ var e=document.getElementById(fid); if(e) e.value = (v!=null ? v : ''); };
+  set('p-title', l.title); set('p-desc', l.description); set('p-price', l.price);
+  set('p-qty', l.quantity_available != null ? l.quantity_available : 1);
+  set('p-ptype', l.price_type || 'fixed'); set('p-ltype', l.listing_type || 'sale');
+  set('p-cat', l.category || '');
+  if (window.onCategoryChange) window.onCategoryChange(l.category || '');
+  var cond=document.getElementById('p-condition'); if(cond) cond.value = l.condition || 'new';
+  _cmSetMeta(l.category, l.metadata);
+  ['photo1-cam','photo1-gal','photo2-cam','photo2-gal','p3cam','p3gal','video-cam','video-gal'].forEach(function(pid){ var e=document.getElementById(pid); if(e) e.value=''; });
+  _cmShowExistingPhoto('mp1','bp1', l.main_photo);
+  _cmShowExistingPhoto('mp2','bp2', l.photo2);
+  _cmShowExistingPhoto('mp3','slot3-photo-area', l.photo3 || l.video360);
+  _cmSetEditLabels(true);
+  if (window.switchPostTab) window.switchPostTab('single');
+  ['ai-checking','ai-approved','ai-rejected'].forEach(function(x){ var e=document.getElementById(x); if(e) e.style.display='none'; });
+  window._openingEditor = true;
+  window.go('post-item');
 };
 
 
@@ -9639,7 +9760,8 @@ var _adTypeMap = {
   featured_listing:      {icon:'&#x2B50;', label:'FEATURED',  color:'#f39c12'},
   video_ad:              {icon:'&#x1F3AC;',label:'VIDEO AD',  color:'#8e44ad'},
   banner_display:        {icon:'&#x1F3AC;',label:'VIDEO AD',  color:'#8e44ad'},
-  event_ad:              {icon:'&#x1F389;',label:'EVENT',     color:'#1a7a3c'}
+  event_ad:              {icon:'&#x1F389;',label:'EVENT',     color:'#1a7a3c'},
+  boost_store:           {icon:'&#x1F3EA;',label:'STORE',     color:'#e67e22'}
 };
 
 function _adShowSlide(sfx, idx) {
@@ -9846,6 +9968,8 @@ window._adClick = function(btn) {
   fd.append('action','record_ad_click');
   fd.append('campaign_id', ad.id);
   fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token':tok}}).catch(function(){});
+  if (ad.ad_type === 'boost_store' && ad.store_id) { window.viewAnnouncedStore(ad.store_id); return; }
+  if (ad.ad_type === 'boost_listing' && ad.listing_id) { window.showItemById(ad.listing_id); return; }
   if (ad.push_link_path) window.open(ad.push_link_path, '_blank');
 };
 
@@ -10332,7 +10456,31 @@ window.submitEventAd = async function() {
 };
 
 // ?????? BOOST LISTING ??????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+window._boostMode = 'item';
+window.setBoostMode = function(mode){
+  window._boostMode = mode;
+  var bi=document.getElementById('boost-mode-item'), bs=document.getElementById('boost-mode-store');
+  if(bi){ bi.style.border = mode==='item'?'2px solid #f39c12':'2px solid #ddd'; bi.style.background = mode==='item'?'#f39c12':'white'; bi.style.color = mode==='item'?'white':'#555'; }
+  if(bs){ bs.style.border = mode==='store'?'2px solid #f39c12':'2px solid #ddd'; bs.style.background = mode==='store'?'#f39c12':'white'; bs.style.color = mode==='store'?'white':'#555'; }
+  var step1=document.getElementById('boost-step1'), step2=document.getElementById('boost-step2');
+  if(mode==='store'){
+    if(step1) step1.style.display='none';
+    var li=document.getElementById('boost-listing-id'); if(li) li.value='';
+    var st=JSON.parse(localStorage.getItem('cm237_store')||'null');
+    if(st){
+      var bn=document.getElementById('boost-biz-name'); if(bn&&!bn.value) bn.value=st.store_name||'';
+      var bp=document.getElementById('boost-biz-phone'); if(bp&&!bp.value) bp.value=st.whatsapp||'';
+      var tEl=document.getElementById('boost-push-title'); if(tEl&&!tEl.value){ tEl.value=('Visit '+(st.store_name||'our store')).substring(0,60); var tc=document.getElementById('boost-title-count'); if(tc) tc.textContent=tEl.value.length+'/60'; }
+      var bEl=document.getElementById('boost-push-body'); if(bEl&&!bEl.value){ bEl.value=('See all our products and offers at '+(st.store_name||'our store')+'.').substring(0,150); var bc=document.getElementById('boost-body-count'); if(bc) bc.textContent=bEl.value.length+'/150'; }
+    }
+    if(step2) step2.style.display='block';
+    window.loadBoostPackages && window.loadBoostPackages();
+  } else {
+    if(step1) step1.style.display='';
+  }
+};
 window.loadBoostListingScreen = async function() {
+  if (window.setBoostMode) window.setBoostMode('item');
   var store = JSON.parse(localStorage.getItem('cm237_store') || 'null');
   if (!store || !store.id) {
     document.getElementById('boost-listings-container').innerHTML =
@@ -10355,13 +10503,14 @@ window.loadBoostListingScreen = async function() {
       container.innerHTML = '<div style="text-align:center;padding:24px;color:#aaa;font-size:13px">No active listings found.<br><br><button onclick="window.go(\'post-listing\')" style="background:#e67e22;color:white;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Post a listing first</button></div>';
       return;
     }
+    window._boostCache = {};
     container.innerHTML = active.map(function(l) {
       var price = l.price_type === 'negotiable' ? 'N??gociable' : Number(l.price).toLocaleString() + ' FCFA';
       var img = l.main_photo ? '<img src="' + l.main_photo + '" style="width:56px;height:56px;object-fit:cover;border-radius:8px;flex-shrink:0">' :
         '<div style="width:56px;height:56px;background:#f0f0f0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">&#x1F4E6;</div>';
       var desc = (l.description || '').substring(0, 80) + ((l.description || '').length > 80 ? '???' : '');
-      return '<div id="boost-card-' + l.id + '" onclick="window.selectBoostListing(' + l.id + ',' +
-        JSON.stringify(l.title) + ',' + JSON.stringify(desc) + ',' + JSON.stringify(l.main_photo||'') + ',' + JSON.stringify(price) + ')"' +
+      window._boostCache[l.id] = { title: l.title || '', desc: desc, photo: l.main_photo || '', price: price };
+      return '<div id="boost-card-' + l.id + '" data-boost-id="' + l.id + '"' +
         ' style="display:flex;align-items:center;gap:12px;background:white;border:2px solid #eee;border-radius:12px;padding:12px;margin-bottom:8px;cursor:pointer">' +
         img +
         '<div style="flex:1;min-width:0">' +
@@ -10372,13 +10521,22 @@ window.loadBoostListingScreen = async function() {
         '<div style="font-size:18px;color:#ddd" id="boost-check-' + l.id + '">&#x25CB;</div>' +
       '</div>';
     }).join('');
+    if (!container._cmDelegated) {
+      container.addEventListener('click', function(ev){
+        var card = ev.target.closest('[data-boost-id]'); if(!card) return;
+        window.selectBoostListing(card.getAttribute('data-boost-id'));
+      });
+      container._cmDelegated = true;
+    }
     window.loadBoostPackages && window.loadBoostPackages();
   } catch(e) {
     container.innerHTML = '<div style="text-align:center;padding:24px;color:#e74c3c;font-size:13px">Failed to load listings. Please try again.</div>';
   }
 };
 
-window.selectBoostListing = function(id, title, desc, photo, priceStr) {
+window.selectBoostListing = function(id) {
+  var _bd = (window._boostCache && window._boostCache[id]) || {};
+  var title = _bd.title || '', desc = _bd.desc || '', photo = _bd.photo || '', priceStr = _bd.price || '';
   document.querySelectorAll('[id^="boost-card-"]').forEach(function(el) {
     el.style.borderColor = '#eee';
     var cid = el.id.replace('boost-card-', '');
@@ -10421,8 +10579,10 @@ window.loadBoostPackages = async function() {
     var d = await (await fetch('/api.php', {method:'POST', body:fd})).json();
     var pkgs = d.packages || [];
     if (!pkgs.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:14px;color:#aaa">No packages available.</div>'; return; }
+    window._boostPkgCache = {};
     grid.innerHTML = pkgs.map(function(p) {
-      return '<div id="bpkg-' + p.id + '" onclick="window.selectBoostPackage(' + p.id + ',' + JSON.stringify(p.name) + ',' + p.price + ')"' +
+      window._boostPkgCache[p.id] = { name: p.name, price: p.price };
+      return '<div id="bpkg-' + p.id + '" data-pkg-id="' + p.id + '"' +
         ' style="border:2px solid #eee;border-radius:12px;padding:14px;text-align:center;cursor:pointer">' +
         '<div style="font-size:13px;font-weight:800;color:#0f1923;margin-bottom:4px">' + p.name + '</div>' +
         '<div style="font-size:11px;color:#666;margin-bottom:8px">' + (p.description||'') + '</div>' +
@@ -10430,10 +10590,19 @@ window.loadBoostPackages = async function() {
         '<div style="font-size:10px;color:#aaa;margin-top:3px">' + Number(p.audience_cap||0).toLocaleString() + ' users</div>' +
       '</div>';
     }).join('');
+    if (!grid._cmDelegated) {
+      grid.addEventListener('click', function(ev){
+        var card = ev.target.closest('[data-pkg-id]'); if(!card) return;
+        window.selectBoostPackage(card.getAttribute('data-pkg-id'));
+      });
+      grid._cmDelegated = true;
+    }
   } catch(e) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:14px;color:#e74c3c">Failed to load packages.</div>'; }
 };
 
-window.selectBoostPackage = function(id, name, price) {
+window.selectBoostPackage = function(id) {
+  var _pd = (window._boostPkgCache && window._boostPkgCache[id]) || {};
+  var name = _pd.name || '', price = _pd.price || '';
   document.querySelectorAll('[id^="bpkg-"]').forEach(function(el) { el.style.borderColor = '#eee'; el.style.background = 'white'; });
   var el = document.getElementById('bpkg-' + id);
   if (el) { el.style.borderColor = '#27ae60'; el.style.background = '#f0faf4'; }
@@ -10452,7 +10621,7 @@ window.submitBoostAd = async function() {
   var img       = (document.getElementById('boost-push-img')            || {}).value;
   var price     = (document.getElementById('boost-selected-package-price') || {}).value;
   var pName     = (document.getElementById('boost-selected-package-name')  || {}).value;
-  if (!listingId) { alert('Please select a listing to boost.'); return; }
+  if (window._boostMode !== 'store' && !listingId) { alert('Please select a listing to boost.'); return; }
   if (!pkgId)     { alert('Please select a package.'); return; }
   if (!bizName)   { alert('Please enter your business name.'); return; }
   if (!bizPhone)  { alert('Please enter a contact phone number.'); return; }
@@ -10462,10 +10631,17 @@ window.submitBoostAd = async function() {
   if (btn) { btn.disabled = true; btn.textContent = 'Submitting???'; }
   var tok = localStorage.getItem('cm237_token') || _sessionToken || '';
   var fd = new FormData();
-  fd.append('action','submit_ad'); fd.append('listing_id', listingId); fd.append('package_id', pkgId);
+  fd.append('action','submit_ad'); fd.append('package_id', pkgId);
+  if (window._boostMode === 'store') {
+    var _st = JSON.parse(localStorage.getItem('cm237_store')||'null');
+    fd.append('ad_type_label','boost_store');
+    if (_st && _st.id) fd.append('store_id', _st.id);
+  } else {
+    fd.append('listing_id', listingId);
+  }
   fd.append('business_name', bizName); fd.append('contact_phone', bizPhone);
   fd.append('push_title', title); fd.append('push_body', body);
-  fd.append('push_image_url', img || ''); fd.append('push_cta_label', 'View Listing'); fd.append('push_link_path', '');
+  fd.append('push_image_url', img || ''); fd.append('push_cta_label', window._boostMode==='store' ? 'Visit Store' : 'View Listing'); fd.append('push_link_path', '');
   try {
     var d = await (await fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token':tok}})).json();
     if (!d.success) { alert(d.error || 'Submission failed. Please try again.'); return; }

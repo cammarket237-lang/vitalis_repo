@@ -2022,6 +2022,9 @@ if ($action === 'edit_listing') {
     $category    = p('category');
     $priceType   = p('price_type');
     $condition   = p('condition');
+    $town        = p('town');
+    $listingType = p('listing_type');
+    $quantity    = p('quantity') ? intval(p('quantity')) : null;
 
     if (!$listingId) fail('Missing listing_id.');
 
@@ -2039,8 +2042,23 @@ if ($action === 'edit_listing') {
         category = COALESCE(NULLIF(?,''), category),
         price_type = COALESCE(NULLIF(?,''), price_type),
         condition = COALESCE(NULLIF(?,''), condition),
+        town = COALESCE(NULLIF(?,''), town),
+        listing_type = COALESCE(NULLIF(?,''), listing_type),
+        quantity_available = COALESCE(?, quantity_available),
         updated_at = NOW()
-        WHERE id=?")->execute([$title,$desc,$price,$category,$priceType,$condition,$listingId]);
+        WHERE id=?")->execute([$title,$desc,$price,$category,$priceType,$condition,$town,$listingType,$quantity,$listingId]);
+
+    // Update category-specific metadata (cars, apartments, electronics, …) if provided
+    $metaRaw = trim($_POST['metadata'] ?? '');
+    if ($metaRaw) {
+        $decoded = json_decode($metaRaw, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            try {
+                db()->prepare("UPDATE cammarket237.listings SET metadata=?::jsonb WHERE id=?")
+                    ->execute([$metaRaw, $listingId]);
+            } catch(Exception $e) {}
+        }
+    }
 
     // Handle photo replacement - track toward monthly limit
     $isPhotoReplacement = !empty($_POST['photo_replacement']);
@@ -2063,11 +2081,29 @@ if ($action === 'edit_listing') {
                 WHERE listing_id=? AND media_role='main_image'")->execute([$p1['url'], $listingId]);
         }
     }
+    // photo2 = first extra_image, photo3 = second extra_image (target by sort_order,
+    // matching how get_listing picks them — avoids overwriting both with one update).
     if (!empty($_FILES['photo2']['name'])) {
         $p2 = saveFile($_FILES['photo2'], 'photo');
         if ($p2['ok']) {
             db()->prepare("UPDATE cammarket237.listing_media SET media_url=?
-                WHERE listing_id=? AND media_role='extra_image'")->execute([$p2['url'], $listingId]);
+                WHERE id = (SELECT id FROM cammarket237.listing_media
+                            WHERE listing_id=? AND media_role='extra_image' ORDER BY sort_order LIMIT 1)")
+                ->execute([$p2['url'], $listingId]);
+        }
+    }
+    if (!empty($_FILES['photo3']['name'])) {
+        $p3 = saveFile($_FILES['photo3'], 'photo');
+        if ($p3['ok']) {
+            $upd = db()->prepare("UPDATE cammarket237.listing_media SET media_url=?
+                WHERE id = (SELECT id FROM cammarket237.listing_media
+                            WHERE listing_id=? AND media_role='extra_image' ORDER BY sort_order LIMIT 1 OFFSET 1)");
+            $upd->execute([$p3['url'], $listingId]);
+            if ($upd->rowCount() === 0) {
+                db()->prepare("INSERT INTO cammarket237.listing_media
+                    (listing_id,media_type,media_url,media_role,sort_order,created_at)
+                    VALUES (?,?,?,?,?,NOW())")->execute([$listingId,'image',$p3['url'],'extra_image',3]);
+            }
         }
     }
 
@@ -4327,9 +4363,10 @@ if ($action === 'submit_ad') {
     $pushCta    = trim(p('push_cta_label') ?? '') ?: 'Learn more';
     $pushLink   = trim(p('push_link_path') ?? '');
     $listingId  = (int)(p('listing_id') ?? 0) ?: null;
+    $storeId    = (int)(p('store_id') ?? 0) ?: null;
     $adTypeLabel = trim(p('ad_type_label') ?? '');
     $adType     = $listingId ? 'boost_listing'
-                : (in_array($adTypeLabel, ['video_ad','event_ad','sponsored_notification','boost_listing']) ? $adTypeLabel : 'sponsored_notification');
+                : (in_array($adTypeLabel, ['video_ad','event_ad','sponsored_notification','boost_listing','boost_store']) ? $adTypeLabel : 'sponsored_notification');
 
     if (!$bizName || !$bizPhone || !$pushTitle || !$pushBody)
         fail('Please fill all required fields.');
@@ -4361,11 +4398,11 @@ if ($action === 'submit_ad') {
 
     db()->prepare("INSERT INTO cammarket237.ad_campaigns
         (ad_type, advertiser_id, package_id, country_code, price, currency_code, status,
-         push_title, push_body, push_image_url, push_cta_label, push_link_path, target_country, listing_id)
+         push_title, push_body, push_image_url, push_cta_label, push_link_path, target_country, listing_id, store_id)
         VALUES (?,?,?,  'CM',?,         'XAF',        'submitted',
-                ?,          ?,         ?,              ?,            ?,              'CM', ?)")
+                ?,          ?,         ?,              ?,            ?,              'CM', ?, ?)")
         ->execute([$adType, $advId, $pkgId ?: null, $pkgPrice,
-                   $pushTitle, $pushBody, $pushImg ?: null, $pushCta, $pushLink ?: null, $listingId]);
+                   $pushTitle, $pushBody, $pushImg ?: null, $pushCta, $pushLink ?: null, $listingId, $storeId]);
     $cid = (int)db()->lastInsertId();
 
     ok(['success' => true, 'campaign_id' => $cid,
@@ -4419,7 +4456,7 @@ if ($action === 'get_ad_feed') {
     try {
         $stmt = db()->prepare("
             SELECT c.id, c.ad_type, c.push_title, c.push_body, c.push_image_url,
-                   c.push_cta_label, c.push_link_path, c.listing_id,
+                   c.push_cta_label, c.push_link_path, c.listing_id, c.store_id,
                    a.business_name,
                    COALESCE(a.contact_phone, u.phone) AS advertiser_phone,
                    lm.media_url AS listing_photo,
