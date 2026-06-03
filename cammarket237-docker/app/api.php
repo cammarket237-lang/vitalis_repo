@@ -4496,6 +4496,43 @@ if ($action === 'get_promoted_stores') {
     } catch (Exception $e) { ok(['store_ids' => []]); }
 }
 
+// ── PROMOTED SHOWCASE (running promoted stores + items, for the dedicated Promoted screen) ──
+if ($action === 'get_promoted_showcase') {
+    try {
+        $rows = q("
+            SELECT c.id, c.ad_type, c.store_id, c.listing_id,
+                   c.push_title, c.push_body, c.push_image_url, c.push_cta_label,
+                   s.store_name, s.region AS store_town,
+                   l.title AS listing_title, l.price AS listing_price, l.town AS listing_town,
+                   (SELECT media_url FROM cammarket237.listing_media
+                      WHERE listing_id=c.listing_id AND media_role IN ('main','main_image')
+                      ORDER BY sort_order LIMIT 1) AS listing_photo
+            FROM cammarket237.ad_campaigns c
+            LEFT JOIN cammarket237.stores s ON s.id=c.store_id
+            LEFT JOIN cammarket237.listings l ON l.id=c.listing_id
+            WHERE c.status IN ('running','active') AND c.target_country='CM'
+            ORDER BY (c.ad_type='boost_store') DESC, c.id DESC
+            LIMIT 60");
+        $promos = array_map(function($c){
+            $isStore = ($c['ad_type'] === 'boost_store') || (!empty($c['store_id']) && empty($c['listing_id']));
+            return [
+                'campaign_id' => intval($c['id']),
+                'type'        => $isStore ? 'store' : 'item',
+                'country'     => 'CM',
+                'currency'    => 'FCFA',
+                'store_id'    => $c['store_id'] ? intval($c['store_id']) : null,
+                'listing_id'  => $c['listing_id'] ? intval($c['listing_id']) : null,
+                'title'       => $isStore ? ($c['store_name'] ?: $c['push_title']) : ($c['listing_title'] ?: $c['push_title']),
+                'subtitle'    => $c['push_body'] ?: ($isStore ? $c['store_town'] : $c['listing_town']),
+                'price'       => $c['listing_price'] ? intval($c['listing_price']) : null,
+                'image'       => $c['push_image_url'] ?: $c['listing_photo'],
+                'cta'         => $c['push_cta_label'] ?: ($isStore ? 'Visit Store' : 'View Listing'),
+            ];
+        }, $rows);
+        ok(['promos' => $promos]);
+    } catch (Exception $e) { ok(['promos' => []]); }
+}
+
 // ── RECORD AD CLICK ────────────────────────────────────────────
 if ($action === 'record_ad_click') {
     $user = authUser();
