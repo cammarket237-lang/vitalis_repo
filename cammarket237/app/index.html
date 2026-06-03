@@ -6441,7 +6441,7 @@ window.doSearch = async function() {
 window._promotedStores = {};
 window.loadPromotedStores = async function(){
   try {
-    var d = await (await fetch('/api.php?action=get_promoted_stores')).json();
+    var d = await (await fetch('/api.php?action=get_promoted_stores&_=' + Date.now())).json();
     var m = {}; (d.store_ids||[]).forEach(function(id){ m[id] = 1; });
     window._promotedStores = m;
   } catch(e){}
@@ -6485,7 +6485,7 @@ window.loadPromotedShowcase = async function(){
   var ss=document.getElementById('promoted-stores-sec'), is=document.getElementById('promoted-items-sec'), emp=document.getElementById('promoted-empty');
   if(ss) ss.innerHTML='<div style="text-align:center;padding:20px;color:#aaa;font-size:13px">Loading…</div>'; if(is) is.innerHTML='';
   var promos=[];
-  try { var d=await (await fetch('/api.php?action=get_promoted_showcase')).json(); promos=d.promos||[]; } catch(e){}
+  try { var d=await (await fetch('/api.php?action=get_promoted_showcase&_=' + Date.now())).json(); promos=d.promos||[]; } catch(e){}
   window._promoCache = promos;
   var stores=[], items=[];
   promos.forEach(function(p,i){ p._i=i; (p.type==='store'?stores:items).push(p); });
