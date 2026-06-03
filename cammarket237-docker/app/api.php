@@ -990,6 +990,15 @@ if ($action === 'seller_listings') {
     ok(['listings'=>$stmt->fetchAll()]);
 }
 
+// ── STORE INFO BY ID (open a store profile without a carried item, e.g. promoted/announced) ──
+if ($action === 'get_store') {
+    $id = intval(g('id') ?: g('store_id') ?: p('store_id'));
+    if (!$id) fail('Missing store id.');
+    $s = q1("SELECT id, store_name, region, whatsapp, rating, latitude, longitude FROM cammarket237.stores WHERE id=?", [$id]);
+    if (!$s) fail('Store not found.');
+    ok(['store'=>$s]);
+}
+
 // ═══════════════════════════════════════════════════════════
 // POST LISTING  (with AI photo verification)
 // ═══════════════════════════════════════════════════════════
