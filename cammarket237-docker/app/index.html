@@ -17,6 +17,7 @@
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{min-height:100vh;background:#fdf8ee;font-family:Georgia,'Times New Roman',serif;display:flex;flex-direction:column;align-items:center}
     .header{width:100%;background:#0f1923;padding:15px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:4px solid #fcd116;position:sticky;top:0;z-index:2100}
+    .ng-curr{font-family:Arial,'Segoe UI',sans-serif}
     .logo{font-size:20px;font-weight:700}
     .logo .g{color:#1a7a3c}.logo .m{color:#ce1126}.logo .y{color:#fcd116}
     .avatar{width:36px;height:36px;border-radius:50%;background:#1a7a3c;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;cursor:pointer}
@@ -628,6 +629,7 @@
           </div>
           <button onclick="window.go('advertise-hub')" style="background:linear-gradient(135deg,#e67e22,#f39c12);color:white;border:none;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer;font-weight:700">&#x1F4E3; Ads</button>
           <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer" onclick="window.go('set-pin')" title="Set Recovery PIN">&#x1F510; PIN</button>
+          <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer" onclick="window.openEditProfile()" data-i18n="profile.editProfile">Edit Profile</button>
           <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer" onclick="window.openSupport('buyer-search')">Help</button>
           <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer" onclick="window.signOut()" data-i18n="nav.logout">Sign out</button>
           <button class="lang-btn" data-lang="en" onclick="window.setLanguage('en')" style="padding:4px 8px;border:none;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;background:#1a7a3c;color:white">EN</button>
@@ -970,6 +972,7 @@
           <span id="seller-notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#e74c3c;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;align-items:center;justify-content:center">0</span>
         </div>
         <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer" onclick="window.go('set-pin')" title="Set Recovery PIN">&#x1F510; <span data-i18n="dash.pin">PIN</span></button>
+        <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer" onclick="window.openEditProfile()" data-i18n="profile.editProfile">Edit Profile</button>
         <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer" onclick="window.openSupport('seller-dash')">Help</button>
         <button style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer" onclick="window.signOut()" data-i18n="nav.logout">Sign out</button>
       </div>
@@ -3916,10 +3919,16 @@
       <button onclick="window.go('advertise-hub')" style="background:#f5f5f5;border:none;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer">&#8592; <span data-i18n="btn.back">Back</span></button>
       <div style="font-size:17px;font-weight:800;color:#0f1923">&#x2B50; Boost My Listing</div>
     </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button id="boost-mode-item" onclick="window.setBoostMode('item')" style="flex:1;padding:10px;border:2px solid #f39c12;background:#f39c12;color:white;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">&#x2B50; Boost a listing</button>
+      <button id="boost-mode-store" onclick="window.setBoostMode('store')" style="flex:1;padding:10px;border:2px solid #ddd;background:white;color:#555;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">&#x1F3EA; Boost my whole store</button>
+    </div>
+    <div id="boost-step1">
     <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">1. Select a listing to boost</div>
     <div id="boost-listings-container" style="margin-bottom:18px">
       <div style="text-align:center;padding:24px;color:#aaa;font-size:13px">Loading your listings???</div>
     </div>
+    </div><!-- /boost-step1 -->
     <input type="hidden" id="boost-listing-id" value="">
     <div id="boost-step2" style="display:none">
       <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">2. Choose your package</div>
@@ -5476,6 +5485,15 @@ window.go = function(id) {
     var postBtn = document.getElementById('post-btn');
     if (banner) banner.style.display = 'none';
     if (postBtn) { postBtn.disabled = false; postBtn.style.opacity = '1'; }
+    // Unless we are opening the editor, ensure a fresh-create state.
+    if (!window._openingEditor) {
+      if (window._editMode && window._cmClearForNew) window._cmClearForNew();
+      window._editMode = false; window._editId = null;
+      if (window._cmSetEditLabels) window._cmSetEditLabels(false);
+      var condNew = document.getElementById('p-condition');
+      if (condNew && !condNew.value) condNew.value = 'new';   // Create defaults to New
+    }
+    window._openingEditor = false;
   }
   if (id === 'seller-dash' || id === 'buyer-search') {
     window.showPromoStrip && window.showPromoStrip(id);
@@ -6318,7 +6336,12 @@ window.setCat = function(cat) {
 };
 
 window.setShopCountry = function(c) {
+  window._shopCountry = c;
   localStorage.setItem('_shopCountry', c);
+  // Sync Nigeria pill highlight
+  var ngPill = document.getElementById('bp-nigeria');
+  if (ngPill) ngPill.classList.toggle('active', c === 'ng');
+  // Legacy ct-* buttons if present
   ['cm','both','ng'].forEach(function(x) {
     var b = document.getElementById('ct-'+x);
     if (!b) return;
@@ -6400,9 +6423,10 @@ window.doSearch = async function() {
 };
 
 window.renderItem = function(item) {
-  window._itemCache[item.id] = item;
+  var _cacheKey = item._src === 'ng' ? 'ng_' + item.id : String(item.id);
+  window._itemCache[_cacheKey] = item;
   var name  = esc(item.title || '');
-  var price = item.price ? Number(item.price).toLocaleString() + (item._src === 'ng' ? ' &#x20A6;' : ' FCFA') : '';
+  var price = item.price ? Number(item.price).toLocaleString() + (item._src === 'ng' ? ' <span class="ng-curr">&#x20A6;</span>' : ' FCFA') : '';
   var town  = esc(item.town  || '');
   var srcBadge = item._src === 'ng' ? '<span style="position:absolute;top:6px;left:6px;font-size:10px;background:rgba(0,0,0,.55);color:white;border-radius:5px;padding:1px 5px;font-weight:700">&#x1F1F3;&#x1F1EC;</span>' : '';
   var cond  = item.condition || '';
@@ -6433,7 +6457,7 @@ window.renderItem = function(item) {
     ? '<img src="' + item.main_photo + '" style="width:100%;height:100px;object-fit:cover;border-radius:10px 10px 0 0" onerror="this.src=&apos;&apos;"/>'
     : '<div style="width:100%;height:100px;border-radius:10px 10px 0 0;background:#e8e0d0;display:flex;align-items:center;justify-content:center;font-size:28px">\uD83D\uDCE6</div>';
   var saved = window._savedItems && window._savedItems[item.id] ? '\u2764\uFE0F' : '\uD83E\uDD0D';
-  return '<div class="itm" data-item-id="' + item.id + '" style="cursor:pointer;position:relative" onclick="var _ci=window._itemCache[this.dataset.itemId];if(_ci)window.showItem(_ci);">'
+  return '<div class="itm" data-item-id="' + _cacheKey + '" style="cursor:pointer;position:relative" onclick="var _ci=window._itemCache[this.dataset.itemId];if(_ci)window.showItem(_ci);">'
     + img + srcBadge
     + '<div style="padding:10px">'
     + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">'
@@ -6477,7 +6501,9 @@ window.showItem = async function(raw) {
   }
   window._currentItem = item;
   window._currentStoreId = item.store_id || null;
-  fetch('/api.php?action=view&id=' + (item.id||'')).catch(function(){});
+  var _iBase = (item._src === 'ng') ? 'https://naijamarket234.com/api.php' : '/api.php';
+  window._itemApiBase = _iBase;
+  fetch(_iBase + '?action=view&id=' + (item.id||'')).catch(function(){});
   // Track view event
   window.trackEvent('view', {listing_id: item.id, category: item.category, town: item.town, region: item.region});
 
@@ -6535,7 +6561,8 @@ window.showItem = async function(raw) {
   var desc  = document.getElementById('det-desc');
   var cond  = document.getElementById('det-condition');
   if (title) title.textContent = item.title || '';
-  if (price) price.textContent = item.price ? Number(item.price).toLocaleString() + ' FCFA' : '';
+  var _curr = item._src === 'ng' ? ' <span class="ng-curr">&#x20A6;</span>' : ' FCFA';
+  if (price) price.innerHTML = item.price ? Number(item.price).toLocaleString() + _curr : '';
   if (desc)  desc.textContent  = item.description || '';
   window._listingTranslated = false;
   window._cachedListingTranslation = null;
@@ -6722,7 +6749,9 @@ window.loadComparison = async function(item) {
   var lst = document.getElementById('det-comp-list');
   if (!sec || !lst) return;
   try {
-    var url = '/api.php?action=get_listings&q=' + encodeURIComponent(item.title||'')
+    var _apiBase = (item._src === 'ng') ? 'https://naijamarket234.com/api.php' : '/api.php';
+    var _curr = item._src === 'ng' ? ' <span class="ng-curr">&#x20A6;</span>' : ' FCFA';
+    var url = _apiBase + '?action=get_listings&q=' + encodeURIComponent(item.title||'')
       + '&cat=' + encodeURIComponent(item.category||'')
       + '&range=national&limit=6';
     var d = await (await fetch(url)).json();
@@ -6737,11 +6766,11 @@ window.loadComparison = async function(item) {
           var distStr = dist ? (dist < 1 ? Math.round(dist*1000)+'m' : dist.toFixed(1)+'km') : (l.town||'');
           var cheaper = parseInt(l.price) < parseInt(item.price);
           var priceDiff = Math.abs(parseInt(l.price) - parseInt(item.price));
-          var diffStr = cheaper ? '(-' + priceDiff.toLocaleString() + ' FCFA)' : (parseInt(l.price) > parseInt(item.price) ? '(+' + priceDiff.toLocaleString() + ' FCFA)' : '(same price)');
+          var diffStr = cheaper ? '(-' + priceDiff.toLocaleString() + _curr + ')' : (parseInt(l.price) > parseInt(item.price) ? '(+' + priceDiff.toLocaleString() + _curr + ')' : '(same price)');
           return '<div onclick="window.showItem(this.dataset.item)" data-item="' + encodeURIComponent(JSON.stringify(l)) + '" style="display:flex;justify-content:space-between;align-items:center;padding:10px;border:1.5px solid #eee;border-radius:10px;cursor:pointer;background:' + (cheaper?'#f0faf4':'#fafaf7') + '">'
             + '<div><div style="font-weight:600;font-size:13px;color:#0f1923">' + (l.store_name||'Store') + '</div>'
             + '<div style="font-size:10px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">\uD83D\uDCCD ' + distStr + '</div></div>'
-            + '<div style="text-align:right"><div style="font-weight:800;color:' + (cheaper?'#1a7a3c':'#0f1923') + ';font-size:14px">' + Number(l.price).toLocaleString() + ' FCFA</div>'
+            + '<div style="text-align:right"><div style="font-weight:800;color:' + (cheaper?'#1a7a3c':'#0f1923') + ';font-size:14px">' + Number(l.price).toLocaleString() + _curr + '</div>'
             + '<div style="font-size:10px;color:' + (cheaper?'#1a7a3c':'#aaa') + '">' + diffStr + '</div></div>'
             + '</div>';
         }).join('');
@@ -6832,7 +6861,7 @@ window.shareItem = function() {
   var item = window._currentItem;
   if (!item) return;
   var url = window.location.origin + '/?item=' + item.id;
-  var text = '\uD83D\uDED2 ' + (item.title||'') + '\n\uD83D\uDCB0 ' + (item.price ? Number(item.price).toLocaleString() + ' FCFA' : '') + '\n\uD83D\uDCCD ' + (item.town||'') + '\n\nCamMarket237 \u2013 ' + url;
+  var text = '\uD83D\uDED2 ' + (item.title||'') + '\n\uD83D\uDCB0 ' + (item.price ? Number(item.price).toLocaleString() + (item._src === 'ng' ? ' \u20A6' : ' FCFA') : '') + '\n\uD83D\uDCCD ' + (item.town||'') + '\n\nCamMarket237 \u2013 ' + url;
   if (navigator.share) {
     navigator.share({title: item.title, text: text, url: url}).catch(function(){});
   } else if (navigator.clipboard) {
@@ -7055,6 +7084,7 @@ window._profileStore = null;
 
 window.loadStoreProfile = async function(storeId, item) {
   window._profileStore = item;
+  var _apiBase = (item && item._src === 'ng') ? 'https://naijamarket234.com/api.php' : '/api.php';
   // Set initial info from item
   var av = document.getElementById('sp-avatar');
   var sn = document.getElementById('sp-name');
@@ -7084,7 +7114,7 @@ window.loadStoreProfile = async function(storeId, item) {
   // Load store listings
   if (storeId) {
     try {
-      var d = await (await fetch('/api.php?action=seller_listings&store_id=' + storeId)).json();
+      var d = await (await fetch(_apiBase + '?action=seller_listings&store_id=' + storeId)).json();
       if (d.success && d.listings) {
         var lst = document.getElementById('sp-listings');
         var cnt = document.getElementById('sp-listings-count');
@@ -7092,8 +7122,8 @@ window.loadStoreProfile = async function(storeId, item) {
         if (lst) lst.innerHTML = d.listings.length
           ? '<div style="display:grid;gap:8px">' + d.listings.map(function(l) {
               var img = l.main_photo ? '<img src="'+l.main_photo+'" style="width:52px;height:52px;border-radius:8px;object-fit:cover;flex-shrink:0"/>' : '<div style="width:52px;height:52px;border-radius:8px;background:#eee;display:flex;align-items:center;justify-content:center">\uD83D\uDCE6</div>';
-              return '<div onclick="window.showItem(this.dataset.item)" data-item="' + encodeURIComponent(JSON.stringify(Object.assign({},l,{store_name:item.store_name,whatsapp:item.whatsapp,latitude:item.latitude,longitude:item.longitude,region:item.region,town:item.town}))) + '" style="display:flex;gap:10px;padding:10px;border:1.5px solid #eee;border-radius:10px;cursor:pointer">'
-                + img + '<div><div style="font-weight:700;font-size:13px">' + esc(l.title) + '</div><div style="color:#1a7a3c;font-weight:700">' + Number(l.price).toLocaleString() + ' FCFA</div></div></div>';
+              return '<div onclick="window.showItem(this.dataset.item)" data-item="' + encodeURIComponent(JSON.stringify(Object.assign({},l,{_src:item._src,store_name:item.store_name,whatsapp:item.whatsapp,latitude:item.latitude,longitude:item.longitude,region:item.region,town:item.town}))) + '" style="display:flex;gap:10px;padding:10px;border:1.5px solid #eee;border-radius:10px;cursor:pointer">'
+                + img + '<div><div style="font-weight:700;font-size:13px">' + esc(l.title) + '</div><div style="color:#1a7a3c;font-weight:700">' + Number(l.price).toLocaleString() + (item._src === 'ng' ? ' <span class="ng-curr">&#x20A6;</span>' : ' FCFA') + '</div></div></div>';
             }).join('') + '</div>'
           : '<div style="color:#aaa;text-align:center;padding:20px">No items yet</div>';
       }
@@ -7102,7 +7132,7 @@ window.loadStoreProfile = async function(storeId, item) {
 
   // Load follower count
   try {
-    var fd = await (await fetch('/api.php?action=get_followers&store_id=' + storeId)).json();
+    var fd = await (await fetch(_apiBase + '?action=get_followers&store_id=' + storeId)).json();
     if (fd.success && sf) sf.textContent = (fd.count||0) + ' followers';
   } catch(e) {}
 };
@@ -7210,7 +7240,7 @@ window.toggleBuyerMap = function() {
         if (!item.latitude || !item.longitude) return;
         var lat = parseFloat(item.latitude), lng = parseFloat(item.longitude);
         if (isNaN(lat) || isNaN(lng)) return;
-        var price = item.price ? Number(item.price).toLocaleString() + ' FCFA' : '';
+        var price = item.price ? Number(item.price).toLocaleString() + (item._src === 'ng' ? ' <span class="ng-curr">&#x20A6;</span>' : ' FCFA') : '';
         var icon = L.divIcon({
           className: '',
           html: '<div style="background:#ce1126;color:white;border-radius:8px;padding:3px 6px;font-size:10px;font-weight:700;white-space:nowrap;border:1px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3)">' + price + '</div>',
@@ -7330,15 +7360,15 @@ window.submitPost = async function() {
     document.getElementById(f[1]).classList.toggle('error', !v);
     if (!v) ok = false;
   });
-  if (!p1 || !p2 || !p3) ok = false; // all 3 photos required; video optional
+  if (!window._editMode && (!p1 || !p2 || !p3)) ok = false; // 3 photos required for new listings; optional when editing
   var errEl = document.getElementById('post-err');
   if (errEl) { errEl.style.display = ok ? 'none' : 'block'; errEl.textContent = 'Please fill all required fields and upload all 3 photos (front, back, and side/detail).'; }
   if (!ok) return;
   ['ai-checking','ai-approved','ai-rejected'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
   var btn = document.getElementById('post-btn');
-  if (btn) { btn.disabled = true; btn.textContent = 'AI Verifying...'; }
+  if (btn) { btn.disabled = true; btn.textContent = window._editMode ? 'Saving...' : 'AI Verifying...'; }
   var ck = document.getElementById('ai-checking');
-  if (ck) ck.style.display = 'block';
+  if (ck && !window._editMode) ck.style.display = 'block';
   try {
     // Always get fresh token from localStorage before posting
     var freshToken = localStorage.getItem('cm237_token') || _sessionToken || '';
@@ -7355,7 +7385,7 @@ window.submitPost = async function() {
     fd.append('quantity',     document.getElementById('p-qty').value);
     if (_bulkOn) fd.append('bulk_available', '1');
     fd.append('bulk_note', document.getElementById('p-bknote').value.trim());
-    fd.append('photo1', p1); fd.append('photo2', p2); fd.append('photo3', p3);
+    if (p1) fd.append('photo1', p1); if (p2) fd.append('photo2', p2); if (p3) fd.append('photo3', p3);
     if (vid) fd.append('video', vid);
     if (window._ghSubmitExtra) {
       Object.keys(window._ghSubmitExtra).forEach(function(k) { fd.append(k, window._ghSubmitExtra[k] || ''); });
@@ -7398,6 +7428,13 @@ window.submitPost = async function() {
                 color:_gv('p-cl-color'), material:_gv('p-cl-material') };
     }
     if (_meta) fd.append('metadata', JSON.stringify(_meta));
+    // Condition (always sent — for both create and edit; defaults to New)
+    fd.append('condition', (document.getElementById('p-condition')||{}).value || 'new');
+    // Edit mode: switch to the edit endpoint and target the existing listing
+    if (window._editMode) {
+      fd.set('action', 'edit_listing');
+      fd.append('listing_id', window._editId);
+    }
     var d = await (await fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token': freshToken || _sessionToken || localStorage.getItem('cm237_token') || ''}})).json();
     if (ck) ck.style.display = 'none';
     if (d.rejected) {
@@ -7440,6 +7477,14 @@ window.submitPost = async function() {
       }
       if (btn) { btn.disabled = false; btn.textContent = 'Try Again'; }
     } else if (d.success) {
+      if (window._editMode) {
+        window._editMode = false; window._editId = null;
+        if (window._cmSetEditLabels) window._cmSetEditLabels(false);
+        if (btn) { btn.disabled = false; btn.textContent = '🚀 Post Item'; }
+        alert('✅ ' + (d.message || 'Listing updated.'));
+        go('seller-dash'); if (window.loadMyListings) window.loadMyListings();
+        return;
+      }
       var ap = document.getElementById('ai-approved'); if (ap) ap.style.display = 'block';
       if (d.pending_review) {
         var am = document.getElementById('ai-ok-msg'); if (am) am.innerHTML = '&#x23F3; Submitted for Review<br><span style="font-size:12px;font-weight:400;color:#555">Our team will review your listing shortly. You\'ll see it go live in your dashboard once approved.</span>';
@@ -8687,13 +8732,16 @@ window.loadMoreFromSeller = async function(storeId, currentItemId) {
   section.style.display = 'none';
   list.innerHTML = '';
   try {
-    var d = await (await fetch('/api.php?action=get_listings&store_id=' + storeId + '&limit=7')).json();
+    var _apiBase = (window._currentItem && window._currentItem._src === 'ng') ? 'https://naijamarket234.com/api.php' : '/api.php';
+    var d = await (await fetch(_apiBase + '?action=get_listings&store_id=' + storeId + '&limit=7')).json();
     if (d.success && d.listings) {
+      var _srcTag = (window._currentItem && window._currentItem._src) || undefined;
       var items = d.listings.filter(function(i){ return i.id != currentItemId; }).slice(0, 6);
+      if (_srcTag) items.forEach(function(i){ i._src = _srcTag; });
       if (items.length === 0) return;
       list.innerHTML = items.map(function(item) {
         var img = item.main_photo || '';
-        var price = item.price ? Number(item.price).toLocaleString() + ' FCFA' : 'Price on request';
+        var price = item.price ? Number(item.price).toLocaleString() + (window._currentItem && window._currentItem._src === 'ng' ? ' <span class="ng-curr">&#x20A6;</span>' : ' FCFA') : 'Price on request';
         var sold = item.is_sold || item.status === 'sold';
         return '<div onclick="window.showItem(this.dataset.item)" data-item="' + encodeURIComponent(JSON.stringify(item)) + '" style="border-radius:12px;overflow:hidden;border:1.5px solid #eee;cursor:pointer;background:white;box-shadow:0 1px 6px rgba(0,0,0,0.06)">'
           + (img
@@ -8970,8 +9018,99 @@ window.cancelPostItem = function() {
   var err = document.getElementById('post-err');
   if (err) err.textContent = '';
 
+  // Reset edit mode so the next "Post Item" is a fresh create
+  window._editMode = false; window._editId = null;
+  if (window._cmSetEditLabels) window._cmSetEditLabels(false);
+
   // Go back to dashboard
   window.go('seller-dash');
+};
+
+// ─── FULL EDIT LISTING (reuses the Create form; covers all aspects + metadata) ───
+window._editMode = window._editMode || false;
+window._editId   = window._editId   || null;
+window._openingEditor = false;
+
+// Category → [formFieldId, metadataKey] map (mirror of the create _meta builder).
+var _CM_META = {
+  'Buy & Sell Cars': [['p-car-make','make'],['p-car-model','model'],['p-car-year','year'],['p-car-mileage','mileage'],['p-car-transmission','transmission'],['p-car-fuel','fuel'],['p-car-color','color']],
+  'Car Rental': [['p-rent-vtype','vehicle_type'],['p-rent-seats','seats'],['p-rent-make','make'],['p-rent-model','model'],['p-rent-year','year'],['p-rent-deposit','deposit'],['p-rent-driver','driver'],['p-rent-fuel','fuel_policy'],['p-rent-pickup','pickup']],
+  'Apartments & Rentals': [['p-apt-beds','bedrooms'],['p-apt-baths','bathrooms'],['p-apt-furnished','furnished'],['p-apt-type','property_type'],['p-apt-period','price_period']],
+  'Transport & Drivers': [['p-trp-from','from'],['p-trp-to','to'],['p-trp-vtype','vehicle_type'],['p-trp-seats','seats'],['p-trp-time','departure_time'],['p-trp-freq','frequency']],
+  'Agriculture': [['p-agr-unit','unit'],['p-agr-qty','quantity'],['p-agr-harvest','harvest_date'],['p-agr-farm','farm_location'],['p-agr-organic','organic']],
+  'Farm/Agricultural Produce': [['p-agr-unit','unit'],['p-agr-qty','quantity'],['p-agr-harvest','harvest_date'],['p-agr-farm','farm_location'],['p-agr-organic','organic']],
+  'Delivery Service': [['p-del-from','from'],['p-del-to','to'],['p-del-vtype','vehicle_type'],['p-del-weight','max_weight'],['p-del-time','delivery_time']],
+  'Electronics': [['p-elec-storage','storage'],['p-elec-ram','ram'],['p-elec-screen','screen'],['p-elec-warranty','warranty']],
+  'Phones & Accessories': [['p-ph-storage','storage'],['p-ph-ram','ram'],['p-ph-network','network'],['p-ph-os','os']],
+  'Clothing & Fashion': [['p-cl-size','size'],['p-cl-gender','gender'],['p-cl-color','color'],['p-cl-material','material']]
+};
+function _cmSetMeta(cat, meta) {
+  if (!meta || !_CM_META[cat]) return;
+  _CM_META[cat].forEach(function(f){ var e=document.getElementById(f[0]); if(e) e.value = (meta[f[1]]!=null ? meta[f[1]] : ''); });
+}
+function _cmClearMeta() {
+  Object.keys(_CM_META).forEach(function(c){ _CM_META[c].forEach(function(f){ var e=document.getElementById(f[0]); if(e){ if(e.tagName==='SELECT') e.selectedIndex=0; else e.value=''; } }); });
+}
+window._cmSetEditLabels = function(on) {
+  var ttl = document.querySelector('#screen-post-item .title');
+  var sub = document.querySelector('#screen-post-item .sub');
+  var btn = document.getElementById('post-btn');
+  if (on) {
+    if (ttl) { ttl.textContent = '✏️ Edit Listing'; ttl.removeAttribute('data-i18n'); }
+    if (sub) { sub.textContent = 'Update any details. Leave a photo empty to keep the current one.'; sub.removeAttribute('data-i18n'); }
+    if (btn) { btn.textContent = '💾 Save Changes'; btn.removeAttribute('data-i18n'); }
+  } else {
+    if (ttl && !ttl.getAttribute('data-i18n')) { ttl.textContent = 'Post Item for Sale'; ttl.setAttribute('data-i18n','create.title'); }
+    if (sub && !sub.getAttribute('data-i18n')) { sub.setAttribute('data-i18n','create.subtitle'); }
+    if (btn && !btn.getAttribute('data-i18n')) { btn.textContent = '🚀 Post Item'; btn.setAttribute('data-i18n','create.publishListing'); }
+  }
+};
+// Clear the create form when switching out of an edit into a fresh listing.
+window._cmClearForNew = function() {
+  ['p-title','p-desc','p-price','p-landmark','p-bulk-note'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
+  var q=document.getElementById('p-qty'); if(q) q.value='1';
+  ['p-cat','p-ltype','p-ptype'].forEach(function(id){ var e=document.getElementById(id); if(e) e.selectedIndex=0; });
+  var cond=document.getElementById('p-condition'); if(cond) cond.value='new';
+  _cmClearMeta();
+  if (window.onCategoryChange) window.onCategoryChange('');
+  ['mp1','mp2','mp3'].forEach(function(id){ var e=document.getElementById(id); if(e){ e.src=''; e.style.display='none'; } });
+  ['bp1','bp2','slot3-photo-area'].forEach(function(id){ var b=document.getElementById(id); if(b){ b.classList.remove('filled'); var mi=b.querySelector('.mico'),ml=b.querySelector('.mlb'); if(mi)mi.style.display=''; if(ml)ml.style.display=''; } });
+  ['photo1-cam','photo1-gal','photo2-cam','photo2-gal','p3cam','p3gal','video-cam','video-gal'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
+};
+function _cmShowExistingPhoto(previewId, boxId, url) {
+  if (!url) return;
+  var img=document.getElementById(previewId);
+  if (img) { img.src=url; img.style.display='block'; }
+  var box=document.getElementById(boxId);
+  if (box) { var mi=box.querySelector('.mico'),ml=box.querySelector('.mlb'); if(mi)mi.style.display='none'; if(ml)ml.style.display='none'; box.classList.add('filled'); }
+}
+// Open the unified editor for a listing id. Fetches the full listing and prefills the create form.
+window.openEditListing = async function(id) {
+  var tok = localStorage.getItem('cm237_token') || (typeof _sessionToken !== 'undefined' ? _sessionToken : '') || '';
+  var l;
+  try {
+    var d = await (await fetch('/api.php?action=get_listing&id=' + id, { headers:{ 'X-Session-Token': tok } })).json();
+    if (!d.success || !d.listing) { alert(d.error || 'Could not load listing.'); return; }
+    l = d.listing;
+  } catch(e) { alert('Error loading listing: ' + e.message); return; }
+  window._editMode = true; window._editId = id;
+  var set = function(fid, v){ var e=document.getElementById(fid); if(e) e.value = (v!=null ? v : ''); };
+  set('p-title', l.title); set('p-desc', l.description); set('p-price', l.price);
+  set('p-qty', l.quantity_available != null ? l.quantity_available : 1);
+  set('p-ptype', l.price_type || 'fixed'); set('p-ltype', l.listing_type || 'sale');
+  set('p-cat', l.category || '');
+  if (window.onCategoryChange) window.onCategoryChange(l.category || '');
+  var cond=document.getElementById('p-condition'); if(cond) cond.value = l.condition || 'new';
+  _cmSetMeta(l.category, l.metadata);
+  ['photo1-cam','photo1-gal','photo2-cam','photo2-gal','p3cam','p3gal','video-cam','video-gal'].forEach(function(pid){ var e=document.getElementById(pid); if(e) e.value=''; });
+  _cmShowExistingPhoto('mp1','bp1', l.main_photo);
+  _cmShowExistingPhoto('mp2','bp2', l.photo2);
+  _cmShowExistingPhoto('mp3','slot3-photo-area', l.photo3 || l.video360);
+  _cmSetEditLabels(true);
+  if (window.switchPostTab) window.switchPostTab('single');
+  ['ai-checking','ai-approved','ai-rejected'].forEach(function(x){ var e=document.getElementById(x); if(e) e.style.display='none'; });
+  window._openingEditor = true;
+  window.go('post-item');
 };
 
 
@@ -9621,7 +9760,8 @@ var _adTypeMap = {
   featured_listing:      {icon:'&#x2B50;', label:'FEATURED',  color:'#f39c12'},
   video_ad:              {icon:'&#x1F3AC;',label:'VIDEO AD',  color:'#8e44ad'},
   banner_display:        {icon:'&#x1F3AC;',label:'VIDEO AD',  color:'#8e44ad'},
-  event_ad:              {icon:'&#x1F389;',label:'EVENT',     color:'#1a7a3c'}
+  event_ad:              {icon:'&#x1F389;',label:'EVENT',     color:'#1a7a3c'},
+  boost_store:           {icon:'&#x1F3EA;',label:'STORE',     color:'#e67e22'}
 };
 
 function _adShowSlide(sfx, idx) {
@@ -9828,6 +9968,8 @@ window._adClick = function(btn) {
   fd.append('action','record_ad_click');
   fd.append('campaign_id', ad.id);
   fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token':tok}}).catch(function(){});
+  if (ad.ad_type === 'boost_store' && ad.store_id) { window.viewAnnouncedStore(ad.store_id); return; }
+  if (ad.ad_type === 'boost_listing' && ad.listing_id) { window.showItemById(ad.listing_id); return; }
   if (ad.push_link_path) window.open(ad.push_link_path, '_blank');
 };
 
@@ -10314,7 +10456,31 @@ window.submitEventAd = async function() {
 };
 
 // ?????? BOOST LISTING ??????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+window._boostMode = 'item';
+window.setBoostMode = function(mode){
+  window._boostMode = mode;
+  var bi=document.getElementById('boost-mode-item'), bs=document.getElementById('boost-mode-store');
+  if(bi){ bi.style.border = mode==='item'?'2px solid #f39c12':'2px solid #ddd'; bi.style.background = mode==='item'?'#f39c12':'white'; bi.style.color = mode==='item'?'white':'#555'; }
+  if(bs){ bs.style.border = mode==='store'?'2px solid #f39c12':'2px solid #ddd'; bs.style.background = mode==='store'?'#f39c12':'white'; bs.style.color = mode==='store'?'white':'#555'; }
+  var step1=document.getElementById('boost-step1'), step2=document.getElementById('boost-step2');
+  if(mode==='store'){
+    if(step1) step1.style.display='none';
+    var li=document.getElementById('boost-listing-id'); if(li) li.value='';
+    var st=JSON.parse(localStorage.getItem('cm237_store')||'null');
+    if(st){
+      var bn=document.getElementById('boost-biz-name'); if(bn&&!bn.value) bn.value=st.store_name||'';
+      var bp=document.getElementById('boost-biz-phone'); if(bp&&!bp.value) bp.value=st.whatsapp||'';
+      var tEl=document.getElementById('boost-push-title'); if(tEl&&!tEl.value){ tEl.value=('Visit '+(st.store_name||'our store')).substring(0,60); var tc=document.getElementById('boost-title-count'); if(tc) tc.textContent=tEl.value.length+'/60'; }
+      var bEl=document.getElementById('boost-push-body'); if(bEl&&!bEl.value){ bEl.value=('See all our products and offers at '+(st.store_name||'our store')+'.').substring(0,150); var bc=document.getElementById('boost-body-count'); if(bc) bc.textContent=bEl.value.length+'/150'; }
+    }
+    if(step2) step2.style.display='block';
+    window.loadBoostPackages && window.loadBoostPackages();
+  } else {
+    if(step1) step1.style.display='';
+  }
+};
 window.loadBoostListingScreen = async function() {
+  if (window.setBoostMode) window.setBoostMode('item');
   var store = JSON.parse(localStorage.getItem('cm237_store') || 'null');
   if (!store || !store.id) {
     document.getElementById('boost-listings-container').innerHTML =
@@ -10337,13 +10503,14 @@ window.loadBoostListingScreen = async function() {
       container.innerHTML = '<div style="text-align:center;padding:24px;color:#aaa;font-size:13px">No active listings found.<br><br><button onclick="window.go(\'post-listing\')" style="background:#e67e22;color:white;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Post a listing first</button></div>';
       return;
     }
+    window._boostCache = {};
     container.innerHTML = active.map(function(l) {
       var price = l.price_type === 'negotiable' ? 'N??gociable' : Number(l.price).toLocaleString() + ' FCFA';
       var img = l.main_photo ? '<img src="' + l.main_photo + '" style="width:56px;height:56px;object-fit:cover;border-radius:8px;flex-shrink:0">' :
         '<div style="width:56px;height:56px;background:#f0f0f0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">&#x1F4E6;</div>';
       var desc = (l.description || '').substring(0, 80) + ((l.description || '').length > 80 ? '???' : '');
-      return '<div id="boost-card-' + l.id + '" onclick="window.selectBoostListing(' + l.id + ',' +
-        JSON.stringify(l.title) + ',' + JSON.stringify(desc) + ',' + JSON.stringify(l.main_photo||'') + ',' + JSON.stringify(price) + ')"' +
+      window._boostCache[l.id] = { title: l.title || '', desc: desc, photo: l.main_photo || '', price: price };
+      return '<div id="boost-card-' + l.id + '" data-boost-id="' + l.id + '"' +
         ' style="display:flex;align-items:center;gap:12px;background:white;border:2px solid #eee;border-radius:12px;padding:12px;margin-bottom:8px;cursor:pointer">' +
         img +
         '<div style="flex:1;min-width:0">' +
@@ -10354,13 +10521,22 @@ window.loadBoostListingScreen = async function() {
         '<div style="font-size:18px;color:#ddd" id="boost-check-' + l.id + '">&#x25CB;</div>' +
       '</div>';
     }).join('');
+    if (!container._cmDelegated) {
+      container.addEventListener('click', function(ev){
+        var card = ev.target.closest('[data-boost-id]'); if(!card) return;
+        window.selectBoostListing(card.getAttribute('data-boost-id'));
+      });
+      container._cmDelegated = true;
+    }
     window.loadBoostPackages && window.loadBoostPackages();
   } catch(e) {
     container.innerHTML = '<div style="text-align:center;padding:24px;color:#e74c3c;font-size:13px">Failed to load listings. Please try again.</div>';
   }
 };
 
-window.selectBoostListing = function(id, title, desc, photo, priceStr) {
+window.selectBoostListing = function(id) {
+  var _bd = (window._boostCache && window._boostCache[id]) || {};
+  var title = _bd.title || '', desc = _bd.desc || '', photo = _bd.photo || '', priceStr = _bd.price || '';
   document.querySelectorAll('[id^="boost-card-"]').forEach(function(el) {
     el.style.borderColor = '#eee';
     var cid = el.id.replace('boost-card-', '');
@@ -10403,8 +10579,10 @@ window.loadBoostPackages = async function() {
     var d = await (await fetch('/api.php', {method:'POST', body:fd})).json();
     var pkgs = d.packages || [];
     if (!pkgs.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:14px;color:#aaa">No packages available.</div>'; return; }
+    window._boostPkgCache = {};
     grid.innerHTML = pkgs.map(function(p) {
-      return '<div id="bpkg-' + p.id + '" onclick="window.selectBoostPackage(' + p.id + ',' + JSON.stringify(p.name) + ',' + p.price + ')"' +
+      window._boostPkgCache[p.id] = { name: p.name, price: p.price };
+      return '<div id="bpkg-' + p.id + '" data-pkg-id="' + p.id + '"' +
         ' style="border:2px solid #eee;border-radius:12px;padding:14px;text-align:center;cursor:pointer">' +
         '<div style="font-size:13px;font-weight:800;color:#0f1923;margin-bottom:4px">' + p.name + '</div>' +
         '<div style="font-size:11px;color:#666;margin-bottom:8px">' + (p.description||'') + '</div>' +
@@ -10412,10 +10590,19 @@ window.loadBoostPackages = async function() {
         '<div style="font-size:10px;color:#aaa;margin-top:3px">' + Number(p.audience_cap||0).toLocaleString() + ' users</div>' +
       '</div>';
     }).join('');
+    if (!grid._cmDelegated) {
+      grid.addEventListener('click', function(ev){
+        var card = ev.target.closest('[data-pkg-id]'); if(!card) return;
+        window.selectBoostPackage(card.getAttribute('data-pkg-id'));
+      });
+      grid._cmDelegated = true;
+    }
   } catch(e) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:14px;color:#e74c3c">Failed to load packages.</div>'; }
 };
 
-window.selectBoostPackage = function(id, name, price) {
+window.selectBoostPackage = function(id) {
+  var _pd = (window._boostPkgCache && window._boostPkgCache[id]) || {};
+  var name = _pd.name || '', price = _pd.price || '';
   document.querySelectorAll('[id^="bpkg-"]').forEach(function(el) { el.style.borderColor = '#eee'; el.style.background = 'white'; });
   var el = document.getElementById('bpkg-' + id);
   if (el) { el.style.borderColor = '#27ae60'; el.style.background = '#f0faf4'; }
@@ -10434,7 +10621,7 @@ window.submitBoostAd = async function() {
   var img       = (document.getElementById('boost-push-img')            || {}).value;
   var price     = (document.getElementById('boost-selected-package-price') || {}).value;
   var pName     = (document.getElementById('boost-selected-package-name')  || {}).value;
-  if (!listingId) { alert('Please select a listing to boost.'); return; }
+  if (window._boostMode !== 'store' && !listingId) { alert('Please select a listing to boost.'); return; }
   if (!pkgId)     { alert('Please select a package.'); return; }
   if (!bizName)   { alert('Please enter your business name.'); return; }
   if (!bizPhone)  { alert('Please enter a contact phone number.'); return; }
@@ -10444,10 +10631,17 @@ window.submitBoostAd = async function() {
   if (btn) { btn.disabled = true; btn.textContent = 'Submitting???'; }
   var tok = localStorage.getItem('cm237_token') || _sessionToken || '';
   var fd = new FormData();
-  fd.append('action','submit_ad'); fd.append('listing_id', listingId); fd.append('package_id', pkgId);
+  fd.append('action','submit_ad'); fd.append('package_id', pkgId);
+  if (window._boostMode === 'store') {
+    var _st = JSON.parse(localStorage.getItem('cm237_store')||'null');
+    fd.append('ad_type_label','boost_store');
+    if (_st && _st.id) fd.append('store_id', _st.id);
+  } else {
+    fd.append('listing_id', listingId);
+  }
   fd.append('business_name', bizName); fd.append('contact_phone', bizPhone);
   fd.append('push_title', title); fd.append('push_body', body);
-  fd.append('push_image_url', img || ''); fd.append('push_cta_label', 'View Listing'); fd.append('push_link_path', '');
+  fd.append('push_image_url', img || ''); fd.append('push_cta_label', window._boostMode==='store' ? 'Visit Store' : 'View Listing'); fd.append('push_link_path', '');
   try {
     var d = await (await fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token':tok}})).json();
     if (!d.success) { alert(d.error || 'Submission failed. Please try again.'); return; }
@@ -13600,6 +13794,193 @@ window.fpResetPassword = async function() {
         }).join('');
       })
       .catch(function(){ list.innerHTML = '<span style="color:#aaa">Could not load tickets.</span>'; });
+  };
+})();
+</script>
+
+<!-- ═══ EDIT PROFILE MODAL ═══ -->
+<div id="edit-profile-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:2000;overflow-y:auto;padding:20px 16px">
+  <div style="background:white;border-radius:18px;max-width:460px;margin:0 auto;padding:24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-size:18px;font-weight:800;color:#0f1923" data-i18n="profile.title">My Profile</div>
+      <button onclick="document.getElementById('edit-profile-modal').style.display='none'" style="background:none;border:none;font-size:24px;cursor:pointer;color:#888;line-height:1">&#215;</button>
+    </div>
+
+    <!-- Account Info -->
+    <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:700">Account Info</div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">Full Name *</label>
+      <input id="ep-name" type="text" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box" placeholder="Your full name"/>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">Phone Number *</label>
+      <input id="ep-phone" type="tel" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box" placeholder="+237XXXXXXXXX"/>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">Region *</label>
+      <select id="ep-region" onchange="window.fillCities('ep-town','ep-town-lbl',this.value)" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box;background:white">
+        <option value="">Select Region</option>
+        <option>Adamawa</option><option>Centre</option><option>East</option>
+        <option>Far North</option><option>Littoral</option><option>North</option>
+        <option>North West</option><option>South</option><option>South West</option><option>West</option>
+      </select>
+    </div>
+    <div style="margin-bottom:16px">
+      <label id="ep-town-lbl" style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">Town / City *</label>
+      <select id="ep-town" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box;background:white">
+        <option value="">Select Town / City</option>
+      </select>
+    </div>
+
+    <!-- Seller-only store fields -->
+    <div id="ep-store-section" style="display:none">
+      <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:700;border-top:1px solid #f0f0f0;padding-top:16px">Store Info</div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">Store Name *</label>
+        <input id="ep-store-name" type="text" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box" placeholder="Your store name"/>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">WhatsApp Number</label>
+        <input id="ep-whatsapp" type="tel" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box" placeholder="+237XXXXXXXXX"/>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">Nearest Market / Landmark</label>
+        <input id="ep-landmark" type="text" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box" placeholder="e.g. Bamenda main market shade 60"/>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">Store Address</label>
+        <input id="ep-store-address" type="text" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box" placeholder="Your store address"/>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:6px">Physical Store?</label>
+        <div style="display:flex;gap:8px">
+          <button id="ep-phys-yes" type="button" onclick="window._epSetPhysical(true)" style="flex:1;padding:9px;border:1.5px solid #ddd;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;background:#f9f9f9;color:#555">&#9989; Yes</button>
+          <button id="ep-phys-no"  type="button" onclick="window._epSetPhysical(false)" style="flex:1;padding:9px;border:1.5px solid #ddd;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;background:#f9f9f9;color:#555">&#10060; No</button>
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:4px">Business Description</label>
+        <textarea id="ep-bio" rows="3" style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box;resize:vertical" placeholder="Tell buyers about your business…"></textarea>
+      </div>
+    </div>
+
+    <div id="ep-error" style="display:none;color:#e74c3c;font-size:13px;margin-bottom:12px;padding:10px 14px;background:#fef0f0;border-radius:8px"></div>
+    <button id="ep-save-btn" onclick="window.saveEditProfile()" style="width:100%;padding:14px;background:#1a7a3c;color:white;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit">&#10003; Save Changes</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var _epPhysical = false;
+
+  window._epSetPhysical = function(val) {
+    _epPhysical = val;
+    var yes = document.getElementById('ep-phys-yes');
+    var no  = document.getElementById('ep-phys-no');
+    if (yes) { yes.style.background = val  ? '#e8f5e9' : '#f9f9f9'; yes.style.borderColor = val  ? '#1a7a3c' : '#ddd'; yes.style.color = val  ? '#1a7a3c' : '#555'; }
+    if (no)  { no.style.background  = !val ? '#fef0f0' : '#f9f9f9'; no.style.borderColor  = !val ? '#e74c3c' : '#ddd'; no.style.color  = !val ? '#e74c3c' : '#555'; }
+  };
+
+  window.openEditProfile = function() {
+    var user  = JSON.parse(localStorage.getItem('cm237_user')  || 'null');
+    var store = JSON.parse(localStorage.getItem('cm237_store') || 'null');
+    if (!user) return;
+
+    document.getElementById('ep-name').value  = user.full_name || '';
+    document.getElementById('ep-phone').value = user.phone     || '';
+
+    // Region SELECT — set value then populate town cascade
+    var regSel = document.getElementById('ep-region');
+    regSel.value = user.region || '';
+    window.fillCities('ep-town', 'ep-town-lbl', user.region || '');
+    // After fillCities populates options, set the saved town
+    var townSel = document.getElementById('ep-town');
+    var savedTown = user.town || (store && store.area_quarter) || '';
+    // Try to select matching option; if not found, add it
+    var found = false;
+    for (var i = 0; i < townSel.options.length; i++) {
+      if (townSel.options[i].value === savedTown) { townSel.value = savedTown; found = true; break; }
+    }
+    if (!found && savedTown) {
+      var o = document.createElement('option');
+      o.value = o.textContent = savedTown;
+      townSel.appendChild(o);
+      townSel.value = savedTown;
+    }
+
+    var storeSection = document.getElementById('ep-store-section');
+    if (user.role === 'seller') {
+      storeSection.style.display = 'block';
+      document.getElementById('ep-store-name').value    = (store && store.store_name)          || '';
+      document.getElementById('ep-whatsapp').value      = (store && store.whatsapp)            || '';
+      document.getElementById('ep-landmark').value      = (store && store.landmark)            || '';
+      document.getElementById('ep-store-address').value = (store && store.store_address)       || '';
+      document.getElementById('ep-bio').value           = (store && store.business_description) || '';
+      window._epSetPhysical(!!(store && store.has_physical_store));
+    } else {
+      storeSection.style.display = 'none';
+    }
+
+    document.getElementById('ep-error').style.display = 'none';
+    document.getElementById('ep-save-btn').disabled = false;
+    document.getElementById('ep-save-btn').textContent = '✓ Save Changes';
+    document.getElementById('edit-profile-modal').style.display = 'block';
+  };
+
+  window.saveEditProfile = async function() {
+    var tok  = localStorage.getItem('cm237_token') || '';
+    var user = JSON.parse(localStorage.getItem('cm237_user')  || 'null');
+    if (!tok || !user) return;
+
+    var errEl = document.getElementById('ep-error');
+    var btn   = document.getElementById('ep-save-btn');
+    errEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    var fd = new FormData();
+    fd.append('action',    'update_profile');
+    fd.append('full_name', document.getElementById('ep-name').value.trim());
+    fd.append('phone',     document.getElementById('ep-phone').value.trim());
+    fd.append('region',    document.getElementById('ep-region').value.trim());
+    fd.append('town',      document.getElementById('ep-town').value.trim());
+
+    if (user.role === 'seller') {
+      fd.append('store_name',           document.getElementById('ep-store-name').value.trim());
+      fd.append('whatsapp',             document.getElementById('ep-whatsapp').value.trim());
+      fd.append('landmark',             document.getElementById('ep-landmark').value.trim());
+      fd.append('store_address',        document.getElementById('ep-store-address').value.trim());
+      fd.append('has_physical_store',   _epPhysical ? '1' : '0');
+      fd.append('business_description', document.getElementById('ep-bio').value.trim());
+    }
+
+    try {
+      var res = await fetch('/api.php', {method:'POST', body:fd, headers:{'X-Session-Token':tok}});
+      var d   = await res.json();
+      if (!d.success) throw new Error(d.error || 'Update failed.');
+
+      // Sync localStorage immediately
+      user.full_name = document.getElementById('ep-name').value.trim();
+      user.phone     = document.getElementById('ep-phone').value.trim();
+      user.region    = document.getElementById('ep-region').value.trim();
+      user.town      = document.getElementById('ep-town').value.trim();
+      localStorage.setItem('cm237_user', JSON.stringify(user));
+      if (window._currentUser) { window._currentUser.full_name = user.full_name; window._currentUser.phone = user.phone; window._currentUser.region = user.region; window._currentUser.town = user.town; }
+
+      if (d.store) {
+        localStorage.setItem('cm237_store', JSON.stringify(d.store));
+        if (window._currentStore) window._currentStore = d.store;
+        var sn = document.getElementById('dash-store-name');
+        if (sn) sn.textContent = d.store.store_name || user.full_name;
+      }
+
+      document.getElementById('edit-profile-modal').style.display = 'none';
+    } catch(e) {
+      errEl.textContent = e.message;
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = '✓ Save Changes';
+    }
   };
 })();
 </script>

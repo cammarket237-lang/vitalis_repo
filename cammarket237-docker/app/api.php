@@ -730,6 +730,55 @@ if ($action === 'seller_login') {
 }
 
 // ═══════════════════════════════════════════════════════════
+// UPDATE PROFILE — buyer or seller updates their profile info
+// ═══════════════════════════════════════════════════════════
+if ($action === 'update_profile') {
+    $user = requireAuth();
+
+    $name    = trim(p('full_name') ?? '');
+    $phone   = trim(p('phone')     ?? '');
+    $region  = trim(p('region')    ?? '');
+    $town    = trim(p('town')      ?? '');
+
+    if (!$name || strlen($name) < 2) fail('Name must be at least 2 characters.');
+    if (!$phone) fail('Phone number is required.');
+    if (!preg_match('/^\+?[0-9]{8,15}$/', preg_replace('/[\s\-]/','',$phone))) fail('Invalid phone number.');
+
+    // Check phone conflict only if phone actually changed
+    if ($phone !== $user['phone']) {
+        $conflict = q1("SELECT id FROM cammarket237.users WHERE phone=? AND id!=? LIMIT 1", [$phone, $user['id']]);
+        if ($conflict) fail('That phone number is already registered to another account.');
+    }
+
+    db()->prepare(
+        "UPDATE cammarket237.users SET full_name=?,phone=?,region=?,town=? WHERE id=?"
+    )->execute([$name, $phone, $region, $town, $user['id']]);
+
+    $storeOut = null;
+    if ($user['role'] === 'seller') {
+        $storeName    = trim(p('store_name')           ?? '');
+        $whatsapp     = trim(p('whatsapp')             ?? '');
+        $landmark     = trim(p('landmark')             ?? '');
+        $storeAddress = trim(p('store_address')        ?? '');
+        $hasPhysical  = p('has_physical_store') === '1';
+        $bizDesc      = trim(p('business_description') ?? '');
+        if ($storeName) {
+            db()->prepare(
+                "UPDATE cammarket237.stores
+                 SET store_name=?,area_quarter=?,whatsapp=?,region=?,
+                     landmark=?,store_address=?,has_physical_store=?,business_description=?
+                 WHERE user_id=?"
+            )->execute([$storeName, $town, $whatsapp ?: $phone, $region,
+                        $landmark, $storeAddress, $hasPhysical, $bizDesc,
+                        $user['id']]);
+        }
+        $storeOut = q1("SELECT * FROM cammarket237.stores WHERE user_id=? LIMIT 1", [$user['id']]);
+    }
+
+    ok(['success' => true, 'message' => 'Profile updated.', 'store' => $storeOut]);
+}
+
+// ═══════════════════════════════════════════════════════════
 // CAMERA SEARCH — identify item in photo, return search keywords
 // ═══════════════════════════════════════════════════════════
 if ($action === 'camera_search') {
@@ -1973,6 +2022,9 @@ if ($action === 'edit_listing') {
     $category    = p('category');
     $priceType   = p('price_type');
     $condition   = p('condition');
+    $town        = p('town');
+    $listingType = p('listing_type');
+    $quantity    = p('quantity') ? intval(p('quantity')) : null;
 
     if (!$listingId) fail('Missing listing_id.');
 
@@ -1990,8 +2042,23 @@ if ($action === 'edit_listing') {
         category = COALESCE(NULLIF(?,''), category),
         price_type = COALESCE(NULLIF(?,''), price_type),
         condition = COALESCE(NULLIF(?,''), condition),
+        town = COALESCE(NULLIF(?,''), town),
+        listing_type = COALESCE(NULLIF(?,''), listing_type),
+        quantity_available = COALESCE(?, quantity_available),
         updated_at = NOW()
-        WHERE id=?")->execute([$title,$desc,$price,$category,$priceType,$condition,$listingId]);
+        WHERE id=?")->execute([$title,$desc,$price,$category,$priceType,$condition,$town,$listingType,$quantity,$listingId]);
+
+    // Update category-specific metadata (cars, apartments, electronics, …) if provided
+    $metaRaw = trim($_POST['metadata'] ?? '');
+    if ($metaRaw) {
+        $decoded = json_decode($metaRaw, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            try {
+                db()->prepare("UPDATE cammarket237.listings SET metadata=?::jsonb WHERE id=?")
+                    ->execute([$metaRaw, $listingId]);
+            } catch(Exception $e) {}
+        }
+    }
 
     // Handle photo replacement - track toward monthly limit
     $isPhotoReplacement = !empty($_POST['photo_replacement']);
@@ -2014,11 +2081,29 @@ if ($action === 'edit_listing') {
                 WHERE listing_id=? AND media_role='main_image'")->execute([$p1['url'], $listingId]);
         }
     }
+    // photo2 = first extra_image, photo3 = second extra_image (target by sort_order,
+    // matching how get_listing picks them — avoids overwriting both with one update).
     if (!empty($_FILES['photo2']['name'])) {
         $p2 = saveFile($_FILES['photo2'], 'photo');
         if ($p2['ok']) {
             db()->prepare("UPDATE cammarket237.listing_media SET media_url=?
-                WHERE listing_id=? AND media_role='extra_image'")->execute([$p2['url'], $listingId]);
+                WHERE id = (SELECT id FROM cammarket237.listing_media
+                            WHERE listing_id=? AND media_role='extra_image' ORDER BY sort_order LIMIT 1)")
+                ->execute([$p2['url'], $listingId]);
+        }
+    }
+    if (!empty($_FILES['photo3']['name'])) {
+        $p3 = saveFile($_FILES['photo3'], 'photo');
+        if ($p3['ok']) {
+            $upd = db()->prepare("UPDATE cammarket237.listing_media SET media_url=?
+                WHERE id = (SELECT id FROM cammarket237.listing_media
+                            WHERE listing_id=? AND media_role='extra_image' ORDER BY sort_order LIMIT 1 OFFSET 1)");
+            $upd->execute([$p3['url'], $listingId]);
+            if ($upd->rowCount() === 0) {
+                db()->prepare("INSERT INTO cammarket237.listing_media
+                    (listing_id,media_type,media_url,media_role,sort_order,created_at)
+                    VALUES (?,?,?,?,?,NOW())")->execute([$listingId,'image',$p3['url'],'extra_image',3]);
+            }
         }
     }
 
@@ -4278,9 +4363,10 @@ if ($action === 'submit_ad') {
     $pushCta    = trim(p('push_cta_label') ?? '') ?: 'Learn more';
     $pushLink   = trim(p('push_link_path') ?? '');
     $listingId  = (int)(p('listing_id') ?? 0) ?: null;
+    $storeId    = (int)(p('store_id') ?? 0) ?: null;
     $adTypeLabel = trim(p('ad_type_label') ?? '');
     $adType     = $listingId ? 'boost_listing'
-                : (in_array($adTypeLabel, ['video_ad','event_ad','sponsored_notification','boost_listing']) ? $adTypeLabel : 'sponsored_notification');
+                : (in_array($adTypeLabel, ['video_ad','event_ad','sponsored_notification','boost_listing','boost_store']) ? $adTypeLabel : 'sponsored_notification');
 
     if (!$bizName || !$bizPhone || !$pushTitle || !$pushBody)
         fail('Please fill all required fields.');
@@ -4312,11 +4398,11 @@ if ($action === 'submit_ad') {
 
     db()->prepare("INSERT INTO cammarket237.ad_campaigns
         (ad_type, advertiser_id, package_id, country_code, price, currency_code, status,
-         push_title, push_body, push_image_url, push_cta_label, push_link_path, target_country, listing_id)
+         push_title, push_body, push_image_url, push_cta_label, push_link_path, target_country, listing_id, store_id)
         VALUES (?,?,?,  'CM',?,         'XAF',        'submitted',
-                ?,          ?,         ?,              ?,            ?,              'CM', ?)")
+                ?,          ?,         ?,              ?,            ?,              'CM', ?, ?)")
         ->execute([$adType, $advId, $pkgId ?: null, $pkgPrice,
-                   $pushTitle, $pushBody, $pushImg ?: null, $pushCta, $pushLink ?: null, $listingId]);
+                   $pushTitle, $pushBody, $pushImg ?: null, $pushCta, $pushLink ?: null, $listingId, $storeId]);
     $cid = (int)db()->lastInsertId();
 
     ok(['success' => true, 'campaign_id' => $cid,
@@ -4370,7 +4456,7 @@ if ($action === 'get_ad_feed') {
     try {
         $stmt = db()->prepare("
             SELECT c.id, c.ad_type, c.push_title, c.push_body, c.push_image_url,
-                   c.push_cta_label, c.push_link_path, c.listing_id,
+                   c.push_cta_label, c.push_link_path, c.listing_id, c.store_id,
                    a.business_name,
                    COALESCE(a.contact_phone, u.phone) AS advertiser_phone,
                    lm.media_url AS listing_photo,
