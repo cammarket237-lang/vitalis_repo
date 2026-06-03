@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+
+  # ── PostgreSQL Database ──────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: cammarket237_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cammarket237_db
+      POSTGRES_USER: cammarket_user
+      POSTGRES_PASSWORD: CamMarket2024
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01_init.sql
+      - ./db/backup.sql:/docker-entrypoint-initdb.d/02_backup.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cammarket_user -d cammarket237_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── PHP Application ──────────────────────────────────────
+  php:
+    build: ./php
+    container_name: cammarket237_php
+    restart: unless-stopped
+    volumes:
+      - ./app:/var/www/cammarket237
+      - ./uploads:/var/www/cammarket237/uploads
+    environment:
+      DB_HOST: db
+      DB_NAME: cammarket237_db
+      DB_USER: cammarket_user
+      DB_PASS: CamMarket2024
+      NG_DB_PORT: 5434   # nigeria DB host port for unified_admin (5433 clashes with school237_db locally)
+      ANTHROPIC_KEY: ${ANTHROPIC_KEY:-your_key_here}
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ── Nginx Web Server ─────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: cammarket237_nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./app:/var/www/cammarket237
+      - ./uploads:/var/www/cammarket237/uploads
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+
+volumes:
+  db_data:

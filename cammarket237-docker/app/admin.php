@@ -112,7 +112,7 @@ if ($act === 'approve_ad' && $id) {
     $msg = "Ad #$id approved — notify advertiser to pay.";
 }
 if ($act === 'activate_ad' && $id) {
-    run("UPDATE cammarket237.ad_campaigns SET status='active' WHERE id=?", [$id]);
+    run("UPDATE cammarket237.ad_campaigns SET status='running' WHERE id=?", [$id]);
     $msg = "Ad #$id is now LIVE.";
 }
 if ($act === 'reject_ad' && $id) {

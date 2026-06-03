@@ -4486,6 +4486,16 @@ if ($action === 'get_ad_feed') {
     }
 }
 
+// ── PROMOTED STORES (store_ids with an active store-boost campaign) ──
+if ($action === 'get_promoted_stores') {
+    try {
+        $rows = q("SELECT DISTINCT store_id FROM cammarket237.ad_campaigns
+                   WHERE ad_type='boost_store' AND store_id IS NOT NULL
+                     AND status IN ('running','active')");
+        ok(['store_ids' => array_map(function($r){ return intval($r['store_id']); }, $rows)]);
+    } catch (Exception $e) { ok(['store_ids' => []]); }
+}
+
 // ── RECORD AD CLICK ────────────────────────────────────────────
 if ($action === 'record_ad_click') {
     $user = authUser();
